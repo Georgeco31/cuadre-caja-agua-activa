@@ -12,6 +12,7 @@ from app.api.deps import get_db
 from app.db.base import Base
 from app.main import app
 from app.models.denomination import Denomination
+from app.seeds.admin_user import seed_admin_user
 import app.models as _models  # noqa: F401
 
 
@@ -137,3 +138,23 @@ def api_denominations(
             session.refresh(denomination)
 
     return denominations
+
+
+@pytest.fixture
+def api_auth_headers(api_client) -> dict[str, str]:
+    client, testing_session_local = api_client
+    with testing_session_local() as session:
+        seed_admin_user(
+            db=session,
+            username="admin",
+            password="admin123",
+            is_active=True,
+        )
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": "admin", "password": "admin123"},
+    )
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

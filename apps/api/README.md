@@ -2,7 +2,7 @@
 
 API minima del proyecto Cuadre de Caja Agua Activa.
 
-Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP y seeds iniciales. Todavia no incluye login, autenticacion, frontend ni correcciones avanzadas.
+Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales y autenticacion basica de administrador con JWT. Todavia no incluye frontend, cookies, refresh tokens ni correcciones avanzadas.
 
 ## Requisitos
 
@@ -104,6 +104,9 @@ La API usa estas variables con valores por defecto:
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 - `ADMIN_IS_ACTIVE`
+- `AUTH_SECRET_KEY`
+- `AUTH_ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
 
 `ADMIN_PASSWORD=admin123` es solo un ejemplo local. Debe cambiarse en cualquier entorno real.
 
@@ -152,4 +155,29 @@ docker compose run --rm api python -m app.seeds.run
 
 Los seeds son idempotentes: pueden ejecutarse varias veces sin duplicar denominaciones ni usuario admin.
 
-Este bloque no implementa login, JWT, cookies ni rutas protegidas.
+## Autenticacion de administrador
+
+La API usa autenticacion Bearer con JWT para los endpoints de negocio. `GET /api/v1/health` y `POST /api/v1/auth/login` son publicos.
+
+Variables principales:
+
+- `AUTH_SECRET_KEY`
+- `AUTH_ALGORITHM`
+- `ACCESS_TOKEN_EXPIRE_MINUTES`
+
+Ejemplo de login:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+```
+
+Ejemplo de uso del token:
+
+```bash
+curl http://localhost:8000/api/v1/auth/me \
+  -H "Authorization: Bearer TOKEN_AQUI"
+```
+
+Los endpoints de cuadres y denominaciones requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens, registro publico ni frontend.

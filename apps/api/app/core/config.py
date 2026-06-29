@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     admin_username: str = "admin"
     admin_password: str | None = None
     admin_is_active: bool = True
+    auth_secret_key: str = "change-this-secret-in-production"
+    auth_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env",

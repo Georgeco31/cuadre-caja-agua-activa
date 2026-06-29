@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_db
+from app.api.deps import get_current_user, get_db
 from app.repositories import cash_sessions
 from app.schemas.cash_count_item import CashCountItemRead, CashCountItemSet
 from app.schemas.cash_session import CashSessionCreate, CashSessionRead
@@ -12,7 +12,11 @@ from app.schemas.summary import CashSessionSummary
 from app.services import cash_count_service, cash_session_service, expense_service
 from app.services.summary_service import get_cash_session_summary
 
-router = APIRouter(prefix="/cash-sessions", tags=["cash-sessions"])
+router = APIRouter(
+    prefix="/cash-sessions",
+    tags=["cash-sessions"],
+    dependencies=[Depends(get_current_user)],
+)
 
 
 @router.post(
