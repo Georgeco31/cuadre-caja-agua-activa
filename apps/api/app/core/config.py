@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     api_service_name: str = "cuadre-caja-api"
     api_v1_prefix: str = "/api/v1"
     environment: str = "development"
+    database_url: str = (
+        "postgresql+psycopg://cuadre_user:cuadre_password@localhost:5432/"
+        "cuadre_caja"
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",
