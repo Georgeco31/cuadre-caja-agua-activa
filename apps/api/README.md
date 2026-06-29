@@ -103,3 +103,19 @@ La API usa estas variables con valores por defecto:
 - `DATABASE_URL`
 
 En este bloque no hay endpoints de negocio, autenticacion, frontend ni seeds.
+
+## Logica interna de cuadres
+
+La logica de negocio vive en `app/services` y usa repositorios de `app/repositories`.
+
+Funciones principales:
+
+- Crear un cuadre por fecha.
+- Evitar cuadres duplicados por fecha.
+- Registrar o actualizar conteos por denominacion.
+- Calcular subtotales desde denominacion y cantidad.
+- Registrar gastos con montos `Decimal`.
+- Calcular resumen diario.
+- Cerrar un cuadre y bloquear cambios directos cuando esta cerrado.
+
+Todavia no existen endpoints API para estas operaciones.
