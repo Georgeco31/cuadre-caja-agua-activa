@@ -1,12 +1,11 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
 class CashCountItemSet(BaseModel):
-    cash_session_id: int
     denomination_id: int
-    quantity: int = Field(ge=0)
+    quantity: int
 
 
 class CashCountItemRead(BaseModel):

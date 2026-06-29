@@ -1,13 +1,12 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
 class ExpenseCreate(BaseModel):
-    cash_session_id: int
     description: str
-    amount: Decimal = Field(gt=0)
+    amount: Decimal
     category: str | None = None
     expense_date: date | None = None
     notes: str | None = None

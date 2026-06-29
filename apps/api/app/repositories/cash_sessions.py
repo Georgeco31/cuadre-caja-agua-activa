@@ -18,6 +18,24 @@ def get_cash_session_by_date(
     return db.scalar(statement)
 
 
+def list_cash_sessions(
+    db: Session,
+    date_from: date | None = None,
+    date_to: date | None = None,
+    status: str | None = None,
+) -> list[CashSession]:
+    statement = select(CashSession).order_by(CashSession.session_date)
+
+    if date_from is not None:
+        statement = statement.where(CashSession.session_date >= date_from)
+    if date_to is not None:
+        statement = statement.where(CashSession.session_date <= date_to)
+    if status is not None:
+        statement = statement.where(CashSession.status == status)
+
+    return list(db.scalars(statement))
+
+
 def create_cash_session(
     db: Session,
     session_date: date,
