@@ -12,6 +12,9 @@ class Settings(BaseSettings):
         "postgresql+psycopg://cuadre_user:cuadre_password@localhost:5432/"
         "cuadre_caja"
     )
+    admin_username: str = "admin"
+    admin_password: str | None = None
+    admin_is_active: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -2,7 +2,7 @@
 
 API minima del proyecto Cuadre de Caja Agua Activa.
 
-Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0 y migraciones Alembic. Todavia no incluye autenticacion, endpoints de negocio, frontend, seeds ni logica de calculo de cuadres.
+Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP y seeds iniciales. Todavia no incluye login, autenticacion, frontend ni correcciones avanzadas.
 
 ## Requisitos
 
@@ -101,8 +101,11 @@ La API usa estas variables con valores por defecto:
 - `API_V1_PREFIX`
 - `ENVIRONMENT`
 - `DATABASE_URL`
+- `ADMIN_USERNAME`
+- `ADMIN_PASSWORD`
+- `ADMIN_IS_ACTIVE`
 
-En este bloque no hay endpoints de negocio, autenticacion, frontend ni seeds.
+`ADMIN_PASSWORD=admin123` es solo un ejemplo local. Debe cambiarse en cualquier entorno real.
 
 ## Logica interna de cuadres
 
@@ -118,4 +121,35 @@ Funciones principales:
 - Calcular resumen diario.
 - Cerrar un cuadre y bloquear cambios directos cuando esta cerrado.
 
-Todavia no existen endpoints API para estas operaciones.
+Los endpoints API usan estos servicios; la logica de negocio no debe duplicarse dentro de las rutas.
+
+## Seeds iniciales
+
+Los seeds cargan:
+
+- Denominaciones iniciales de monedas y billetes.
+- Usuario administrador inicial con `password_hash`.
+
+Antes de ejecutar seeds, levantar la base de datos y aplicar migraciones:
+
+```bash
+docker compose up -d db
+cd apps/api
+alembic upgrade head
+```
+
+Ejecutar seeds desde `apps/api`:
+
+```bash
+python -m app.seeds.run
+```
+
+Con Docker Compose, desde la raiz del proyecto:
+
+```bash
+docker compose run --rm api python -m app.seeds.run
+```
+
+Los seeds son idempotentes: pueden ejecutarse varias veces sin duplicar denominaciones ni usuario admin.
+
+Este bloque no implementa login, JWT, cookies ni rutas protegidas.
