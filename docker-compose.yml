@@ -1,0 +1,30 @@
+# Placeholder para Docker Compose.
+# Los servicios reales se agregaran en bloques futuros cuando existan
+# la app FastAPI, la app Next.js y la base PostgreSQL configurada.
+#
+# Ejemplo futuro de servicios:
+#
+# services:
+#   api:
+#     build: ./apps/api
+#     env_file:
+#       - .env
+#     depends_on:
+#       - db
+#
+#   web:
+#     build: ./apps/web
+#     env_file:
+#       - .env
+#     depends_on:
+#       - api
+#
+#   db:
+#     image: postgres:latest
+#     env_file:
+#       - .env
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#
+# volumes:
+#   postgres_data:
