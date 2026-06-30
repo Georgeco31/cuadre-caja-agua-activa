@@ -7,6 +7,13 @@ import type {
   CashSessionPayload,
 } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
+import type {
+  CorrectionCountItemPayload,
+  CorrectionCountItemResponse,
+  CorrectionExpensePayload,
+  CorrectionExpenseResponse,
+  CorrectionLog,
+} from "@/types/correction";
 import type { Denomination } from "@/types/denomination";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
@@ -164,6 +171,48 @@ export async function createExpense(
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   });
+}
+
+export async function listCorrections(
+  token: string,
+  cashSessionId: number,
+): Promise<CorrectionLog[]> {
+  return request<CorrectionLog[]>(
+    `/cash-sessions/${cashSessionId}/corrections`,
+    {
+      headers: authHeaders(token),
+    },
+  );
+}
+
+export async function correctCashCountItem(
+  token: string,
+  cashSessionId: number,
+  payload: CorrectionCountItemPayload,
+): Promise<CorrectionCountItemResponse> {
+  return request<CorrectionCountItemResponse>(
+    `/cash-sessions/${cashSessionId}/corrections/count-items`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function createCorrectiveExpense(
+  token: string,
+  cashSessionId: number,
+  payload: CorrectionExpensePayload,
+): Promise<CorrectionExpenseResponse> {
+  return request<CorrectionExpenseResponse>(
+    `/cash-sessions/${cashSessionId}/corrections/expenses`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 async function request<T>(

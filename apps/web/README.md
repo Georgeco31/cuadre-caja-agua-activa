@@ -2,7 +2,7 @@
 
 App web Next.js para el MVP de Cuadre de Caja Agua Activa.
 
-Este frontend incluye login, dashboard inicial, pantalla de cuadre diario e historial con detalle de cuadres. Todavía no incluye correcciones, edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
+Este frontend incluye login, dashboard inicial, pantalla de cuadre diario, historial con detalle de cuadres e interfaz de correcciones controladas para cuadres cerrados. Todavía no incluye edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -73,7 +73,12 @@ npm run build
 - Gastos registrados con `POST /api/v1/cash-sessions/{id}/expenses`.
 - Resumen cargado desde `GET /api/v1/cash-sessions/{id}/summary`.
 - Cierre de cuadre con `POST /api/v1/cash-sessions/{id}/close`.
+- Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
+- Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
+- Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
+
+En el detalle de historial, las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.

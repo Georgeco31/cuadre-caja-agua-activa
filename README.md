@@ -117,8 +117,9 @@ cuadre-caja-agua-activa/
 - Bloque 9: registro y listado basico de gastos dentro del cuadre diario.
 - Bloque 10: historial y detalle de cuadres con resumen, conteos y gastos.
 - Bloque 11: correcciones backend sobre cuadres cerrados con trazabilidad en `correction_logs`.
+- Bloque 12: interfaz frontend para correcciones controladas y consulta de logs en detalle de historial.
 
-Todavia no se ha creado interfaz para correcciones, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se ha creado edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 
