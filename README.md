@@ -2,7 +2,7 @@
 
 Aplicacion web responsive para registrar el cuadre diario de caja del negocio Agua Activa.
 
-El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario e historial futuro. En esta etapa solo se define la base documental y la estructura inicial del repositorio.
+El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario e historial futuro. En esta etapa ya existe backend FastAPI con autenticacion JWT y una base frontend Next.js con login y dashboard inicial.
 
 ## Problema que resuelve
 
@@ -22,7 +22,7 @@ El MVP se enfoca solamente en:
 - Separacion de monedas y billetes.
 - Registro de gastos.
 - Calculo automatico de totales.
-- Guardado futuro en base de datos.
+- Guardado en base de datos.
 - Consulta futura de historial.
 - Correcciones con trazabilidad.
 
@@ -72,15 +72,26 @@ Pruebas:
 Frontend Next.js -> API FastAPI -> PostgreSQL
 ```
 
-## Estructura inicial
+## Estructura actual
 
 ```text
 cuadre-caja-agua-activa/
 ├── apps/
 │   ├── api/
-│   │   └── .gitkeep
+│   │   ├── app/
+│   │   ├── alembic/
+│   │   ├── tests/
+│   │   ├── Dockerfile
+│   │   ├── README.md
+│   │   └── pyproject.toml
 │   └── web/
-│       └── .gitkeep
+│       ├── app/
+│       ├── components/
+│       ├── lib/
+│       ├── types/
+│       ├── Dockerfile
+│       ├── README.md
+│       └── package.json
 ├── docs/
 │   ├── 00-definicion-base.md
 │   ├── 01-roadmap.md
@@ -94,9 +105,16 @@ cuadre-caja-agua-activa/
 
 ## Estado actual
 
-Bloque 0: base documental y estructura inicial.
+- Bloque 0: base documental y estructura inicial.
+- Bloque 1: backend FastAPI base con health endpoint.
+- Bloque 2: PostgreSQL, SQLAlchemy, Alembic y modelos iniciales.
+- Bloque 3: logica de negocio interna de cuadres.
+- Bloque 4: endpoints API REST de cuadres y denominaciones.
+- Bloque 5: seeds idempotentes de denominaciones y usuario administrador.
+- Bloque 6: autenticacion admin con JWT Bearer.
+- Bloque 7: frontend Next.js con login, dashboard inicial y consumo de `/api/v1/auth/me`.
 
-Todavia no se ha creado una app Next.js, una app FastAPI, modelos SQLAlchemy, migraciones Alembic, endpoints, pantallas ni base de datos funcional.
+Todavia no se ha creado el formulario visual de cuadre diario, registro de gastos desde frontend, historial visual, correcciones desde interfaz, cookies ni refresh tokens.
 
 ## Documentacion
 
@@ -105,12 +123,42 @@ Todavia no se ha creado una app Next.js, una app FastAPI, modelos SQLAlchemy, mi
 - `docs/02-modelo-datos.md`: modelo de datos inicial documentado.
 - `docs/03-reglas-negocio.md`: reglas de negocio del MVP.
 
-## Verificacion del Bloque 0
+## Frontend
+
+La app web vive en `apps/web`.
+
+Variables principales:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:8010/api/v1
+```
+
+Para desarrollo:
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+## Verificacion general
 
 Ejecutar:
 
 ```bash
 git status
+cd apps/api
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[test]"
+pytest
+cd ../web
+npm install
+npm run build
 ```
 
-Confirmar que solo existen archivos de documentacion, estructura base y configuracion inicial segura.
+Para validar Docker Compose desde la raiz:
+
+```bash
+docker compose config
+```

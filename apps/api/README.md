@@ -2,7 +2,7 @@
 
 API minima del proyecto Cuadre de Caja Agua Activa.
 
-Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales y autenticacion basica de administrador con JWT. Todavia no incluye frontend, cookies, refresh tokens ni correcciones avanzadas.
+Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales y autenticacion basica de administrador con JWT. El frontend vive en `apps/web`. Todavia no incluye cookies, refresh tokens ni correcciones avanzadas.
 
 ## Requisitos
 
@@ -101,6 +101,7 @@ La API usa estas variables con valores por defecto:
 - `API_V1_PREFIX`
 - `ENVIRONMENT`
 - `DATABASE_URL`
+- `BACKEND_CORS_ORIGINS`
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 - `ADMIN_IS_ACTIVE`
@@ -109,6 +110,12 @@ La API usa estas variables con valores por defecto:
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 
 `ADMIN_PASSWORD=admin123` es solo un ejemplo local. Debe cambiarse en cualquier entorno real.
+
+`BACKEND_CORS_ORIGINS` permite al frontend local comunicarse con la API desde el navegador. Valor local sugerido:
+
+```bash
+BACKEND_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+```
 
 ## Logica interna de cuadres
 
@@ -180,4 +187,4 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres y denominaciones requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens, registro publico ni frontend.
+Los endpoints de cuadres y denominaciones requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
