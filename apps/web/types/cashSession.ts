@@ -16,6 +16,12 @@ export type CashSessionPayload = {
   notes?: string | null;
 };
 
+export type CashSessionFilters = {
+  date_from?: string;
+  date_to?: string;
+  status?: CashSessionStatus | "";
+};
+
 export type CashCountItemPayload = {
   denomination_id: number;
   quantity: number;

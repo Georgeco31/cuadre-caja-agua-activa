@@ -16,3 +16,9 @@ class CashCountItemRead(BaseModel):
     subtotal: Decimal
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CashCountItemDetailRead(CashCountItemRead):
+    denomination_type: str
+    denomination_label: str
+    denomination_value: Decimal

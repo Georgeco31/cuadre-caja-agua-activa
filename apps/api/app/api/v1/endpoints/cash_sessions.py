@@ -5,7 +5,11 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
 from app.repositories import cash_sessions
-from app.schemas.cash_count_item import CashCountItemRead, CashCountItemSet
+from app.schemas.cash_count_item import (
+    CashCountItemDetailRead,
+    CashCountItemRead,
+    CashCountItemSet,
+)
 from app.schemas.cash_session import CashSessionCreate, CashSessionRead
 from app.schemas.expense import ExpenseCreate, ExpenseRead
 from app.schemas.summary import CashSessionSummary
@@ -94,6 +98,23 @@ def set_count_item(
             cash_session_id=cash_session_id,
             denomination_id=payload.denomination_id,
             quantity=payload.quantity,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/{cash_session_id}/count-items",
+    response_model=list[CashCountItemDetailRead],
+)
+def list_count_items(
+    cash_session_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return cash_count_service.list_count_items(
+            db=db,
+            cash_session_id=cash_session_id,
         )
     except ValueError as error:
         raise _http_error(error) from error

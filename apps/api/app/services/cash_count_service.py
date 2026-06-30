@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.models.cash_count_item import CashCountItem
 from app.repositories import cash_count_items, cash_sessions, denominations
+from app.schemas.cash_count_item import CashCountItemDetailRead
 from app.services.cash_session_service import ensure_cash_session_is_open
 
 MONEY_QUANT = Decimal("0.01")
@@ -53,6 +54,33 @@ def set_count_item(
     db.commit()
     db.refresh(count_item)
     return count_item
+
+
+def list_count_items(
+    db: Session,
+    cash_session_id: int,
+) -> list[CashCountItemDetailRead]:
+    cash_session = cash_sessions.get_cash_session(db, cash_session_id)
+    if cash_session is None:
+        raise ValueError("El cuadre no existe.")
+
+    count_items = cash_count_items.list_count_items_by_cash_session(
+        db=db,
+        cash_session_id=cash_session_id,
+    )
+    return [
+        CashCountItemDetailRead(
+            id=count_item.id,
+            cash_session_id=count_item.cash_session_id,
+            denomination_id=count_item.denomination_id,
+            denomination_type=count_item.denomination.type,
+            denomination_label=count_item.denomination.label,
+            denomination_value=count_item.denomination.value,
+            quantity=count_item.quantity,
+            subtotal=count_item.subtotal,
+        )
+        for count_item in count_items
+    ]
 
 
 def _calculate_subtotal(value: Decimal, quantity: int) -> Decimal:

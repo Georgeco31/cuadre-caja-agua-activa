@@ -3,8 +3,10 @@ import type {
   CashCountItem,
   CashCountItemPayload,
   CashSession,
+  CashSessionFilters,
   CashSessionPayload,
 } from "@/types/cashSession";
+import type { CountItemDetail } from "@/types/countItem";
 import type { Denomination } from "@/types/denomination";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
@@ -53,6 +55,36 @@ export async function getCashSessionByDate(
   });
 }
 
+export async function getCashSession(
+  token: string,
+  cashSessionId: number,
+): Promise<CashSession> {
+  return request<CashSession>(`/cash-sessions/${cashSessionId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function listCashSessions(
+  token: string,
+  filters: CashSessionFilters = {},
+): Promise<CashSession[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+
+  const query = searchParams.toString();
+  return request<CashSession[]>(`/cash-sessions${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
 export async function createCashSession(
   token: string,
   payload: CashSessionPayload,
@@ -75,6 +107,18 @@ export async function setCashCountItem(
       method: "POST",
       headers: authHeaders(token),
       body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function listCashCountItems(
+  token: string,
+  cashSessionId: number,
+): Promise<CountItemDetail[]> {
+  return request<CountItemDetail[]>(
+    `/cash-sessions/${cashSessionId}/count-items`,
+    {
+      headers: authHeaders(token),
     },
   );
 }

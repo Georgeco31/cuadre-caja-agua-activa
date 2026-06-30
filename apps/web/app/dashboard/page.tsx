@@ -67,12 +67,20 @@ export default function DashboardPage() {
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Sistema de cuadre diario de caja
             </p>
-            <Link
-              className="mt-6 inline-flex h-10 items-center rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500"
-              href="/dashboard/cash-session"
-            >
-              Registrar cuadre diario
-            </Link>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500"
+                href="/dashboard/cash-session"
+              >
+                Registrar cuadre diario
+              </Link>
+              <Link
+                className="inline-flex h-10 items-center justify-center rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700"
+                href="/dashboard/history"
+              >
+                Ver historial
+              </Link>
+            </div>
           </div>
         </section>
       </div>

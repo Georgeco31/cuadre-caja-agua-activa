@@ -126,6 +126,7 @@ Funciones principales:
 - Crear un cuadre por fecha.
 - Evitar cuadres duplicados por fecha.
 - Registrar o actualizar conteos por denominacion.
+- Listar conteos por cuadre con datos de denominacion.
 - Calcular subtotales desde denominacion y cantidad.
 - Registrar gastos con montos `Decimal`.
 - Listar gastos por cuadre.
@@ -196,3 +197,9 @@ Endpoints de gastos dentro de un cuadre:
 - `POST /api/v1/cash-sessions/{cash_session_id}/expenses`
 
 El listado devuelve solo gastos del cuadre solicitado. No existen endpoints de edicion o eliminacion de gastos.
+
+Endpoint de conteos dentro de un cuadre:
+
+- `GET /api/v1/cash-sessions/{cash_session_id}/count-items`
+
+El listado devuelve solo conteos del cuadre solicitado e incluye datos basicos de la denominacion para consulta en el frontend.

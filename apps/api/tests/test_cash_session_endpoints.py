@@ -161,6 +161,142 @@ def test_count_items_endpoint_rejects_negative_quantity(
     assert response.status_code == 400
 
 
+def test_list_count_items_endpoint_without_token_returns_401(api_client) -> None:
+    client, _ = api_client
+
+    response = client.get("/api/v1/cash-sessions/1/count-items")
+
+    assert response.status_code == 401
+
+
+def test_list_count_items_endpoint_returns_count_items(
+    api_client,
+    api_denominations,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    cash_session_id = _create_cash_session(client, api_auth_headers)
+    _set_count(client, cash_session_id, api_denominations["coin_025"].id, 10, api_auth_headers)
+    _set_count(client, cash_session_id, api_denominations["bill_1000"].id, 2, api_auth_headers)
+
+    response = client.get(
+        f"/api/v1/cash-sessions/{cash_session_id}/count-items",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "id": response.json()[0]["id"],
+            "cash_session_id": cash_session_id,
+            "denomination_id": api_denominations["bill_1000"].id,
+            "denomination_type": "bill",
+            "denomination_label": "Billete de 10 dolares",
+            "denomination_value": "10.00",
+            "quantity": 2,
+            "subtotal": "20.00",
+        },
+        {
+            "id": response.json()[1]["id"],
+            "cash_session_id": cash_session_id,
+            "denomination_id": api_denominations["coin_025"].id,
+            "denomination_type": "coin",
+            "denomination_label": "Moneda de 25 centavos",
+            "denomination_value": "0.25",
+            "quantity": 10,
+            "subtotal": "2.50",
+        },
+    ]
+
+
+def test_list_count_items_endpoint_returns_404_for_missing_cash_session(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+
+    response = client.get(
+        "/api/v1/cash-sessions/999/count-items",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_create_and_list_count_item_returns_created_count_item(
+    api_client,
+    api_denominations,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    cash_session_id = _create_cash_session(client, api_auth_headers)
+    create_response = client.post(
+        f"/api/v1/cash-sessions/{cash_session_id}/count-items",
+        headers=api_auth_headers,
+        json={
+            "denomination_id": api_denominations["coin_025"].id,
+            "quantity": 10,
+        },
+    )
+
+    response = client.get(
+        f"/api/v1/cash-sessions/{cash_session_id}/count-items",
+        headers=api_auth_headers,
+    )
+
+    assert create_response.status_code == 200
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "id": create_response.json()["id"],
+            "cash_session_id": cash_session_id,
+            "denomination_id": api_denominations["coin_025"].id,
+            "denomination_type": "coin",
+            "denomination_label": "Moneda de 25 centavos",
+            "denomination_value": "0.25",
+            "quantity": 10,
+            "subtotal": "2.50",
+        },
+    ]
+
+
+def test_list_count_items_endpoint_does_not_mix_cash_sessions(
+    api_client,
+    api_denominations,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    first_cash_session_id = _create_cash_session(client, api_auth_headers)
+    second_response = client.post(
+        "/api/v1/cash-sessions",
+        headers=api_auth_headers,
+        json={"session_date": "2026-06-30"},
+    )
+    second_cash_session_id = second_response.json()["id"]
+    _set_count(
+        client,
+        first_cash_session_id,
+        api_denominations["coin_025"].id,
+        10,
+        api_auth_headers,
+    )
+    _set_count(
+        client,
+        second_cash_session_id,
+        api_denominations["bill_1000"].id,
+        2,
+        api_auth_headers,
+    )
+
+    response = client.get(
+        f"/api/v1/cash-sessions/{first_cash_session_id}/count-items",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert [item["denomination_type"] for item in response.json()] == ["coin"]
+
+
 def test_expenses_endpoint_creates_expense(api_client, api_auth_headers) -> None:
     client, _ = api_client
     cash_session_id = _create_cash_session(client, api_auth_headers)
