@@ -2,7 +2,7 @@
 
 API minima del proyecto Cuadre de Caja Agua Activa.
 
-Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales y autenticacion basica de administrador con JWT. El frontend vive en `apps/web`. Todavia no incluye cookies, refresh tokens ni correcciones avanzadas.
+Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales, autenticacion basica de administrador con JWT y correcciones controladas sobre cuadres cerrados. El frontend vive en `apps/web`. Todavia no incluye cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -132,6 +132,7 @@ Funciones principales:
 - Listar gastos por cuadre.
 - Calcular resumen diario.
 - Cerrar un cuadre y bloquear cambios directos cuando esta cerrado.
+- Registrar correcciones justificadas sobre cuadres cerrados con trazabilidad de total anterior y total nuevo.
 
 Los endpoints API usan estos servicios; la logica de negocio no debe duplicarse dentro de las rutas.
 
@@ -203,3 +204,13 @@ Endpoint de conteos dentro de un cuadre:
 - `GET /api/v1/cash-sessions/{cash_session_id}/count-items`
 
 El listado devuelve solo conteos del cuadre solicitado e incluye datos basicos de la denominacion para consulta en el frontend.
+
+## Correcciones de cuadres cerrados
+
+Los endpoints normales de conteos y gastos siguen rechazando cambios cuando el cuadre esta cerrado. Para ajustes posteriores al cierre existen endpoints especificos de correccion:
+
+- `POST /api/v1/cash-sessions/{cash_session_id}/corrections/count-items`
+- `POST /api/v1/cash-sessions/{cash_session_id}/corrections/expenses`
+- `GET /api/v1/cash-sessions/{cash_session_id}/corrections`
+
+Las correcciones solo se permiten en cuadres con estado `closed` y requieren un motivo no vacio. La API calcula los subtotales y totales desde backend, registra `previous_total` y `new_total` en `correction_logs`, y mantiene el cuadre cerrado.

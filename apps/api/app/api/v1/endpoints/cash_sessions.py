@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.models.user import User
 from app.repositories import cash_sessions
 from app.schemas.cash_count_item import (
     CashCountItemDetailRead,
@@ -11,9 +12,21 @@ from app.schemas.cash_count_item import (
     CashCountItemSet,
 )
 from app.schemas.cash_session import CashSessionCreate, CashSessionRead
+from app.schemas.correction import (
+    CorrectionCountItemCreate,
+    CorrectionCountItemResponse,
+    CorrectionExpenseCreate,
+    CorrectionExpenseResponse,
+    CorrectionLogRead,
+)
 from app.schemas.expense import ExpenseCreate, ExpenseRead
 from app.schemas.summary import CashSessionSummary
-from app.services import cash_count_service, cash_session_service, expense_service
+from app.services import (
+    cash_count_service,
+    cash_session_service,
+    correction_service,
+    expense_service,
+)
 from app.services.summary_service import get_cash_session_summary
 
 router = APIRouter(
@@ -151,6 +164,82 @@ def list_expenses(
 ):
     try:
         return expense_service.list_expenses(
+            db=db,
+            cash_session_id=cash_session_id,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.post(
+    "/{cash_session_id}/corrections/count-items",
+    response_model=CorrectionCountItemResponse,
+)
+def correct_count_item(
+    cash_session_id: int,
+    payload: CorrectionCountItemCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        count_item, correction_log = correction_service.correct_count_item(
+            db=db,
+            cash_session_id=cash_session_id,
+            denomination_id=payload.denomination_id,
+            quantity=payload.quantity,
+            reason=payload.reason,
+            created_by=current_user.id,
+        )
+        return CorrectionCountItemResponse(
+            count_item=count_item,
+            summary=get_cash_session_summary(db, cash_session_id),
+            correction_log=correction_log,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.post(
+    "/{cash_session_id}/corrections/expenses",
+    response_model=CorrectionExpenseResponse,
+)
+def create_corrective_expense(
+    cash_session_id: int,
+    payload: CorrectionExpenseCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    try:
+        expense, correction_log = correction_service.create_corrective_expense(
+            db=db,
+            cash_session_id=cash_session_id,
+            description=payload.description,
+            amount=payload.amount,
+            category=payload.category,
+            expense_date=payload.expense_date,
+            notes=payload.notes,
+            reason=payload.reason,
+            created_by=current_user.id,
+        )
+        return CorrectionExpenseResponse(
+            expense=expense,
+            summary=get_cash_session_summary(db, cash_session_id),
+            correction_log=correction_log,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/{cash_session_id}/corrections",
+    response_model=list[CorrectionLogRead],
+)
+def list_corrections(
+    cash_session_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return correction_service.list_corrections(
             db=db,
             cash_session_id=cash_session_id,
         )
