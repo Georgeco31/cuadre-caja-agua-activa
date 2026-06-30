@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -66,11 +67,12 @@ export default function DashboardPage() {
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Sistema de cuadre diario de caja
             </p>
-            <div className="mt-6 rounded-md border border-dashed border-water-500 bg-water-50 p-4">
-              <p className="text-sm font-medium text-water-700">
-                Próximo bloque: registro de cuadre diario
-              </p>
-            </div>
+            <Link
+              className="mt-6 inline-flex h-10 items-center rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500"
+              href="/dashboard/cash-session"
+            >
+              Registrar cuadre diario
+            </Link>
           </div>
         </section>
       </div>

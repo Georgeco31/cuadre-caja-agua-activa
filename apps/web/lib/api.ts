@@ -1,6 +1,24 @@
 import type { CurrentUser, LoginCredentials, TokenResponse } from "@/types/auth";
+import type {
+  CashCountItem,
+  CashCountItemPayload,
+  CashSession,
+  CashSessionPayload,
+} from "@/types/cashSession";
+import type { Denomination } from "@/types/denomination";
+import type { CashSessionSummary } from "@/types/summary";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1";
+
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
 
 export async function login(
   credentials: LoginCredentials,
@@ -19,6 +37,69 @@ export async function getCurrentUser(token: string): Promise<CurrentUser> {
   });
 }
 
+export async function listDenominations(token: string): Promise<Denomination[]> {
+  return request<Denomination[]>("/denominations", {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getCashSessionByDate(
+  token: string,
+  sessionDate: string,
+): Promise<CashSession> {
+  return request<CashSession>(`/cash-sessions/by-date/${sessionDate}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createCashSession(
+  token: string,
+  payload: CashSessionPayload,
+): Promise<CashSession> {
+  return request<CashSession>("/cash-sessions", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function setCashCountItem(
+  token: string,
+  cashSessionId: number,
+  payload: CashCountItemPayload,
+): Promise<CashCountItem> {
+  return request<CashCountItem>(
+    `/cash-sessions/${cashSessionId}/count-items`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function getCashSessionSummary(
+  token: string,
+  cashSessionId: number,
+): Promise<CashSessionSummary> {
+  return request<CashSessionSummary>(
+    `/cash-sessions/${cashSessionId}/summary`,
+    {
+      headers: authHeaders(token),
+    },
+  );
+}
+
+export async function closeCashSession(
+  token: string,
+  cashSessionId: number,
+): Promise<CashSession> {
+  return request<CashSession>(`/cash-sessions/${cashSessionId}/close`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -33,16 +114,22 @@ async function request<T>(
 
   if (!response.ok) {
     const message = await getErrorMessage(response);
-    throw new Error(message);
+    throw new ApiError(message, response.status);
   }
 
   return response.json() as Promise<T>;
 }
 
+function authHeaders(token: string): HeadersInit {
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 async function getErrorMessage(response: Response): Promise<string> {
   try {
-    const body = (await response.json()) as { detail?: string };
-    if (body.detail) {
+    const body = (await response.json()) as { detail?: string | unknown[] };
+    if (typeof body.detail === "string") {
       return body.detail;
     }
   } catch {
