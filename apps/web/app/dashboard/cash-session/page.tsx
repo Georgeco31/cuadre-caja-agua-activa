@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { CashSessionCard } from "@/components/CashSessionCard";
 import { DenominationCountTable } from "@/components/DenominationCountTable";
 import { ErrorMessage } from "@/components/ErrorMessage";
+import { ExpenseForm } from "@/components/ExpenseForm";
+import { ExpenseList } from "@/components/ExpenseList";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SummaryCard } from "@/components/SummaryCard";
@@ -14,14 +16,17 @@ import {
   ApiError,
   closeCashSession,
   createCashSession,
+  createExpense,
   getCashSessionByDate,
   getCashSessionSummary,
+  listExpenses,
   listDenominations,
   setCashCountItem,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type { CashSession } from "@/types/cashSession";
 import type { Denomination } from "@/types/denomination";
+import type { Expense, ExpensePayload } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
 
 export default function CashSessionPage() {
@@ -29,6 +34,7 @@ export default function CashSessionPage() {
   const [token, setToken] = useState<string | null>(null);
   const [cashSession, setCashSession] = useState<CashSession | null>(null);
   const [denominations, setDenominations] = useState<Denomination[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<CashSessionSummary | null>(null);
   const [quantities, setQuantities] = useState<Record<number, string>>({});
   const [error, setError] = useState("");
@@ -36,6 +42,7 @@ export default function CashSessionPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [isClosing, setIsClosing] = useState(false);
+  const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
 
   const coins = useMemo(
     () =>
@@ -74,13 +81,14 @@ export default function CashSessionPage() {
         listDenominations(activeToken),
         getOrCreateCashSession(activeToken, sessionDate),
       ]);
-      const loadedSummary = await getCashSessionSummary(
-        activeToken,
-        loadedSession.id,
-      );
+      const [loadedSummary, loadedExpenses] = await Promise.all([
+        getCashSessionSummary(activeToken, loadedSession.id),
+        listExpenses(activeToken, loadedSession.id),
+      ]);
 
       setDenominations(loadedDenominations);
       setCashSession(loadedSession);
+      setExpenses(loadedExpenses);
       setSummary(loadedSummary);
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
@@ -196,6 +204,35 @@ export default function CashSessionPage() {
     }
   }
 
+  async function handleCreateExpense(payload: ExpensePayload): Promise<boolean> {
+    if (!token || !cashSession || isClosed) {
+      return false;
+    }
+
+    setIsSubmittingExpense(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const createdExpense = await createExpense(token, cashSession.id, payload);
+      const updatedSummary = await getCashSessionSummary(token, cashSession.id);
+
+      setExpenses((currentExpenses) => [...currentExpenses, createdExpense]);
+      setSummary(updatedSummary);
+      setMessage(`Gasto registrado: ${createdExpense.description}.`);
+      return true;
+    } catch (expenseError) {
+      if (redirectIfUnauthorized(expenseError)) {
+        return false;
+      }
+
+      setError(getErrorMessage(expenseError));
+      return false;
+    } finally {
+      setIsSubmittingExpense(false);
+    }
+  }
+
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
@@ -284,6 +321,15 @@ export default function CashSessionPage() {
             onQuantityChange={handleQuantityChange}
             onSave={handleSaveCount}
           />
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <ExpenseForm
+            disabled={isClosed}
+            isSubmitting={isSubmittingExpense}
+            onSubmit={handleCreateExpense}
+          />
+          <ExpenseList expenses={expenses} />
         </div>
       </div>
     </main>

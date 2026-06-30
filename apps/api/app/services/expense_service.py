@@ -42,6 +42,17 @@ def create_expense(
     return expense
 
 
+def list_expenses(db: Session, cash_session_id: int) -> list[Expense]:
+    cash_session = cash_sessions.get_cash_session(db, cash_session_id)
+    if cash_session is None:
+        raise ValueError("El cuadre no existe.")
+
+    return expenses.list_expenses_by_cash_session(
+        db=db,
+        cash_session_id=cash_session_id,
+    )
+
+
 def _to_money_decimal(amount: Decimal | str | int) -> Decimal:
     if isinstance(amount, float):
         raise ValueError("No usar float para valores monetarios.")

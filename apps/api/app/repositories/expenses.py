@@ -32,5 +32,9 @@ def list_expenses_by_cash_session(
     db: Session,
     cash_session_id: int,
 ) -> list[Expense]:
-    statement = select(Expense).where(Expense.cash_session_id == cash_session_id)
+    statement = (
+        select(Expense)
+        .where(Expense.cash_session_id == cash_session_id)
+        .order_by(Expense.created_at, Expense.id)
+    )
     return list(db.scalars(statement))

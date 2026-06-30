@@ -198,6 +198,95 @@ def test_expenses_endpoint_rejects_non_positive_amount(
     assert response.status_code == 400
 
 
+def test_list_expenses_endpoint_without_token_returns_401(api_client) -> None:
+    client, _ = api_client
+
+    response = client.get("/api/v1/cash-sessions/1/expenses")
+
+    assert response.status_code == 401
+
+
+def test_list_expenses_endpoint_returns_expenses(api_client, api_auth_headers) -> None:
+    client, _ = api_client
+    cash_session_id = _create_cash_session(client, api_auth_headers)
+    _create_expense(client, cash_session_id, Decimal("8.50"), api_auth_headers)
+    _create_expense(client, cash_session_id, Decimal("2.00"), api_auth_headers)
+
+    response = client.get(
+        f"/api/v1/cash-sessions/{cash_session_id}/expenses",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert [expense["amount"] for expense in response.json()] == ["8.50", "2.00"]
+
+
+def test_list_expenses_endpoint_returns_404_for_missing_cash_session(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+
+    response = client.get(
+        "/api/v1/cash-sessions/999/expenses",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 404
+
+
+def test_create_and_list_expense_returns_created_expense(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    cash_session_id = _create_cash_session(client, api_auth_headers)
+    create_response = client.post(
+        f"/api/v1/cash-sessions/{cash_session_id}/expenses",
+        headers=api_auth_headers,
+        json={
+            "description": "Compra de fundas",
+            "amount": "8.50",
+            "category": "Insumos",
+            "expense_date": "2026-06-29",
+            "notes": "Gasto hecho con dinero de caja",
+        },
+    )
+
+    response = client.get(
+        f"/api/v1/cash-sessions/{cash_session_id}/expenses",
+        headers=api_auth_headers,
+    )
+
+    assert create_response.status_code == 201
+    assert response.status_code == 200
+    assert response.json() == [create_response.json()]
+
+
+def test_list_expenses_endpoint_does_not_mix_cash_sessions(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    first_cash_session_id = _create_cash_session(client, api_auth_headers)
+    second_response = client.post(
+        "/api/v1/cash-sessions",
+        headers=api_auth_headers,
+        json={"session_date": "2026-06-30"},
+    )
+    second_cash_session_id = second_response.json()["id"]
+    _create_expense(client, first_cash_session_id, Decimal("8.50"), api_auth_headers)
+    _create_expense(client, second_cash_session_id, Decimal("2.00"), api_auth_headers)
+
+    response = client.get(
+        f"/api/v1/cash-sessions/{first_cash_session_id}/expenses",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200
+    assert [expense["amount"] for expense in response.json()] == ["8.50"]
+
+
 def test_summary_endpoint_calculates_totals(
     api_client,
     api_denominations,

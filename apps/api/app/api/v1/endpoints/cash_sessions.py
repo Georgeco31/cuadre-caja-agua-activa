@@ -123,6 +123,20 @@ def create_expense(
         raise _http_error(error) from error
 
 
+@router.get("/{cash_session_id}/expenses", response_model=list[ExpenseRead])
+def list_expenses(
+    cash_session_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return expense_service.list_expenses(
+            db=db,
+            cash_session_id=cash_session_id,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
 @router.get("/{cash_session_id}/summary", response_model=CashSessionSummary)
 def get_summary(
     cash_session_id: int,

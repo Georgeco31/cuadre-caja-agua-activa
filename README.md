@@ -114,8 +114,9 @@ cuadre-caja-agua-activa/
 - Bloque 6: autenticacion admin con JWT Bearer.
 - Bloque 7: frontend Next.js con login, dashboard inicial y consumo de `/api/v1/auth/me`.
 - Bloque 8: pantalla frontend de cuadre diario con denominaciones, conteos, resumen y cierre.
+- Bloque 9: registro y listado basico de gastos dentro del cuadre diario.
 
-Todavia no se ha creado registro de gastos desde frontend, historial visual, correcciones desde interfaz, cookies ni refresh tokens.
+Todavia no se ha creado historial visual, correcciones desde interfaz, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

@@ -6,6 +6,7 @@ import type {
   CashSessionPayload,
 } from "@/types/cashSession";
 import type { Denomination } from "@/types/denomination";
+import type { Expense, ExpensePayload } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1";
@@ -97,6 +98,27 @@ export async function closeCashSession(
   return request<CashSession>(`/cash-sessions/${cashSessionId}/close`, {
     method: "POST",
     headers: authHeaders(token),
+  });
+}
+
+export async function listExpenses(
+  token: string,
+  cashSessionId: number,
+): Promise<Expense[]> {
+  return request<Expense[]>(`/cash-sessions/${cashSessionId}/expenses`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createExpense(
+  token: string,
+  cashSessionId: number,
+  payload: ExpensePayload,
+): Promise<Expense> {
+  return request<Expense>(`/cash-sessions/${cashSessionId}/expenses`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
   });
 }
 

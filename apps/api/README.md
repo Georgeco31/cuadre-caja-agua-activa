@@ -128,6 +128,7 @@ Funciones principales:
 - Registrar o actualizar conteos por denominacion.
 - Calcular subtotales desde denominacion y cantidad.
 - Registrar gastos con montos `Decimal`.
+- Listar gastos por cuadre.
 - Calcular resumen diario.
 - Cerrar un cuadre y bloquear cambios directos cuando esta cerrado.
 
@@ -188,3 +189,10 @@ curl http://localhost:8000/api/v1/auth/me \
 ```
 
 Los endpoints de cuadres y denominaciones requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+
+Endpoints de gastos dentro de un cuadre:
+
+- `GET /api/v1/cash-sessions/{cash_session_id}/expenses`
+- `POST /api/v1/cash-sessions/{cash_session_id}/expenses`
+
+El listado devuelve solo gastos del cuadre solicitado. No existen endpoints de edicion o eliminacion de gastos.

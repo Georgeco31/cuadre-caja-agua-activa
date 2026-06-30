@@ -2,7 +2,7 @@
 
 App web Next.js para el MVP de Cuadre de Caja Agua Activa.
 
-Este frontend incluye login, dashboard inicial y pantalla de cuadre diario para registrar cantidades de monedas y billetes contra la API. Todavía no incluye registro de gastos desde interfaz, historial visual, correcciones, cookies ni refresh tokens.
+Este frontend incluye login, dashboard inicial y pantalla de cuadre diario para registrar cantidades de monedas, billetes y gastos contra la API. Todavía no incluye historial visual, correcciones, edición de gastos, eliminación de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -63,6 +63,8 @@ npm run build
 - La pantalla de cuadre diario consulta o crea el cuadre del día.
 - Denominaciones cargadas desde `GET /api/v1/denominations`.
 - Conteos enviados con `POST /api/v1/cash-sessions/{id}/count-items`.
+- Gastos listados desde `GET /api/v1/cash-sessions/{id}/expenses`.
+- Gastos registrados con `POST /api/v1/cash-sessions/{id}/expenses`.
 - Resumen cargado desde `GET /api/v1/cash-sessions/{id}/summary`.
 - Cierre de cuadre con `POST /api/v1/cash-sessions/{id}/close`.
 - Token JWT guardado en `localStorage` para el MVP inicial.
