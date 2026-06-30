@@ -96,7 +96,16 @@ cuadre-caja-agua-activa/
 │   ├── 00-definicion-base.md
 │   ├── 01-roadmap.md
 │   ├── 02-modelo-datos.md
-│   └── 03-reglas-negocio.md
+│   ├── 03-reglas-negocio.md
+│   ├── 04-ejecucion-local.md
+│   └── 05-backup-restauracion.md
+├── scripts/
+│   ├── backup-db.sh
+│   ├── local-migrate.sh
+│   ├── local-seed.sh
+│   ├── local-start.sh
+│   ├── local-stop.sh
+│   └── restore-db.sh
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
@@ -118,6 +127,7 @@ cuadre-caja-agua-activa/
 - Bloque 10: historial y detalle de cuadres con resumen, conteos y gastos.
 - Bloque 11: correcciones backend sobre cuadres cerrados con trazabilidad en `correction_logs`.
 - Bloque 12: interfaz frontend para correcciones controladas y consulta de logs en detalle de historial.
+- Bloque 13: ejecucion local ordenada con Docker Compose, scripts y documentacion de backup/restauracion.
 
 Todavia no se ha creado edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
@@ -127,6 +137,43 @@ Todavia no se ha creado edicion desde historial, edicion de gastos, eliminacion 
 - `docs/01-roadmap.md`: roadmap por bloques pequeños.
 - `docs/02-modelo-datos.md`: modelo de datos inicial documentado.
 - `docs/03-reglas-negocio.md`: reglas de negocio del MVP.
+- `docs/04-ejecucion-local.md`: ejecucion local con Docker Compose.
+- `docs/05-backup-restauracion.md`: backup y restauracion de PostgreSQL.
+
+## Ejecucion local con Docker
+
+Crear variables locales:
+
+```bash
+cp .env.example .env
+```
+
+Editar `.env` y cambiar los valores `change-me` antes de usar datos reales.
+
+Comandos principales desde la raiz:
+
+```bash
+./scripts/local-start.sh
+./scripts/local-migrate.sh
+./scripts/local-seed.sh
+./scripts/backup-db.sh
+./scripts/restore-db.sh backups/nombre_backup.sql
+./scripts/local-stop.sh
+```
+
+Abrir:
+
+```text
+http://localhost:3000/login
+```
+
+La API queda disponible en:
+
+```text
+http://localhost:8010/api/v1/health
+```
+
+Los datos de PostgreSQL se conservan en el volumen Docker `postgres_data`. Los backups locales se guardan en `backups/` y no deben subirse a Git.
 
 ## Frontend
 

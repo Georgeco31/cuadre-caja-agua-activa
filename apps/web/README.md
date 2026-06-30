@@ -17,10 +17,10 @@ Crear `.env.local` en `apps/web` si se desea cambiar la URL de la API:
 NEXT_PUBLIC_API_URL=http://localhost:8010/api/v1
 ```
 
-Si el backend se levanta con Docker en el puerto por defecto:
+Si el backend se levanta con Docker en el puerto por defecto del proyecto:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+NEXT_PUBLIC_API_URL=http://localhost:8010/api/v1
 ```
 
 ## Instalación
@@ -55,6 +55,20 @@ Rutas principales:
 
 ```bash
 npm run build
+```
+
+## Docker Compose
+
+Desde la raiz del proyecto:
+
+```bash
+./scripts/local-start.sh
+```
+
+La web queda disponible en:
+
+```text
+http://localhost:3000/login
 ```
 
 ## Flujo actual

@@ -32,6 +32,7 @@ pnpm-debug.log*
 *.pid
 *.log
 docker-data/
+backups/
 
 # OS / editors
 .DS_Store

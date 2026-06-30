@@ -61,8 +61,10 @@ docker compose up --build api
 Luego probar en otra terminal:
 
 ```bash
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8010/api/v1/health
 ```
+
+Con la configuracion local del proyecto, Docker Compose publica la API en `API_PORT`, por defecto `8010`.
 
 ## Base de datos y migraciones
 
@@ -89,7 +91,14 @@ DATABASE_URL=postgresql+psycopg://cuadre_user:cuadre_password@localhost:5432/cua
 Dentro de Docker Compose, la API usa el host `db`:
 
 ```bash
-DATABASE_URL=postgresql+psycopg://cuadre_user:cuadre_password@db:5432/cuadre_caja
+DATABASE_URL=postgresql+psycopg://cuadre_user:change-me@db:5432/cuadre_caja
+```
+
+Desde la raiz del proyecto tambien se puede usar:
+
+```bash
+./scripts/local-migrate.sh
+./scripts/local-seed.sh
 ```
 
 ## Variables de entorno
@@ -109,12 +118,12 @@ La API usa estas variables con valores por defecto:
 - `AUTH_ALGORITHM`
 - `ACCESS_TOKEN_EXPIRE_MINUTES`
 
-`ADMIN_PASSWORD=admin123` es solo un ejemplo local. Debe cambiarse en cualquier entorno real.
+`ADMIN_PASSWORD=change-me` es solo un marcador local. Debe cambiarse antes de usar datos reales.
 
 `BACKEND_CORS_ORIGINS` permite al frontend local comunicarse con la API desde el navegador. Valor local sugerido:
 
 ```bash
-BACKEND_CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+BACKEND_CORS_ORIGINS=["http://localhost:3000","http://127.0.0.1:3000"]
 ```
 
 ## Logica interna de cuadres
