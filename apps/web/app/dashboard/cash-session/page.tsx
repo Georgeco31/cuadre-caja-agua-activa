@@ -17,14 +17,17 @@ import {
   closeCashSession,
   createCashSession,
   createExpense,
+  getCashSession,
   getCashSessionByDate,
   getCashSessionSummary,
+  listCashCountItems,
   listExpenses,
   listDenominations,
   setCashCountItem,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type { CashSession } from "@/types/cashSession";
+import type { CountItemDetail } from "@/types/countItem";
 import type { Denomination } from "@/types/denomination";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
@@ -34,6 +37,7 @@ export default function CashSessionPage() {
   const [token, setToken] = useState<string | null>(null);
   const [cashSession, setCashSession] = useState<CashSession | null>(null);
   const [denominations, setDenominations] = useState<Denomination[]>([]);
+  const [countItems, setCountItems] = useState<CountItemDetail[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<CashSessionSummary | null>(null);
   const [quantities, setQuantities] = useState<Record<number, string>>({});
@@ -58,6 +62,10 @@ export default function CashSessionPage() {
         .sort(compareDenominationValue),
     [denominations],
   );
+  const savedDenominationIds = useMemo(
+    () => new Set(countItems.map((item) => item.denomination_id)),
+    [countItems],
+  );
   const isClosed = cashSession?.status === "closed";
 
   useEffect(() => {
@@ -81,15 +89,19 @@ export default function CashSessionPage() {
         listDenominations(activeToken),
         getOrCreateCashSession(activeToken, sessionDate),
       ]);
-      const [loadedSummary, loadedExpenses] = await Promise.all([
-        getCashSessionSummary(activeToken, loadedSession.id),
-        listExpenses(activeToken, loadedSession.id),
-      ]);
+      const [loadedSummary, loadedExpenses, loadedCountItems] =
+        await Promise.all([
+          getCashSessionSummary(activeToken, loadedSession.id),
+          listExpenses(activeToken, loadedSession.id),
+          listCashCountItems(activeToken, loadedSession.id),
+        ]);
 
       setDenominations(loadedDenominations);
       setCashSession(loadedSession);
       setExpenses(loadedExpenses);
       setSummary(loadedSummary);
+      setCountItems(loadedCountItems);
+      setQuantities(buildQuantityMap(loadedDenominations, loadedCountItems));
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -131,7 +143,7 @@ export default function CashSessionPage() {
   }
 
   async function handleSaveCount(denomination: Denomination) {
-    if (!token || !cashSession || isClosed) {
+    if (!token || !cashSession || !summary || isClosed) {
       return;
     }
 
@@ -147,17 +159,18 @@ export default function CashSessionPage() {
     setMessage("");
 
     try {
-      const savedItem = await setCashCountItem(token, cashSession.id, {
+      await setCashCountItem(token, cashSession.id, {
         denomination_id: denomination.id,
         quantity,
       });
-      const updatedSummary = await getCashSessionSummary(token, cashSession.id);
+      const [updatedSummary, updatedCountItems] = await Promise.all([
+        getCashSessionSummary(token, cashSession.id),
+        listCashCountItems(token, cashSession.id),
+      ]);
 
-      setQuantities((currentQuantities) => ({
-        ...currentQuantities,
-        [denomination.id]: String(savedItem.quantity),
-      }));
       setSummary(updatedSummary);
+      setCountItems(updatedCountItems);
+      setQuantities(buildQuantityMap(denominations, updatedCountItems));
       setMessage(`Cantidad guardada para ${denomination.label}.`);
     } catch (saveError) {
       if (redirectIfUnauthorized(saveError)) {
@@ -171,13 +184,11 @@ export default function CashSessionPage() {
   }
 
   async function handleCloseCashSession() {
-    if (!token || !cashSession || isClosed) {
+    if (!token || !cashSession || !summary || isClosed) {
       return;
     }
 
-    const shouldClose = window.confirm(
-      "¿Cerrar el cuadre diario? Después no podrás editar sus cantidades.",
-    );
+    const shouldClose = window.confirm(buildCloseConfirmation(summary));
     if (!shouldClose) {
       return;
     }
@@ -187,11 +198,24 @@ export default function CashSessionPage() {
     setMessage("");
 
     try {
-      const closedSession = await closeCashSession(token, cashSession.id);
-      const updatedSummary = await getCashSessionSummary(token, cashSession.id);
+      await closeCashSession(token, cashSession.id);
+      const [
+        refreshedSession,
+        updatedSummary,
+        updatedCountItems,
+        updatedExpenses,
+      ] = await Promise.all([
+        getCashSession(token, cashSession.id),
+        getCashSessionSummary(token, cashSession.id),
+        listCashCountItems(token, cashSession.id),
+        listExpenses(token, cashSession.id),
+      ]);
 
-      setCashSession(closedSession);
+      setCashSession(refreshedSession);
       setSummary(updatedSummary);
+      setCountItems(updatedCountItems);
+      setExpenses(updatedExpenses);
+      setQuantities(buildQuantityMap(denominations, updatedCountItems));
       setMessage("Cuadre cerrado correctamente.");
     } catch (closeError) {
       if (redirectIfUnauthorized(closeError)) {
@@ -215,9 +239,12 @@ export default function CashSessionPage() {
 
     try {
       const createdExpense = await createExpense(token, cashSession.id, payload);
-      const updatedSummary = await getCashSessionSummary(token, cashSession.id);
+      const [updatedSummary, updatedExpenses] = await Promise.all([
+        getCashSessionSummary(token, cashSession.id),
+        listExpenses(token, cashSession.id),
+      ]);
 
-      setExpenses((currentExpenses) => [...currentExpenses, createdExpense]);
+      setExpenses(updatedExpenses);
       setSummary(updatedSummary);
       setMessage(`Gasto registrado: ${createdExpense.description}.`);
       return true;
@@ -308,6 +335,7 @@ export default function CashSessionPage() {
             denominations={coins}
             disabled={isClosed}
             quantities={quantities}
+            savedDenominationIds={savedDenominationIds}
             savingId={savingId}
             onQuantityChange={handleQuantityChange}
             onSave={handleSaveCount}
@@ -317,6 +345,7 @@ export default function CashSessionPage() {
             denominations={bills}
             disabled={isClosed}
             quantities={quantities}
+            savedDenominationIds={savedDenominationIds}
             savingId={savingId}
             onQuantityChange={handleQuantityChange}
             onSave={handleSaveCount}
@@ -347,6 +376,50 @@ function compareDenominationValue(
   second: Denomination,
 ): number {
   return Number(first.value) - Number(second.value);
+}
+
+function buildQuantityMap(
+  denominations: Denomination[],
+  countItems: CountItemDetail[],
+): Record<number, string> {
+  const quantityMap: Record<number, string> = {};
+
+  denominations.forEach((denomination) => {
+    quantityMap[denomination.id] = "0";
+  });
+
+  countItems.forEach((item) => {
+    quantityMap[item.denomination_id] = String(item.quantity);
+  });
+
+  return quantityMap;
+}
+
+function buildCloseConfirmation(summary: CashSessionSummary): string {
+  return [
+    "Cerrar el cuadre diario?",
+    "",
+    `Total monedas: ${formatMoney(summary.total_coins)}`,
+    `Total billetes: ${formatMoney(summary.total_bills)}`,
+    `Total contado: ${formatMoney(summary.total_counted)}`,
+    `Total gastos: ${formatMoney(summary.total_expenses)}`,
+    `Total final: ${formatMoney(summary.final_total)}`,
+    "",
+    "Despues del cierre las cantidades y gastos normales quedaran bloqueados.",
+    "Cualquier ajuste posterior debera registrarse como correccion con motivo.",
+  ].join("\n");
+}
+
+function formatMoney(value: string): string {
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue)) {
+    return `$${value}`;
+  }
+
+  return new Intl.NumberFormat("es-EC", {
+    style: "currency",
+    currency: "USD",
+  }).format(numberValue);
 }
 
 function getErrorMessage(possibleError: unknown): string {

@@ -78,6 +78,8 @@ http://localhost:3000/login
 - Enlace desde dashboard hacia `/dashboard/cash-session`.
 - Enlace desde dashboard hacia `/dashboard/history`.
 - La pantalla de cuadre diario consulta o crea el cuadre del día.
+- La pantalla de cuadre diario precarga conteos guardados desde `GET /api/v1/cash-sessions/{id}/count-items`.
+- Si no hay conteo guardado para una denominación, el input muestra 0.
 - El historial lista cuadres desde `GET /api/v1/cash-sessions`.
 - El detalle consulta resumen, conteos y gastos del cuadre.
 - Denominaciones cargadas desde `GET /api/v1/denominations`.
@@ -87,6 +89,7 @@ http://localhost:3000/login
 - Gastos registrados con `POST /api/v1/cash-sessions/{id}/expenses`.
 - Resumen cargado desde `GET /api/v1/cash-sessions/{id}/summary`.
 - Cierre de cuadre con `POST /api/v1/cash-sessions/{id}/close`.
+- Antes de cerrar, el frontend muestra una confirmación con el resumen oficial actual.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.

@@ -13,6 +13,11 @@ const summaryItems = [
 ] as const;
 
 export function SummaryCard({ summary }: SummaryCardProps) {
+  const isClosed = summary.status === "closed";
+  const statusStyles = isClosed
+    ? "border-slate-200 bg-slate-100 text-slate-700"
+    : "border-water-100 bg-water-50 text-water-700";
+
   return (
     <section aria-labelledby="cash-summary-title" className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -25,7 +30,9 @@ export function SummaryCard({ summary }: SummaryCardProps) {
             Totales calculados
           </h2>
         </div>
-        <span className="w-fit rounded-md border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700">
+        <span
+          className={`w-fit rounded-md border px-3 py-1 text-sm font-medium ${statusStyles}`}
+        >
           {summary.status}
         </span>
       </div>

@@ -5,6 +5,7 @@ type DenominationCountTableProps = {
   denominations: Denomination[];
   disabled: boolean;
   quantities: Record<number, string>;
+  savedDenominationIds: Set<number>;
   savingId: number | null;
   onQuantityChange: (denominationId: number, value: string) => void;
   onSave: (denomination: Denomination) => void;
@@ -15,6 +16,7 @@ export function DenominationCountTable({
   denominations,
   disabled,
   quantities,
+  savedDenominationIds,
   savingId,
   onQuantityChange,
   onSave,
@@ -31,22 +33,34 @@ export function DenominationCountTable({
         >
           {title}
         </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Las cantidades se cargan desde el cuadre guardado. Si no hay conteo,
+          se muestra 0.
+        </p>
       </div>
 
       <div className="divide-y divide-slate-100">
         {denominations.map((denomination) => {
           const isSaving = savingId === denomination.id;
           const isAnyRowSaving = savingId !== null;
+          const isSaved = savedDenominationIds.has(denomination.id);
 
           return (
             <div
-              className="grid gap-3 px-4 py-3 sm:grid-cols-[1fr_120px_160px_112px] sm:items-center"
+              className="grid gap-3 px-4 py-3 sm:grid-cols-[1fr_120px_160px_128px] sm:items-center"
               key={denomination.id}
             >
               <div>
-                <p className="font-medium text-slate-950">
-                  {denomination.label}
-                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium text-slate-950">
+                    {denomination.label}
+                  </p>
+                  {isSaved ? (
+                    <span className="rounded-md border border-water-100 bg-water-50 px-2 py-0.5 text-xs font-medium text-water-700">
+                      Guardado
+                    </span>
+                  ) : null}
+                </div>
                 <p className="text-sm text-slate-600">
                   Valor: {formatMoney(denomination.value)}
                 </p>
@@ -80,7 +94,11 @@ export function DenominationCountTable({
                 onClick={() => onSave(denomination)}
                 disabled={disabled || isAnyRowSaving}
               >
-                {isSaving ? "Guardando..." : "Guardar"}
+                {isSaving
+                  ? "Guardando..."
+                  : isSaved
+                    ? "Actualizar"
+                    : "Guardar"}
               </button>
             </div>
           );
