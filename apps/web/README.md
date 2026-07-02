@@ -86,6 +86,7 @@ http://localhost:3000/login
 - La pantalla de cuadre diario precarga conteos guardados desde `GET /api/v1/cash-sessions/{id}/count-items`.
 - Si no hay conteo guardado para una denominación, el input muestra 0.
 - El historial lista cuadres desde `GET /api/v1/cash-sessions`.
+- El historial permite filtrar por fecha desde, fecha hasta y estado usando `date_from`, `date_to` y `status`.
 - El detalle consulta resumen, conteos y gastos del cuadre.
 - Denominaciones cargadas desde `GET /api/v1/denominations`.
 - Conteos enviados con `POST /api/v1/cash-sessions/{id}/count-items`.

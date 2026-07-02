@@ -1,23 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import {
+  CashSessionHistoryFilters,
+  type CashSessionHistoryFilterValues,
+} from "@/components/CashSessionHistoryFilters";
 import { CashSessionHistoryTable } from "@/components/CashSessionHistoryTable";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
 import { ApiError, listCashSessions } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
-import type { CashSession, CashSessionStatus } from "@/types/cashSession";
+import type { CashSession } from "@/types/cashSession";
+
+const emptyFilters: CashSessionHistoryFilterValues = {
+  dateFrom: "",
+  dateTo: "",
+  status: "",
+};
 
 export default function CashSessionHistoryPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [cashSessions, setCashSessions] = useState<CashSession[]>([]);
-  const [dateFilter, setDateFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState<CashSessionStatus | "">("");
+  const [filters, setFilters] =
+    useState<CashSessionHistoryFilterValues>(emptyFilters);
+  const [appliedFilters, setAppliedFilters] =
+    useState<CashSessionHistoryFilterValues>(emptyFilters);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,19 +46,21 @@ export default function CashSessionHistoryPage() {
 
   async function loadCashSessions(
     activeToken: string,
-    filters: { date?: string; status?: CashSessionStatus | "" } = {},
+    activeFilters: CashSessionHistoryFilterValues = emptyFilters,
   ) {
     setIsLoading(true);
     setError("");
 
     try {
       const loadedCashSessions = await listCashSessions(activeToken, {
-        ...(filters.date
-          ? { date_from: filters.date, date_to: filters.date }
+        ...(activeFilters.dateFrom
+          ? { date_from: activeFilters.dateFrom }
           : {}),
-        ...(filters.status ? { status: filters.status } : {}),
+        ...(activeFilters.dateTo ? { date_to: activeFilters.dateTo } : {}),
+        ...(activeFilters.status ? { status: activeFilters.status } : {}),
       });
-      setCashSessions(loadedCashSessions);
+      setCashSessions(sortCashSessionsDesc(loadedCashSessions));
+      setAppliedFilters(activeFilters);
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -58,16 +72,17 @@ export default function CashSessionHistoryPage() {
     }
   }
 
-  function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleFilterSubmit() {
     if (!token) {
       return;
     }
 
-    loadCashSessions(token, {
-      date: dateFilter,
-      status: statusFilter,
-    });
+    if (filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo) {
+      setError("La fecha desde no puede ser posterior a la fecha hasta.");
+      return;
+    }
+
+    loadCashSessions(token, filters);
   }
 
   function handleClearFilters() {
@@ -75,9 +90,8 @@ export default function CashSessionHistoryPage() {
       return;
     }
 
-    setDateFilter("");
-    setStatusFilter("");
-    loadCashSessions(token);
+    setFilters(emptyFilters);
+    loadCashSessions(token, emptyFilters);
   }
 
   function redirectIfUnauthorized(possibleError: unknown): boolean {
@@ -111,59 +125,23 @@ export default function CashSessionHistoryPage() {
           <LogoutButton />
         </header>
 
-        <form
-          className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[180px_180px_auto_auto] sm:items-end"
+        <CashSessionHistoryFilters
+          filters={filters}
+          disabled={isLoading}
+          onChange={setFilters}
           onSubmit={handleFilterSubmit}
-        >
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Fecha</span>
-            <input
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
-              type="date"
-              value={dateFilter}
-              onChange={(event) => setDateFilter(event.target.value)}
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">Estado</span>
-            <select
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
-              value={statusFilter}
-              onChange={(event) =>
-                setStatusFilter(event.target.value as CashSessionStatus | "")
-              }
-            >
-              <option value="">Todos</option>
-              <option value="open">open</option>
-              <option value="closed">closed</option>
-            </select>
-          </label>
-
-          <button
-            className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-            type="submit"
-            disabled={isLoading}
-          >
-            Filtrar
-          </button>
-
-          <button
-            className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
-            type="button"
-            onClick={handleClearFilters}
-            disabled={isLoading}
-          >
-            Limpiar
-          </button>
-        </form>
+          onClear={handleClearFilters}
+        />
 
         {error ? <ErrorMessage message={error} /> : null}
 
         {isLoading ? (
           <LoadingState label="Cargando historial..." />
         ) : (
-          <CashSessionHistoryTable cashSessions={cashSessions} />
+          <CashSessionHistoryTable
+            cashSessions={cashSessions}
+            hasActiveFilters={hasActiveFilters(appliedFilters)}
+          />
         )}
       </div>
     </main>
@@ -176,4 +154,19 @@ function getErrorMessage(possibleError: unknown): string {
   }
 
   return "No se pudo completar la solicitud.";
+}
+
+function hasActiveFilters(filters: CashSessionHistoryFilterValues): boolean {
+  return Boolean(filters.dateFrom || filters.dateTo || filters.status);
+}
+
+function sortCashSessionsDesc(cashSessions: CashSession[]): CashSession[] {
+  return [...cashSessions].sort((first, second) => {
+    const dateComparison = second.session_date.localeCompare(first.session_date);
+    if (dateComparison !== 0) {
+      return dateComparison;
+    }
+
+    return second.id - first.id;
+  });
 }

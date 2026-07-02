@@ -4,10 +4,12 @@ import type { CashSession } from "@/types/cashSession";
 
 type CashSessionHistoryTableProps = {
   cashSessions: CashSession[];
+  hasActiveFilters?: boolean;
 };
 
 export function CashSessionHistoryTable({
   cashSessions,
+  hasActiveFilters = false,
 }: CashSessionHistoryTableProps) {
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -19,7 +21,9 @@ export function CashSessionHistoryTable({
 
       {cashSessions.length === 0 ? (
         <p className="px-4 py-6 text-sm text-slate-600">
-          Todavía no hay cuadres registrados.
+          {hasActiveFilters
+            ? "No se encontraron cuadres con los filtros seleccionados."
+            : "Todavía no hay cuadres registrados."}
         </p>
       ) : (
         <div className="overflow-x-auto">
