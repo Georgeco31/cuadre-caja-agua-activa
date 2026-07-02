@@ -128,8 +128,10 @@ cuadre-caja-agua-activa/
 - Bloque 11: correcciones backend sobre cuadres cerrados con trazabilidad en `correction_logs`.
 - Bloque 12: interfaz frontend para correcciones controladas y consulta de logs en detalle de historial.
 - Bloque 13: ejecucion local ordenada con Docker Compose, scripts y documentacion de backup/restauracion.
+- Bloque 14: precarga de conteos guardados y mejora del flujo diario.
+- Bloque 15: resumen acumulado de caja con filtros por fecha y estado.
 
-Todavia no se ha creado edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se ha creado reportes avanzados, exportaciones PDF/Excel, ventas reales, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

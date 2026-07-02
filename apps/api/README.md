@@ -140,6 +140,7 @@ Funciones principales:
 - Registrar gastos con montos `Decimal`.
 - Listar gastos por cuadre.
 - Calcular resumen diario.
+- Calcular resumen acumulado de caja desde cuadres registrados.
 - Cerrar un cuadre y bloquear cambios directos cuando esta cerrado.
 - Registrar correcciones justificadas sobre cuadres cerrados con trazabilidad de total anterior y total nuevo.
 
@@ -223,3 +224,17 @@ Los endpoints normales de conteos y gastos siguen rechazando cambios cuando el c
 - `GET /api/v1/cash-sessions/{cash_session_id}/corrections`
 
 Las correcciones solo se permiten en cuadres con estado `closed` y requieren un motivo no vacio. La API calcula los subtotales y totales desde backend, registra `previous_total` y `new_total` en `correction_logs`, y mantiene el cuadre cerrado.
+
+## Reportes
+
+Endpoint de resumen acumulado de caja:
+
+- `GET /api/v1/reports/cash-summary`
+
+Filtros opcionales:
+
+- `date_from`
+- `date_to`
+- `status`
+
+El reporte suma `total_counted`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte no representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.

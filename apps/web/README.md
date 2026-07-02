@@ -50,6 +50,7 @@ Rutas principales:
 - `/dashboard/cash-session`
 - `/dashboard/history`
 - `/dashboard/history/[cashSessionId]`
+- `/dashboard/reports`
 
 ## Build
 
@@ -77,6 +78,7 @@ http://localhost:3000/login
 - Dashboard protegido en `/dashboard`.
 - Enlace desde dashboard hacia `/dashboard/cash-session`.
 - Enlace desde dashboard hacia `/dashboard/history`.
+- Enlace desde dashboard hacia `/dashboard/reports`.
 - La pantalla de cuadre diario consulta o crea el cuadre del día.
 - La pantalla de cuadre diario precarga conteos guardados desde `GET /api/v1/cash-sessions/{id}/count-items`.
 - Si no hay conteo guardado para una denominación, el input muestra 0.
@@ -90,6 +92,7 @@ http://localhost:3000/login
 - Resumen cargado desde `GET /api/v1/cash-sessions/{id}/summary`.
 - Cierre de cuadre con `POST /api/v1/cash-sessions/{id}/close`.
 - Antes de cerrar, el frontend muestra una confirmación con el resumen oficial actual.
+- Resumen acumulado cargado desde `GET /api/v1/reports/cash-summary`.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.
@@ -97,5 +100,7 @@ http://localhost:3000/login
 - Logout elimina el token y vuelve a `/login`.
 
 En el detalle de historial, las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
+
+La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados. No representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.

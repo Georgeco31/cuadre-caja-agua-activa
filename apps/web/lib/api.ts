@@ -16,6 +16,10 @@ import type {
 } from "@/types/correction";
 import type { Denomination } from "@/types/denomination";
 import type { Expense, ExpensePayload } from "@/types/expense";
+import type {
+  CashSummaryReport,
+  CashSummaryReportFilters,
+} from "@/types/report";
 import type { CashSessionSummary } from "@/types/summary";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1";
@@ -211,6 +215,30 @@ export async function createCorrectiveExpense(
       method: "POST",
       headers: authHeaders(token),
       body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function getCashSummaryReport(
+  token: string,
+  filters: CashSummaryReportFilters = {},
+): Promise<CashSummaryReport> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+
+  const query = searchParams.toString();
+  return request<CashSummaryReport>(
+    `/reports/cash-summary${query ? `?${query}` : ""}`,
+    {
+      headers: authHeaders(token),
     },
   );
 }
