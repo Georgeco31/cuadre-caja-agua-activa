@@ -2,7 +2,7 @@
 
 App web Next.js para el MVP de Cuadre de Caja Agua Activa.
 
-Este frontend incluye login, dashboard inicial, pantalla de cuadre diario, historial con detalle de cuadres e interfaz de correcciones controladas para cuadres cerrados. Todavía no incluye edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo de dashboard, pantalla de cuadre diario, historial con detalle de cuadres, reporte acumulado e interfaz de correcciones controladas para cuadres cerrados. Todavía no incluye edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -76,9 +76,12 @@ http://localhost:3000/login
 
 - Login en `/login`.
 - Dashboard protegido en `/dashboard`.
-- Enlace desde dashboard hacia `/dashboard/cash-session`.
-- Enlace desde dashboard hacia `/dashboard/history`.
-- Enlace desde dashboard hacia `/dashboard/reports`.
+- El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
+- El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
+- Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
+- El dashboard muestra acciones rápidas hacia `/dashboard/cash-session`, `/dashboard/history` y `/dashboard/reports`.
+- El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
+- El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario consulta o crea el cuadre del día.
 - La pantalla de cuadre diario precarga conteos guardados desde `GET /api/v1/cash-sessions/{id}/count-items`.
 - Si no hay conteo guardado para una denominación, el input muestra 0.
