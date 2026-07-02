@@ -2,7 +2,7 @@
 
 Aplicacion web responsive para registrar el cuadre diario de caja del negocio Agua Activa.
 
-El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario e historial futuro. En esta etapa ya existe backend FastAPI con autenticacion JWT y una base frontend Next.js con login y dashboard inicial.
+El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario, historial, correcciones y resumen acumulado. En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido y documentacion operativa para prueba piloto local.
 
 ## Problema que resuelve
 
@@ -23,8 +23,10 @@ El MVP se enfoca solamente en:
 - Registro de gastos.
 - Calculo automatico de totales.
 - Guardado en base de datos.
-- Consulta futura de historial.
+- Consulta de historial con filtros.
 - Correcciones con trazabilidad.
+- Resumen acumulado de caja.
+- Operacion local con backup y restauracion.
 
 Quedan fuera del MVP:
 
@@ -36,6 +38,7 @@ Quedan fuera del MVP:
 - WhatsApp.
 - Reportes avanzados.
 - Multiples cajas o turnos.
+- Exportaciones PDF/Excel.
 
 ## Stack definido
 
@@ -98,9 +101,13 @@ cuadre-caja-agua-activa/
 │   ├── 02-modelo-datos.md
 │   ├── 03-reglas-negocio.md
 │   ├── 04-ejecucion-local.md
-│   └── 05-backup-restauracion.md
+│   ├── 05-backup-restauracion.md
+│   ├── 06-prueba-piloto-local.md
+│   ├── 07-checklist-uso-diario.md
+│   └── 08-checklist-validacion-mvp.md
 ├── scripts/
 │   ├── backup-db.sh
+│   ├── check-health.sh
 │   ├── local-migrate.sh
 │   ├── local-seed.sh
 │   ├── local-start.sh
@@ -130,6 +137,9 @@ cuadre-caja-agua-activa/
 - Bloque 13: ejecucion local ordenada con Docker Compose, scripts y documentacion de backup/restauracion.
 - Bloque 14: precarga de conteos guardados y mejora del flujo diario.
 - Bloque 15: resumen acumulado de caja con filtros por fecha y estado.
+- Bloque 16: dashboard operativo con estado del cuadre de hoy, acciones rapidas, ultimos cuadres y recordatorio de backup.
+- Bloque 17: filtros de historial por fecha desde, fecha hasta y estado.
+- Bloque 18: documentacion operativa, checklist de uso diario, checklist de validacion MVP y health check local.
 
 Todavia no se ha creado reportes avanzados, exportaciones PDF/Excel, ventas reales, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
@@ -141,6 +151,9 @@ Todavia no se ha creado reportes avanzados, exportaciones PDF/Excel, ventas real
 - `docs/03-reglas-negocio.md`: reglas de negocio del MVP.
 - `docs/04-ejecucion-local.md`: ejecucion local con Docker Compose.
 - `docs/05-backup-restauracion.md`: backup y restauracion de PostgreSQL.
+- `docs/06-prueba-piloto-local.md`: guia para ejecutar una prueba piloto local.
+- `docs/07-checklist-uso-diario.md`: checklist operativo para el cierre diario.
+- `docs/08-checklist-validacion-mvp.md`: checklist tecnico funcional del MVP.
 
 ## Ejecucion local con Docker
 
@@ -158,6 +171,7 @@ Comandos principales desde la raiz:
 ./scripts/local-start.sh
 ./scripts/local-migrate.sh
 ./scripts/local-seed.sh
+./scripts/check-health.sh
 ./scripts/backup-db.sh
 ./scripts/restore-db.sh backups/nombre_backup.sql
 ./scripts/local-stop.sh
@@ -176,6 +190,9 @@ http://localhost:8010/api/v1/health
 ```
 
 Los datos de PostgreSQL se conservan en el volumen Docker `postgres_data`. Los backups locales se guardan en `backups/` y no deben subirse a Git.
+
+No usar `docker compose down -v` con datos reales. Para apagar sin borrar datos,
+usar siempre `./scripts/local-stop.sh`.
 
 ## Frontend
 
@@ -208,6 +225,7 @@ pip install -e ".[test]"
 pytest
 cd ../web
 npm install
+npm run typecheck
 npm run build
 ```
 
@@ -215,4 +233,10 @@ Para validar Docker Compose desde la raiz:
 
 ```bash
 docker compose config
+```
+
+Para validar que backend y frontend responden localmente:
+
+```bash
+./scripts/check-health.sh
 ```
