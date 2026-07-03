@@ -4,10 +4,10 @@ type DenominationCountTableProps = {
   title: string;
   denominations: Denomination[];
   disabled: boolean;
-  quantities: Record<number, string>;
+  countedAmounts: Record<number, string>;
   savedDenominationIds: Set<number>;
   savingId: number | null;
-  onQuantityChange: (denominationId: number, value: string) => void;
+  onCountedAmountChange: (denominationId: number, value: string) => void;
   onSave: (denomination: Denomination) => void;
 };
 
@@ -15,10 +15,10 @@ export function DenominationCountTable({
   title,
   denominations,
   disabled,
-  quantities,
+  countedAmounts,
   savedDenominationIds,
   savingId,
-  onQuantityChange,
+  onCountedAmountChange,
   onSave,
 }: DenominationCountTableProps) {
   return (
@@ -34,8 +34,8 @@ export function DenominationCountTable({
           {title}
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Las cantidades se cargan desde el cuadre guardado. Si no hay conteo,
-          se muestra 0.
+          Ingrese el total contado para cada denominación. Ejemplo: si tiene 10
+          monedas de 5 ctvs, escriba 0.50.
         </p>
       </div>
 
@@ -71,18 +71,20 @@ export function DenominationCountTable({
               </p>
 
               <label className="block">
+                <span className="mb-1 block text-xs font-medium text-slate-600">
+                  Monto contado
+                </span>
                 <span className="sr-only">
-                  Cantidad para {denomination.label}
+                  Monto contado para {denomination.label}
                 </span>
                 <input
                   className="h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:bg-slate-100 disabled:text-slate-500"
-                  type="number"
-                  inputMode="numeric"
-                  min={0}
-                  step={1}
-                  value={quantities[denomination.id] ?? ""}
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="0.00"
+                  value={countedAmounts[denomination.id] ?? ""}
                   onChange={(event) =>
-                    onQuantityChange(denomination.id, event.target.value)
+                    onCountedAmountChange(denomination.id, event.target.value)
                   }
                   disabled={disabled}
                 />

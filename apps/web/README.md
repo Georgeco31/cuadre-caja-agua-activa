@@ -83,13 +83,14 @@ http://localhost:3000/login
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario consulta o crea el cuadre del día.
-- La pantalla de cuadre diario precarga conteos guardados desde `GET /api/v1/cash-sessions/{id}/count-items`.
-- Si no hay conteo guardado para una denominación, el input muestra 0.
+- La pantalla de cuadre diario precarga montos contados desde el `subtotal` guardado en `GET /api/v1/cash-sessions/{id}/count-items`.
+- Si no hay conteo guardado para una denominación, el input muestra `0.00`.
+- El operador ingresa monto contado por denominación; el frontend convierte ese monto a `quantity` antes de enviar al backend.
 - El historial lista cuadres desde `GET /api/v1/cash-sessions`.
 - El historial permite filtrar por fecha desde, fecha hasta y estado usando `date_from`, `date_to` y `status`.
 - El detalle consulta resumen, conteos y gastos del cuadre.
 - Denominaciones cargadas desde `GET /api/v1/denominations`.
-- Conteos enviados con `POST /api/v1/cash-sessions/{id}/count-items`.
+- Conteos enviados con `POST /api/v1/cash-sessions/{id}/count-items`; el backend sigue recibiendo `quantity` y calculando `subtotal`.
 - Conteos listados desde `GET /api/v1/cash-sessions/{id}/count-items`.
 - Gastos listados desde `GET /api/v1/cash-sessions/{id}/expenses`.
 - Gastos registrados con `POST /api/v1/cash-sessions/{id}/expenses`.

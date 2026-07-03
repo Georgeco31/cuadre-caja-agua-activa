@@ -26,6 +26,11 @@ import {
   setCashCountItem,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import {
+  formatCentsAsMoneyInput,
+  isValidMoneyInputDraft,
+  parseMoneyInputToCents,
+} from "@/lib/money";
 import type { CashSession } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
 import type { Denomination } from "@/types/denomination";
@@ -40,7 +45,9 @@ export default function CashSessionPage() {
   const [countItems, setCountItems] = useState<CountItemDetail[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<CashSessionSummary | null>(null);
-  const [quantities, setQuantities] = useState<Record<number, string>>({});
+  const [countedAmounts, setCountedAmounts] = useState<Record<number, string>>(
+    {},
+  );
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -101,7 +108,9 @@ export default function CashSessionPage() {
       setExpenses(loadedExpenses);
       setSummary(loadedSummary);
       setCountItems(loadedCountItems);
-      setQuantities(buildQuantityMap(loadedDenominations, loadedCountItems));
+      setCountedAmounts(
+        buildCountedAmountMap(loadedDenominations, loadedCountItems),
+      );
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -133,10 +142,10 @@ export default function CashSessionPage() {
     }
   }
 
-  function handleQuantityChange(denominationId: number, value: string) {
-    if (value === "" || /^\d+$/.test(value)) {
-      setQuantities((currentQuantities) => ({
-        ...currentQuantities,
+  function handleCountedAmountChange(denominationId: number, value: string) {
+    if (isValidMoneyInputDraft(value)) {
+      setCountedAmounts((currentAmounts) => ({
+        ...currentAmounts,
         [denominationId]: value,
       }));
     }
@@ -147,9 +156,12 @@ export default function CashSessionPage() {
       return;
     }
 
-    const quantity = Number(quantities[denomination.id]);
-    if (!Number.isInteger(quantity) || quantity < 0) {
-      setError("Ingresa una cantidad válida mayor o igual a cero.");
+    const quantityResult = getQuantityFromCountedAmount(
+      countedAmounts[denomination.id] ?? "",
+      denomination,
+    );
+    if (!quantityResult.ok) {
+      setError(quantityResult.message);
       setMessage("");
       return;
     }
@@ -161,7 +173,7 @@ export default function CashSessionPage() {
     try {
       await setCashCountItem(token, cashSession.id, {
         denomination_id: denomination.id,
-        quantity,
+        quantity: quantityResult.quantity,
       });
       const [updatedSummary, updatedCountItems] = await Promise.all([
         getCashSessionSummary(token, cashSession.id),
@@ -170,8 +182,8 @@ export default function CashSessionPage() {
 
       setSummary(updatedSummary);
       setCountItems(updatedCountItems);
-      setQuantities(buildQuantityMap(denominations, updatedCountItems));
-      setMessage(`Cantidad guardada para ${denomination.label}.`);
+      setCountedAmounts(buildCountedAmountMap(denominations, updatedCountItems));
+      setMessage(`Monto contado guardado para ${denomination.label}.`);
     } catch (saveError) {
       if (redirectIfUnauthorized(saveError)) {
         return;
@@ -215,7 +227,7 @@ export default function CashSessionPage() {
       setSummary(updatedSummary);
       setCountItems(updatedCountItems);
       setExpenses(updatedExpenses);
-      setQuantities(buildQuantityMap(denominations, updatedCountItems));
+      setCountedAmounts(buildCountedAmountMap(denominations, updatedCountItems));
       setMessage("Cuadre cerrado correctamente.");
     } catch (closeError) {
       if (redirectIfUnauthorized(closeError)) {
@@ -334,20 +346,20 @@ export default function CashSessionPage() {
             title="Monedas"
             denominations={coins}
             disabled={isClosed}
-            quantities={quantities}
+            countedAmounts={countedAmounts}
             savedDenominationIds={savedDenominationIds}
             savingId={savingId}
-            onQuantityChange={handleQuantityChange}
+            onCountedAmountChange={handleCountedAmountChange}
             onSave={handleSaveCount}
           />
           <DenominationCountTable
             title="Billetes"
             denominations={bills}
             disabled={isClosed}
-            quantities={quantities}
+            countedAmounts={countedAmounts}
             savedDenominationIds={savedDenominationIds}
             savingId={savingId}
-            onQuantityChange={handleQuantityChange}
+            onCountedAmountChange={handleCountedAmountChange}
             onSave={handleSaveCount}
           />
         </div>
@@ -378,21 +390,64 @@ function compareDenominationValue(
   return Number(first.value) - Number(second.value);
 }
 
-function buildQuantityMap(
+function buildCountedAmountMap(
   denominations: Denomination[],
   countItems: CountItemDetail[],
 ): Record<number, string> {
-  const quantityMap: Record<number, string> = {};
+  const countedAmountMap: Record<number, string> = {};
 
   denominations.forEach((denomination) => {
-    quantityMap[denomination.id] = "0";
+    countedAmountMap[denomination.id] = "0.00";
   });
 
   countItems.forEach((item) => {
-    quantityMap[item.denomination_id] = String(item.quantity);
+    const subtotalCents = parseMoneyInputToCents(item.subtotal);
+    countedAmountMap[item.denomination_id] =
+      subtotalCents === null
+        ? item.subtotal
+        : formatCentsAsMoneyInput(subtotalCents);
   });
 
-  return quantityMap;
+  return countedAmountMap;
+}
+
+type QuantityResult =
+  | { ok: true; quantity: number }
+  | { ok: false; message: string };
+
+function getQuantityFromCountedAmount(
+  countedAmount: string,
+  denomination: Denomination,
+): QuantityResult {
+  const amountCents = parseMoneyInputToCents(countedAmount);
+  if (amountCents === null) {
+    return {
+      ok: false,
+      message: "Ingresa un monto contado válido mayor o igual a cero.",
+    };
+  }
+
+  const denominationCents = parseMoneyInputToCents(denomination.value);
+  if (denominationCents === null || denominationCents <= 0) {
+    return {
+      ok: false,
+      message: "No se pudo validar la denominación seleccionada.",
+    };
+  }
+
+  if (amountCents % denominationCents !== 0) {
+    return {
+      ok: false,
+      message:
+        "El monto ingresado no coincide con esta denominación. " +
+        `Debe ser múltiplo de ${formatMoney(denomination.value)}.`,
+    };
+  }
+
+  return {
+    ok: true,
+    quantity: amountCents / denominationCents,
+  };
 }
 
 function buildCloseConfirmation(summary: CashSessionSummary): string {
