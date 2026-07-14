@@ -8,7 +8,8 @@ const summaryItems = [
   ["Total monedas", "total_coins"],
   ["Total billetes", "total_bills"],
   ["Total contado", "total_counted"],
-  ["Total gastos", "total_expenses"],
+  ["Gastos antes del conteo", "total_pre_count_expenses"],
+  ["Gastos después del conteo", "total_post_count_expenses"],
   ["Total final", "final_total"],
 ] as const;
 
@@ -37,7 +38,7 @@ export function SummaryCard({ summary }: SummaryCardProps) {
         </span>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {summaryItems.map(([label, key]) => (
           <div
             className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
@@ -50,6 +51,12 @@ export function SummaryCard({ summary }: SummaryCardProps) {
           </div>
         ))}
       </div>
+
+      <p className="rounded-md border border-water-100 bg-water-50 px-4 py-3 text-sm leading-6 text-water-800">
+        Los gastos antes del conteo no se restan porque ya están reflejados en
+        el dinero contado. El total final solo resta los gastos después del
+        conteo.
+      </p>
     </section>
   );
 }

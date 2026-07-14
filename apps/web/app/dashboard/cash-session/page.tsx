@@ -73,6 +73,16 @@ export default function CashSessionPage() {
     () => new Set(countItems.map((item) => item.denomination_id)),
     [countItems],
   );
+  const preCountExpenses = useMemo(
+    () =>
+      expenses.filter((expense) => expense.expense_timing === "before_count"),
+    [expenses],
+  );
+  const postCountExpenses = useMemo(
+    () =>
+      expenses.filter((expense) => expense.expense_timing === "after_count"),
+    [expenses],
+  );
   const isClosed = cashSession?.status === "closed";
 
   useEffect(() => {
@@ -364,14 +374,55 @@ export default function CashSessionPage() {
           />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <ExpenseForm
-            disabled={isClosed}
-            isSubmitting={isSubmittingExpense}
-            onSubmit={handleCreateExpense}
-          />
-          <ExpenseList expenses={expenses} />
-        </div>
+        <section aria-labelledby="expenses-title" className="space-y-4">
+          <div>
+            <p className="text-sm font-medium text-water-700">Gastos</p>
+            <h2
+              id="expenses-title"
+              className="mt-1 text-xl font-semibold text-slate-950"
+            >
+              Gastos del cuadre
+            </h2>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <div className="grid gap-6">
+              <ExpenseForm
+                title="Gastos antes del conteo"
+                eyebrow="Control"
+                helpText="Se registran para control, pero no se restan del total contado."
+                disabled={isClosed}
+                isSubmitting={isSubmittingExpense}
+                expenseTiming="before_count"
+                onSubmit={handleCreateExpense}
+              />
+              <ExpenseList
+                titleId="pre-count-expenses-title"
+                title="Gastos antes del conteo"
+                emptyMessage="Todavía no hay gastos antes del conteo."
+                expenses={preCountExpenses}
+              />
+            </div>
+
+            <div className="grid gap-6">
+              <ExpenseForm
+                title="Gastos después del conteo"
+                eyebrow="Caja"
+                helpText="Estos gastos sí se restan del total contado."
+                disabled={isClosed}
+                isSubmitting={isSubmittingExpense}
+                expenseTiming="after_count"
+                onSubmit={handleCreateExpense}
+              />
+              <ExpenseList
+                titleId="post-count-expenses-title"
+                title="Gastos después del conteo"
+                emptyMessage="Todavía no hay gastos después del conteo."
+                expenses={postCountExpenses}
+              />
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );
@@ -457,7 +508,8 @@ function buildCloseConfirmation(summary: CashSessionSummary): string {
     `Total monedas: ${formatMoney(summary.total_coins)}`,
     `Total billetes: ${formatMoney(summary.total_bills)}`,
     `Total contado: ${formatMoney(summary.total_counted)}`,
-    `Total gastos: ${formatMoney(summary.total_expenses)}`,
+    `Gastos antes del conteo: ${formatMoney(summary.total_pre_count_expenses)}`,
+    `Gastos después del conteo: ${formatMoney(summary.total_post_count_expenses)}`,
     `Total final: ${formatMoney(summary.final_total)}`,
     "",
     "Despues del cierre las cantidades y gastos normales quedaran bloqueados.",

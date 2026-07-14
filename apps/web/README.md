@@ -2,7 +2,7 @@
 
 App web Next.js para el MVP de Cuadre de Caja Agua Activa.
 
-Este frontend incluye login, panel operativo de dashboard, pantalla de cuadre diario, historial con detalle de cuadres, reporte acumulado e interfaz de correcciones controladas para cuadres cerrados. Todavía no incluye edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo de dashboard, pantalla de cuadre diario, historial con detalle de cuadres, reporte acumulado, gastos separados por momento del conteo e interfaz de correcciones controladas para cuadres cerrados. Todavía no incluye edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -93,8 +93,10 @@ http://localhost:3000/login
 - Conteos enviados con `POST /api/v1/cash-sessions/{id}/count-items`; el backend sigue recibiendo `quantity` y calculando `subtotal`.
 - Conteos listados desde `GET /api/v1/cash-sessions/{id}/count-items`.
 - Gastos listados desde `GET /api/v1/cash-sessions/{id}/expenses`.
-- Gastos registrados con `POST /api/v1/cash-sessions/{id}/expenses`.
+- Gastos antes del conteo registrados con `POST /api/v1/cash-sessions/{id}/expenses` usando `expense_timing: "before_count"`.
+- Gastos despues del conteo registrados con `POST /api/v1/cash-sessions/{id}/expenses` usando `expense_timing: "after_count"`.
 - Resumen cargado desde `GET /api/v1/cash-sessions/{id}/summary`.
+- El resumen muestra gastos antes del conteo como control y gastos despues del conteo como el monto que se resta del total contado.
 - Cierre de cuadre con `POST /api/v1/cash-sessions/{id}/close`.
 - Antes de cerrar, el frontend muestra una confirmación con el resumen oficial actual.
 - Resumen acumulado cargado desde `GET /api/v1/reports/cash-summary`.
@@ -104,8 +106,8 @@ http://localhost:3000/login
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 
-En el detalle de historial, las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
+En el detalle de historial, los gastos se muestran separados entre antes del conteo y despues del conteo. Las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
 
-La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados. No representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo gastos antes del conteo y gastos despues del conteo. No representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.

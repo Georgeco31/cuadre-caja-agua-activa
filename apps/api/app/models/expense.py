@@ -13,6 +13,10 @@ class Expense(Base):
     __tablename__ = "expenses"
     __table_args__ = (
         CheckConstraint("amount > 0", name="ck_expenses_amount_positive"),
+        CheckConstraint(
+            "expense_timing IN ('before_count', 'after_count')",
+            name="ck_expenses_expense_timing",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -23,6 +27,11 @@ class Expense(Base):
     description: Mapped[str] = mapped_column(String(255), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     category: Mapped[str | None] = mapped_column(String(100))
+    expense_timing: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        server_default="after_count",
+    )
     expense_date: Mapped[date] = mapped_column(Date, nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(

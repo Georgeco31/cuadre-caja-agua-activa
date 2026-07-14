@@ -94,6 +94,7 @@ Campos:
 | `description` | Descripcion del gasto. |
 | `amount` | Monto del gasto. |
 | `category` | Categoria del gasto. |
+| `expense_timing` | Momento del gasto: `before_count` o `after_count`. |
 | `expense_date` | Fecha del gasto. |
 | `notes` | Notas adicionales. |
 | `created_at` | Fecha y hora de creacion. |
@@ -101,7 +102,9 @@ Campos:
 Notas:
 
 - El monto debe ser mayor a cero.
-- Los gastos se restan del total contado para obtener el total final.
+- Los gastos `before_count` se registran para control y no se restan del total contado.
+- Los gastos `after_count` se restan del total contado para obtener el total final.
+- Los gastos existentes antes de este campo se consideran `after_count`.
 
 ## correction_logs
 
@@ -140,5 +143,7 @@ Los totales no deben escribirse manualmente.
 - Total monedas = suma de subtotales donde la denominacion es moneda.
 - Total billetes = suma de subtotales donde la denominacion es billete.
 - Total contado = total monedas + total billetes.
-- Total gastos = suma de gastos.
-- Total final = total contado - total gastos.
+- Total gastos antes del conteo = suma de gastos `before_count`.
+- Total gastos despues del conteo = suma de gastos `after_count`.
+- Total gastos = total gastos despues del conteo, por compatibilidad con respuestas existentes.
+- Total final = total contado - total gastos despues del conteo.

@@ -94,13 +94,14 @@ Debe respetar:
 Objetivo:
 
 - Permitir registrar gastos asociados a un cuadre.
-- Calcular total de gastos.
-- Calcular total final.
+- Calcular gastos antes del conteo y despues del conteo.
+- Calcular total final restando solo los gastos posteriores al conteo.
 
 Debe respetar:
 
 - Gastos con monto mayor a cero.
 - Gastos asociados a una sesion de caja.
+- Gastos clasificados por momento del conteo.
 
 ## Bloque 6 - Cierre de cuadre
 

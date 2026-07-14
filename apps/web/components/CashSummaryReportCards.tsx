@@ -9,7 +9,8 @@ const cardItems = [
   ["Cuadres abiertos", "open_sessions", "count"],
   ["Cuadres cerrados", "closed_sessions", "count"],
   ["Total contado", "total_counted", "money"],
-  ["Total gastos", "total_expenses", "money"],
+  ["Gastos antes del conteo", "total_pre_count_expenses", "money"],
+  ["Gastos después del conteo", "total_post_count_expenses", "money"],
   ["Total final", "final_total", "money"],
 ] as const;
 

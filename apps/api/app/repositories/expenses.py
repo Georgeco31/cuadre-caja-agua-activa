@@ -13,6 +13,7 @@ def create_expense(
     description: str,
     amount: Decimal,
     category: str | None,
+    expense_timing: str,
     expense_date: date,
     notes: str | None,
 ) -> Expense:
@@ -21,6 +22,7 @@ def create_expense(
         description=description,
         amount=amount,
         category=category,
+        expense_timing=expense_timing,
         expense_date=expense_date,
         notes=notes,
     )

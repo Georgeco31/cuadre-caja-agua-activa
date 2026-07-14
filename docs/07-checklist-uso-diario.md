@@ -33,18 +33,20 @@ Checklist simple para operar el MVP local durante la prueba piloto.
 - [ ] Crear o abrir el cuadre del dia.
 - [ ] Registrar monedas.
 - [ ] Registrar billetes.
-- [ ] Registrar gastos realizados con dinero de caja.
-- [ ] Confirmar que el resumen muestra total contado, total de gastos y total final.
+- [ ] Registrar gastos antes del conteo, si aplican.
+- [ ] Registrar gastos despues del conteo, si aplican.
+- [ ] Confirmar que el resumen muestra total contado, gastos antes del conteo, gastos despues del conteo y total final.
+- [ ] Confirmar que el total final resta solo los gastos despues del conteo.
 - [ ] Comparar el total del sistema con el cuadre manual.
 - [ ] Anotar cualquier diferencia.
 
 ## Cierre
 
 - [ ] Revisar total final.
-- [ ] Revisar gastos registrados.
+- [ ] Revisar gastos antes del conteo y despues del conteo.
 - [ ] Cerrar el cuadre cuando este validado.
 - [ ] Verificar que el cuadre aparece en historial.
-- [ ] Abrir el detalle del historial y revisar resumen, conteos y gastos.
+- [ ] Abrir el detalle del historial y revisar resumen, conteos y gastos separados por momento.
 - [ ] Hacer backup:
 
   ```bash

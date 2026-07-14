@@ -3,6 +3,10 @@
 import { FormEvent, useState } from "react";
 
 import { ErrorMessage } from "@/components/ErrorMessage";
+import {
+  isValidMoneyInputDraft,
+  parseMoneyInputToCents,
+} from "@/lib/money";
 import type { CorrectionExpensePayload } from "@/types/correction";
 
 type CorrectionExpenseFormProps = {
@@ -37,7 +41,8 @@ export function CorrectionExpenseForm({
       return;
     }
 
-    if (!normalizedAmount || Number(normalizedAmount) <= 0) {
+    const amountCents = parseMoneyInputToCents(normalizedAmount);
+    if (amountCents === null || amountCents <= 0) {
       setFormError("Ingresa un monto mayor a cero.");
       return;
     }
@@ -108,12 +113,15 @@ export function CorrectionExpenseForm({
             <span className="text-sm font-medium text-slate-700">Monto</span>
             <input
               className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:bg-slate-100 disabled:text-slate-500"
-              type="number"
+              type="text"
               inputMode="decimal"
-              min="0.01"
-              step="0.01"
+              placeholder="0.00"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) => {
+                if (isValidMoneyInputDraft(event.target.value)) {
+                  setAmount(event.target.value);
+                }
+              }}
               disabled={disabled || isSubmitting}
               required
             />

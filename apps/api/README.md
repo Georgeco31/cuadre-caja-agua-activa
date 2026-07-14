@@ -2,7 +2,7 @@
 
 API minima del proyecto Cuadre de Caja Agua Activa.
 
-Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales, autenticacion basica de administrador con JWT y correcciones controladas sobre cuadres cerrados. El frontend vive en `apps/web`. Todavia no incluye cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales, autenticacion basica de administrador con JWT, gastos separados por momento del conteo y correcciones controladas sobre cuadres cerrados. El frontend vive en `apps/web`. Todavia no incluye cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -137,7 +137,7 @@ Funciones principales:
 - Registrar o actualizar conteos por denominacion.
 - Listar conteos por cuadre con datos de denominacion.
 - Calcular subtotales desde denominacion y cantidad.
-- Registrar gastos con montos `Decimal`.
+- Registrar gastos con montos `Decimal` y momento `before_count` o `after_count`.
 - Listar gastos por cuadre.
 - Calcular resumen diario.
 - Calcular resumen acumulado de caja desde cuadres registrados.
@@ -207,7 +207,12 @@ Endpoints de gastos dentro de un cuadre:
 - `GET /api/v1/cash-sessions/{cash_session_id}/expenses`
 - `POST /api/v1/cash-sessions/{cash_session_id}/expenses`
 
-El listado devuelve solo gastos del cuadre solicitado. No existen endpoints de edicion o eliminacion de gastos.
+El listado devuelve solo gastos del cuadre solicitado. Cada gasto incluye `expense_timing`:
+
+- `before_count`: gasto registrado antes del conteo. Se muestra para control, pero no se resta del total contado.
+- `after_count`: gasto registrado despues del conteo. Se resta del total contado para obtener el total final.
+
+Los gastos existentes y los nuevos gastos sin `expense_timing` explicito quedan como `after_count`. No existen endpoints de edicion o eliminacion de gastos.
 
 Endpoint de conteos dentro de un cuadre:
 
@@ -217,13 +222,13 @@ El listado devuelve solo conteos del cuadre solicitado e incluye datos basicos d
 
 ## Correcciones de cuadres cerrados
 
-Los endpoints normales de conteos y gastos siguen rechazando cambios cuando el cuadre esta cerrado. Para ajustes posteriores al cierre existen endpoints especificos de correccion:
+Los endpoints normales de conteos y gastos aceptan cambios mientras el cuadre esta `open` y siguen rechazando cambios cuando el cuadre esta cerrado. Para ajustes posteriores al cierre existen endpoints especificos de correccion:
 
 - `POST /api/v1/cash-sessions/{cash_session_id}/corrections/count-items`
 - `POST /api/v1/cash-sessions/{cash_session_id}/corrections/expenses`
 - `GET /api/v1/cash-sessions/{cash_session_id}/corrections`
 
-Las correcciones solo se permiten en cuadres con estado `closed` y requieren un motivo no vacio. La API calcula los subtotales y totales desde backend, registra `previous_total` y `new_total` en `correction_logs`, y mantiene el cuadre cerrado.
+Las correcciones solo se permiten en cuadres con estado `closed` y requieren un motivo no vacio. La API calcula los subtotales y totales desde backend, registra `previous_total` y `new_total` en `correction_logs`, y mantiene el cuadre cerrado. Los gastos correctivos se registran como `after_count`.
 
 ## Reportes
 
@@ -237,4 +242,13 @@ Filtros opcionales:
 - `date_to`
 - `status`
 
-El reporte suma `total_counted`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte no representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+El reporte suma `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte no representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+
+Formula oficial del resumen:
+
+```text
+total_counted = total_coins + total_bills
+total_pre_count_expenses = suma(gastos before_count)
+total_post_count_expenses = suma(gastos after_count)
+final_total = total_counted - total_post_count_expenses
+```

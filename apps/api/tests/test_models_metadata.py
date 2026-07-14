@@ -65,7 +65,10 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_cash_count_items_quantity_nonnegative",
         "ck_cash_count_items_subtotal_nonnegative",
     }
-    assert _check_constraint_names("expenses") == {"ck_expenses_amount_positive"}
+    assert _check_constraint_names("expenses") == {
+        "ck_expenses_amount_positive",
+        "ck_expenses_expense_timing",
+    }
 
 
 def _foreign_key_targets(table_name: str, column_name: str) -> set[str]:

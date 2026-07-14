@@ -2,14 +2,14 @@
 
 Aplicacion web responsive para registrar el cuadre diario de caja del negocio Agua Activa.
 
-El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario, historial, correcciones y resumen acumulado. En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido y documentacion operativa para prueba piloto local.
+El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario, historial, correcciones y resumen acumulado. En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, gastos separados por momento del conteo y documentacion operativa para prueba piloto local.
 
 ## Problema que resuelve
 
 El cuadre de caja necesita una forma clara y consistente de registrar:
 
 - Cantidades de monedas y billetes por denominacion.
-- Gastos realizados con dinero de caja.
+- Gastos realizados con dinero de caja antes o despues del conteo.
 - Totales calculados automaticamente.
 - Estado del cuadre diario.
 - Correcciones con trazabilidad cuando un cuadre ya este cerrado.
@@ -20,7 +20,7 @@ El MVP se enfoca solamente en:
 
 - Registro de cuadre diario.
 - Separacion de monedas y billetes.
-- Registro de gastos.
+- Registro de gastos antes del conteo y despues del conteo.
 - Calculo automatico de totales.
 - Guardado en base de datos.
 - Consulta de historial con filtros.
@@ -140,6 +140,7 @@ cuadre-caja-agua-activa/
 - Bloque 16: dashboard operativo con estado del cuadre de hoy, acciones rapidas, ultimos cuadres y recordatorio de backup.
 - Bloque 17: filtros de historial por fecha desde, fecha hasta y estado.
 - Bloque 18: documentacion operativa, checklist de uso diario, checklist de validacion MVP y health check local.
+- Bloque 20: gastos separados entre antes del conteo y despues del conteo, con total final calculado solo contra gastos posteriores al conteo.
 
 Todavia no se ha creado reportes avanzados, exportaciones PDF/Excel, ventas reales, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 

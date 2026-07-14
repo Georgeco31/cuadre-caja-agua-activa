@@ -11,12 +11,14 @@ Estas reglas definen el comportamiento esperado del MVP. En el Bloque 0 solo se 
 5. Total monedas = suma de subtotales de monedas.
 6. Total billetes = suma de subtotales de billetes.
 7. Total contado = total monedas + total billetes.
-8. Total gastos = suma de gastos.
-9. Total final = total contado - total gastos.
-10. Si un cuadre esta cerrado, cualquier cambio debe quedar registrado como correccion.
-11. No borrar registros importantes sin trazabilidad.
-12. Evitar duplicados por fecha.
-13. Priorizar exactitud y orden antes que diseño avanzado.
+8. Los gastos deben separarse entre antes del conteo y despues del conteo.
+9. Total gastos antes del conteo = suma de gastos `before_count`.
+10. Total gastos despues del conteo = suma de gastos `after_count`.
+11. Total final = total contado - total gastos despues del conteo.
+12. Si un cuadre esta cerrado, cualquier cambio debe quedar registrado como correccion.
+13. No borrar registros importantes sin trazabilidad.
+14. Evitar duplicados por fecha.
+15. Priorizar exactitud y orden antes que diseño avanzado.
 
 ## Reglas sobre cuadres diarios
 
@@ -40,13 +42,15 @@ Estas reglas definen el comportamiento esperado del MVP. En el Bloque 0 solo se 
 - Cada gasto debe tener descripcion.
 - Cada gasto debe tener monto mayor a cero.
 - Cada gasto debe tener fecha.
-- Los gastos se suman para calcular el total de gastos.
-- El total de gastos se resta del total contado para obtener el total final.
+- Cada gasto debe indicar si ocurrio antes del conteo (`before_count`) o despues del conteo (`after_count`).
+- Los gastos antes del conteo se muestran para control, pero no se restan del total contado.
+- Los gastos despues del conteo se suman para calcular el total que se resta del total contado.
+- Los gastos existentes antes de esta separacion se consideran despues del conteo.
 
 ## Reglas sobre totales
 
 - El sistema debe calcular todos los totales.
-- El usuario no debe modificar manualmente total monedas, total billetes, total contado, total gastos ni total final.
+- El usuario no debe modificar manualmente total monedas, total billetes, total contado, total gastos antes del conteo, total gastos despues del conteo ni total final.
 - Los calculos deben partir de cantidades, denominaciones y gastos registrados.
 
 Formulas:
@@ -55,8 +59,9 @@ Formulas:
 total_monedas = suma(subtotales de monedas)
 total_billetes = suma(subtotales de billetes)
 total_contado = total_monedas + total_billetes
-total_gastos = suma(gastos)
-total_final = total_contado - total_gastos
+total_gastos_antes_conteo = suma(gastos before_count)
+total_gastos_despues_conteo = suma(gastos after_count)
+total_final = total_contado - total_gastos_despues_conteo
 ```
 
 ## Reglas sobre cierre y correcciones

@@ -6,9 +6,9 @@ reemplazarlo todavia.
 
 ## Objetivo
 
-Validar que el sistema permite registrar el cuadre diario, gastos, cierre,
-historial, correcciones, reportes basicos, backup y restauracion en un flujo real
-de trabajo local.
+Validar que el sistema permite registrar el cuadre diario, gastos antes y
+despues del conteo, cierre, historial, correcciones, reportes basicos, backup y
+restauracion en un flujo real de trabajo local.
 
 ## Duracion recomendada
 
@@ -82,14 +82,16 @@ Desde la raiz del proyecto:
 2. Crear o abrir el cuadre del dia.
 3. Registrar monedas.
 4. Registrar billetes.
-5. Registrar gastos.
-6. Revisar el resumen oficial del backend.
-7. Comparar contra el cuadre manual.
-8. Cerrar el cuadre cuando el total este revisado.
-9. Revisar el historial.
-10. Revisar el detalle del cuadre.
-11. Hacer backup.
-12. Apagar el sistema sin borrar datos.
+5. Registrar gastos antes del conteo si ya salieron de caja antes de contar.
+6. Registrar gastos despues del conteo si se pagaron luego del conteo.
+7. Revisar el resumen oficial del backend.
+8. Confirmar que solo los gastos despues del conteo se restan del total contado.
+9. Comparar contra el cuadre manual.
+10. Cerrar el cuadre cuando el total este revisado.
+11. Revisar el historial.
+12. Revisar el detalle del cuadre.
+13. Hacer backup.
+14. Apagar el sistema sin borrar datos.
 
 ## Backup antes y despues de la prueba
 
@@ -196,7 +198,8 @@ Usar una tabla externa o cuaderno con:
 - Total manual.
 - Total del sistema.
 - Diferencia.
-- Gastos registrados.
+- Gastos antes del conteo registrados.
+- Gastos despues del conteo registrados.
 - Estado del cuadre: abierto o cerrado.
 - Si hubo correccion, motivo.
 - Observacion.
@@ -208,7 +211,8 @@ La prueba piloto se considera exitosa si:
 - El sistema se puede usar durante 7 a 15 dias sin perdida de datos.
 - Cada dia se puede crear o abrir el cuadre correspondiente.
 - Los conteos se guardan y se precargan al recargar la pantalla.
-- Los gastos aparecen en el resumen.
+- Los gastos antes y despues del conteo aparecen separados en el resumen.
+- El total final resta solo los gastos despues del conteo.
 - El cierre bloquea la edicion normal.
 - Las correcciones de cuadres cerrados quedan registradas con motivo.
 - El historial y el detalle permiten revisar dias anteriores.

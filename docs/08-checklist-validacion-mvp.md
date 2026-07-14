@@ -26,8 +26,11 @@ Checklist tecnico funcional para validar el MVP antes y durante la prueba piloto
 - [ ] Registrar monedas.
 - [ ] Registrar billetes.
 - [ ] Precargar conteos al recargar la pantalla.
-- [ ] Registrar gastos.
+- [ ] Registrar gastos antes del conteo.
+- [ ] Registrar gastos despues del conteo.
 - [ ] Ver resumen oficial.
+- [ ] Confirmar que gastos antes del conteo no se restan del total contado.
+- [ ] Confirmar que gastos despues del conteo si se restan del total contado.
 - [ ] Cerrar cuadre.
 - [ ] Bloquear edicion normal cuando el cuadre esta `closed`.
 
@@ -46,7 +49,8 @@ Checklist tecnico funcional para validar el MVP antes y durante la prueba piloto
 
 - [ ] Ver resumen.
 - [ ] Ver conteos.
-- [ ] Ver gastos.
+- [ ] Ver gastos antes del conteo.
+- [ ] Ver gastos despues del conteo.
 - [ ] Ver estado y fecha de cierre.
 - [ ] Volver al historial.
 
@@ -64,6 +68,7 @@ Checklist tecnico funcional para validar el MVP antes y durante la prueba piloto
 - [ ] Filtrar por fecha desde.
 - [ ] Filtrar por fecha hasta.
 - [ ] Filtrar por estado.
+- [ ] Ver gastos antes y despues del conteo en el acumulado.
 - [ ] Confirmar nota de que no son ventas reales.
 - [ ] Confirmar estado vacio si no hay resultados.
 

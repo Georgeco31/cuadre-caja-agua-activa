@@ -150,6 +150,7 @@ def create_expense(
             description=payload.description,
             amount=payload.amount,
             category=payload.category,
+            expense_timing=payload.expense_timing,
             expense_date=payload.expense_date,
             notes=payload.notes,
         )

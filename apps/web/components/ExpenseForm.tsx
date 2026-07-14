@@ -3,17 +3,29 @@
 import { FormEvent, useState } from "react";
 
 import { ErrorMessage } from "@/components/ErrorMessage";
-import type { ExpensePayload } from "@/types/expense";
+import {
+  isValidMoneyInputDraft,
+  parseMoneyInputToCents,
+} from "@/lib/money";
+import type { ExpensePayload, ExpenseTiming } from "@/types/expense";
 
 type ExpenseFormProps = {
+  title?: string;
+  eyebrow?: string;
+  helpText?: string;
   disabled: boolean;
   isSubmitting: boolean;
+  expenseTiming?: ExpenseTiming;
   onSubmit: (payload: ExpensePayload) => Promise<boolean>;
 };
 
 export function ExpenseForm({
+  title = "Registrar gasto",
+  eyebrow = "Gastos del dia",
+  helpText,
   disabled,
   isSubmitting,
+  expenseTiming = "after_count",
   onSubmit,
 }: ExpenseFormProps) {
   const [description, setDescription] = useState("");
@@ -22,6 +34,7 @@ export function ExpenseForm({
   const [expenseDate, setExpenseDate] = useState("");
   const [notes, setNotes] = useState("");
   const [formError, setFormError] = useState("");
+  const titleId = `expense-form-${expenseTiming}-title`;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,7 +47,8 @@ export function ExpenseForm({
       return;
     }
 
-    if (!normalizedAmount || Number(normalizedAmount) <= 0) {
+    const amountCents = parseMoneyInputToCents(normalizedAmount);
+    if (amountCents === null || amountCents <= 0) {
       setFormError("Ingresa un monto mayor a cero.");
       return;
     }
@@ -42,6 +56,7 @@ export function ExpenseForm({
     const wasSaved = await onSubmit({
       description: normalizedDescription,
       amount: normalizedAmount,
+      expense_timing: expenseTiming,
       ...(category.trim() ? { category: category.trim() } : {}),
       ...(expenseDate ? { expense_date: expenseDate } : {}),
       ...(notes.trim() ? { notes: notes.trim() } : {}),
@@ -60,17 +75,22 @@ export function ExpenseForm({
 
   return (
     <section
-      aria-labelledby="expense-form-title"
+      aria-labelledby={titleId}
       className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
     >
       <div className="mb-4">
-        <p className="text-sm font-medium text-water-700">Gastos del día</p>
+        <p className="text-sm font-medium text-water-700">{eyebrow}</p>
         <h2
-          id="expense-form-title"
+          id={titleId}
           className="mt-1 text-lg font-semibold text-slate-950"
         >
-          Registrar gasto
+          {title}
         </h2>
+        {helpText ? (
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {helpText}
+          </p>
+        ) : null}
       </div>
 
       {formError ? (
@@ -98,12 +118,15 @@ export function ExpenseForm({
             <span className="text-sm font-medium text-slate-700">Monto</span>
             <input
               className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:bg-slate-100 disabled:text-slate-500"
-              type="number"
+              type="text"
               inputMode="decimal"
-              min="0.01"
-              step="0.01"
+              placeholder="0.00"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) => {
+                if (isValidMoneyInputDraft(event.target.value)) {
+                  setAmount(event.target.value);
+                }
+              }}
               disabled={disabled || isSubmitting}
               required
             />

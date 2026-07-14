@@ -12,5 +12,7 @@ class CashSummaryReport(BaseModel):
     open_sessions: int
     closed_sessions: int
     total_counted: Decimal
+    total_pre_count_expenses: Decimal
+    total_post_count_expenses: Decimal
     total_expenses: Decimal
     final_total: Decimal

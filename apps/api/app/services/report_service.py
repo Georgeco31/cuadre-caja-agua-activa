@@ -45,6 +45,14 @@ def get_cash_summary_report(
             (summary.total_counted for summary in summaries),
             MONEY_ZERO,
         ),
+        total_pre_count_expenses=sum(
+            (summary.total_pre_count_expenses for summary in summaries),
+            MONEY_ZERO,
+        ),
+        total_post_count_expenses=sum(
+            (summary.total_post_count_expenses for summary in summaries),
+            MONEY_ZERO,
+        ),
         total_expenses=sum(
             (summary.total_expenses for summary in summaries),
             MONEY_ZERO,

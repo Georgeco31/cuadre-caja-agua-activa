@@ -103,6 +103,7 @@ def create_corrective_expense(
         description=normalized_description,
         amount=decimal_amount,
         category=_normalize_optional_text(category),
+        expense_timing="after_count",
         expense_date=expense_date or cash_session.session_date,
         notes=_normalize_optional_text(notes),
     )

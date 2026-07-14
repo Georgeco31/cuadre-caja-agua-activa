@@ -17,14 +17,16 @@ def test_get_cash_session_summary_calculates_daily_totals(
     create_expense(
         db,
         cash_session_id=cash_session.id,
-        description="Gasto 1",
+        description="Gasto antes del conteo",
         amount=Decimal("8.50"),
+        expense_timing="before_count",
     )
     create_expense(
         db,
         cash_session_id=cash_session.id,
-        description="Gasto 2",
+        description="Gasto despues del conteo",
         amount=Decimal("2.00"),
+        expense_timing="after_count",
     )
 
     summary = get_cash_session_summary(db, cash_session.id)
@@ -35,5 +37,7 @@ def test_get_cash_session_summary_calculates_daily_totals(
     assert summary.total_coins == Decimal("7.50")
     assert summary.total_bills == Decimal("70.00")
     assert summary.total_counted == Decimal("77.50")
-    assert summary.total_expenses == Decimal("10.50")
-    assert summary.final_total == Decimal("67.00")
+    assert summary.total_pre_count_expenses == Decimal("8.50")
+    assert summary.total_post_count_expenses == Decimal("2.00")
+    assert summary.total_expenses == Decimal("2.00")
+    assert summary.final_total == Decimal("75.50")

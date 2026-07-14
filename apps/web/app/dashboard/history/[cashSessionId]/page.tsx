@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { CashSessionDetailCard } from "@/components/CashSessionDetailCard";
@@ -57,6 +57,16 @@ export default function CashSessionHistoryDetailPage() {
 
   const cashSessionId = Number(params.cashSessionId);
   const isClosed = cashSession?.status === "closed";
+  const preCountExpenses = useMemo(
+    () =>
+      expenses.filter((expense) => expense.expense_timing === "before_count"),
+    [expenses],
+  );
+  const postCountExpenses = useMemo(
+    () =>
+      expenses.filter((expense) => expense.expense_timing === "after_count"),
+    [expenses],
+  );
 
   useEffect(() => {
     const storedToken = getToken();
@@ -237,7 +247,20 @@ export default function CashSessionHistoryDetailPage() {
             <CashSessionDetailCard cashSession={cashSession} />
             <SummaryCard summary={summary} />
             <CountItemsList countItems={countItems} />
-            <ExpenseList expenses={expenses} />
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ExpenseList
+                titleId="detail-pre-count-expenses-title"
+                title="Gastos antes del conteo"
+                emptyMessage="No hay gastos antes del conteo en este cuadre."
+                expenses={preCountExpenses}
+              />
+              <ExpenseList
+                titleId="detail-post-count-expenses-title"
+                title="Gastos después del conteo"
+                emptyMessage="No hay gastos después del conteo en este cuadre."
+                expenses={postCountExpenses}
+              />
+            </div>
 
             <section
               aria-labelledby="corrections-title"

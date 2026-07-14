@@ -29,6 +29,8 @@ def test_cash_summary_report_without_sessions_returns_zeroes(
         "open_sessions": 0,
         "closed_sessions": 0,
         "total_counted": "0.00",
+        "total_pre_count_expenses": "0.00",
+        "total_post_count_expenses": "0.00",
         "total_expenses": "0.00",
         "final_total": "0.00",
     }
@@ -63,6 +65,13 @@ def test_cash_summary_report_calculates_accumulated_totals(
         api_denominations["bill_1000"].id,
         2,
         api_auth_headers,
+    )
+    _create_expense(
+        client,
+        first_session_id,
+        Decimal("1.50"),
+        api_auth_headers,
+        expense_timing="before_count",
     )
     _create_expense(
         client,
@@ -103,6 +112,8 @@ def test_cash_summary_report_calculates_accumulated_totals(
     assert body["open_sessions"] == 1
     assert body["closed_sessions"] == 1
     assert body["total_counted"] == "44.00"
+    assert body["total_pre_count_expenses"] == "1.50"
+    assert body["total_post_count_expenses"] == "7.50"
     assert body["total_expenses"] == "7.50"
     assert body["final_total"] == "36.50"
 
@@ -150,6 +161,8 @@ def test_cash_summary_report_filters_by_date_range(
     assert body["date_to"] == "2026-07-02"
     assert body["total_sessions"] == 1
     assert body["total_counted"] == "20.00"
+    assert body["total_pre_count_expenses"] == "0.00"
+    assert body["total_post_count_expenses"] == "4.00"
     assert body["total_expenses"] == "4.00"
     assert body["final_total"] == "16.00"
 
@@ -216,6 +229,8 @@ def test_cash_summary_report_returns_zeroes_when_filter_has_no_sessions(
     body = response.json()
     assert body["total_sessions"] == 0
     assert body["total_counted"] == "0.00"
+    assert body["total_pre_count_expenses"] == "0.00"
+    assert body["total_post_count_expenses"] == "0.00"
     assert body["total_expenses"] == "0.00"
     assert body["final_total"] == "0.00"
 
@@ -291,11 +306,16 @@ def _create_expense(
     cash_session_id: int,
     amount: Decimal,
     headers: dict[str, str],
+    expense_timing: str = "after_count",
 ) -> None:
     response = client.post(
         f"/api/v1/cash-sessions/{cash_session_id}/expenses",
         headers=headers,
-        json={"description": "Gasto de prueba", "amount": str(amount)},
+        json={
+            "description": "Gasto de prueba",
+            "amount": str(amount),
+            "expense_timing": expense_timing,
+        },
     )
     assert response.status_code == 201
 

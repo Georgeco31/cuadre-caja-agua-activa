@@ -11,5 +11,7 @@ class CashSessionSummary(BaseModel):
     total_coins: Decimal
     total_bills: Decimal
     total_counted: Decimal
+    total_pre_count_expenses: Decimal
+    total_post_count_expenses: Decimal
     total_expenses: Decimal
     final_total: Decimal

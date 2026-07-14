@@ -1,27 +1,35 @@
 import type { Expense } from "@/types/expense";
 
 type ExpenseListProps = {
+  titleId?: string;
+  title?: string;
+  emptyMessage?: string;
   expenses: Expense[];
 };
 
-export function ExpenseList({ expenses }: ExpenseListProps) {
+export function ExpenseList({
+  titleId = "expense-list-title",
+  title = "Gastos registrados",
+  emptyMessage = "Todavía no hay gastos registrados para este cuadre.",
+  expenses,
+}: ExpenseListProps) {
   return (
     <section
-      aria-labelledby="expense-list-title"
+      aria-labelledby={titleId}
       className="rounded-lg border border-slate-200 bg-white shadow-sm"
     >
       <div className="border-b border-slate-200 px-4 py-3">
         <h2
-          id="expense-list-title"
+          id={titleId}
           className="text-lg font-semibold text-slate-950"
         >
-          Gastos registrados
+          {title}
         </h2>
       </div>
 
       {expenses.length === 0 ? (
         <p className="px-4 py-6 text-sm text-slate-600">
-          Todavía no hay gastos registrados para este cuadre.
+          {emptyMessage}
         </p>
       ) : (
         <div className="divide-y divide-slate-100">
@@ -40,6 +48,9 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
                       Categoría: {expense.category}
                     </p>
                   ) : null}
+                  <p className="mt-1 text-sm text-slate-600">
+                    Tipo: {formatExpenseTiming(expense.expense_timing)}
+                  </p>
                   {expense.notes ? (
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {expense.notes}
@@ -56,6 +67,14 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
       )}
     </section>
   );
+}
+
+function formatExpenseTiming(expenseTiming: Expense["expense_timing"]): string {
+  if (expenseTiming === "before_count") {
+    return "Antes del conteo";
+  }
+
+  return "Despues del conteo";
 }
 
 function formatMoney(value: string): string {

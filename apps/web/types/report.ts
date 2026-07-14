@@ -14,6 +14,8 @@ export type CashSummaryReport = {
   open_sessions: number;
   closed_sessions: number;
   total_counted: string;
+  total_pre_count_expenses: string;
+  total_post_count_expenses: string;
   total_expenses: string;
   final_total: string;
 };

@@ -10,7 +10,8 @@ type DashboardTodayCardProps = {
 
 const summaryItems = [
   ["Total contado", "total_counted", "money"],
-  ["Total gastos", "total_expenses", "money"],
+  ["Gastos antes", "total_pre_count_expenses", "money"],
+  ["Gastos después", "total_post_count_expenses", "money"],
   ["Total final", "final_total", "money"],
   ["Estado", "status", "status"],
 ] as const;
@@ -49,7 +50,7 @@ export function DashboardTodayCard({
       </div>
 
       {summary ? (
-        <dl className="mt-5 grid overflow-hidden rounded-md border border-slate-200 sm:grid-cols-4">
+        <dl className="mt-5 grid overflow-hidden rounded-md border border-slate-200 sm:grid-cols-2 lg:grid-cols-5">
           {summaryItems.map(([label, key, format]) => (
             <div
               className="border-b border-slate-200 px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"

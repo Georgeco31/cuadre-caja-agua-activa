@@ -315,7 +315,29 @@ def test_expenses_endpoint_creates_expense(api_client, api_auth_headers) -> None
 
     assert response.status_code == 201
     assert response.json()["amount"] == "8.50"
+    assert response.json()["expense_timing"] == "after_count"
     assert response.json()["expense_date"] == "2026-06-29"
+
+
+def test_expenses_endpoint_creates_before_count_expense(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    cash_session_id = _create_cash_session(client, api_auth_headers)
+
+    response = client.post(
+        f"/api/v1/cash-sessions/{cash_session_id}/expenses",
+        headers=api_auth_headers,
+        json={
+            "description": "Compra antes del conteo",
+            "amount": "10.00",
+            "expense_timing": "before_count",
+        },
+    )
+
+    assert response.status_code == 201
+    assert response.json()["expense_timing"] == "before_count"
 
 
 def test_expenses_endpoint_rejects_non_positive_amount(
@@ -355,6 +377,10 @@ def test_list_expenses_endpoint_returns_expenses(api_client, api_auth_headers) -
 
     assert response.status_code == 200
     assert [expense["amount"] for expense in response.json()] == ["8.50", "2.00"]
+    assert [expense["expense_timing"] for expense in response.json()] == [
+        "after_count",
+        "after_count",
+    ]
 
 
 def test_list_expenses_endpoint_returns_404_for_missing_cash_session(
@@ -435,7 +461,13 @@ def test_summary_endpoint_calculates_totals(
     _set_count(client, cash_session_id, api_denominations["coin_100"].id, 5, api_auth_headers)
     _set_count(client, cash_session_id, api_denominations["bill_1000"].id, 3, api_auth_headers)
     _set_count(client, cash_session_id, api_denominations["bill_2000"].id, 2, api_auth_headers)
-    _create_expense(client, cash_session_id, Decimal("8.50"), api_auth_headers)
+    _create_expense(
+        client,
+        cash_session_id,
+        Decimal("8.50"),
+        api_auth_headers,
+        expense_timing="before_count",
+    )
     _create_expense(client, cash_session_id, Decimal("2.00"), api_auth_headers)
 
     response = client.get(
@@ -451,8 +483,10 @@ def test_summary_endpoint_calculates_totals(
         "total_coins": "7.50",
         "total_bills": "70.00",
         "total_counted": "77.50",
-        "total_expenses": "10.50",
-        "final_total": "67.00",
+        "total_pre_count_expenses": "8.50",
+        "total_post_count_expenses": "2.00",
+        "total_expenses": "2.00",
+        "final_total": "75.50",
     }
 
 
@@ -519,10 +553,15 @@ def _create_expense(
     cash_session_id: int,
     amount: Decimal,
     headers: dict[str, str],
+    expense_timing: str = "after_count",
 ) -> None:
     response = client.post(
         f"/api/v1/cash-sessions/{cash_session_id}/expenses",
         headers=headers,
-        json={"description": "Gasto", "amount": str(amount)},
+        json={
+            "description": "Gasto",
+            "amount": str(amount),
+            "expense_timing": expense_timing,
+        },
     )
     assert response.status_code == 201
