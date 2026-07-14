@@ -28,6 +28,8 @@ def test_cash_summary_report_without_sessions_returns_zeroes(
         "total_sessions": 0,
         "open_sessions": 0,
         "closed_sessions": 0,
+        "total_coins": "0.00",
+        "total_bills": "0.00",
         "total_counted": "0.00",
         "total_pre_count_expenses": "0.00",
         "total_post_count_expenses": "0.00",
@@ -111,6 +113,8 @@ def test_cash_summary_report_calculates_accumulated_totals(
     assert body["total_sessions"] == 2
     assert body["open_sessions"] == 1
     assert body["closed_sessions"] == 1
+    assert body["total_coins"] == "4.00"
+    assert body["total_bills"] == "40.00"
     assert body["total_counted"] == "44.00"
     assert body["total_pre_count_expenses"] == "1.50"
     assert body["total_post_count_expenses"] == "7.50"
@@ -160,6 +164,8 @@ def test_cash_summary_report_filters_by_date_range(
     assert body["date_from"] == "2026-07-02"
     assert body["date_to"] == "2026-07-02"
     assert body["total_sessions"] == 1
+    assert body["total_coins"] == "0.00"
+    assert body["total_bills"] == "20.00"
     assert body["total_counted"] == "20.00"
     assert body["total_pre_count_expenses"] == "0.00"
     assert body["total_post_count_expenses"] == "4.00"
@@ -200,7 +206,75 @@ def test_cash_summary_report_filters_by_status(
     assert body["total_sessions"] == 1
     assert body["open_sessions"] == 0
     assert body["closed_sessions"] == 1
+    assert body["total_coins"] == "0.00"
+    assert body["total_bills"] == "20.00"
     assert body["total_counted"] == "20.00"
+
+
+def test_cash_summary_report_accumulates_only_coins(
+    api_client,
+    api_denominations,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    _create_report_session(
+        client,
+        api_auth_headers,
+        api_denominations["coin_025"].id,
+        "2026-07-01",
+        4,
+    )
+    _create_report_session(
+        client,
+        api_auth_headers,
+        api_denominations["coin_100"].id,
+        "2026-07-02",
+        3,
+    )
+
+    response = client.get(
+        "/api/v1/reports/cash-summary",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total_coins"] == "4.00"
+    assert body["total_bills"] == "0.00"
+    assert body["total_counted"] == body["total_coins"]
+
+
+def test_cash_summary_report_accumulates_only_bills(
+    api_client,
+    api_denominations,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    _create_report_session(
+        client,
+        api_auth_headers,
+        api_denominations["bill_1000"].id,
+        "2026-07-01",
+        2,
+    )
+    _create_report_session(
+        client,
+        api_auth_headers,
+        api_denominations["bill_2000"].id,
+        "2026-07-02",
+        1,
+    )
+
+    response = client.get(
+        "/api/v1/reports/cash-summary",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total_coins"] == "0.00"
+    assert body["total_bills"] == "40.00"
+    assert body["total_counted"] == body["total_bills"]
 
 
 def test_cash_summary_report_returns_zeroes_when_filter_has_no_sessions(
@@ -228,6 +302,8 @@ def test_cash_summary_report_returns_zeroes_when_filter_has_no_sessions(
     assert response.status_code == 200
     body = response.json()
     assert body["total_sessions"] == 0
+    assert body["total_coins"] == "0.00"
+    assert body["total_bills"] == "0.00"
     assert body["total_counted"] == "0.00"
     assert body["total_pre_count_expenses"] == "0.00"
     assert body["total_post_count_expenses"] == "0.00"

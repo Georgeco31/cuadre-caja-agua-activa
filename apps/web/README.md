@@ -111,6 +111,6 @@ http://localhost:3000/login
 
 En el detalle de historial, los gastos se muestran separados entre antes del conteo y despues del conteo. Las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
 
-La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo gastos antes del conteo y gastos despues del conteo. No representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo total en monedas, total en billetes, total contado, gastos antes del conteo y gastos despues del conteo. No representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.

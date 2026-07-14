@@ -242,7 +242,7 @@ Filtros opcionales:
 - `date_to`
 - `status`
 
-El reporte suma `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte no representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+El reporte suma `total_coins`, `total_bills`, `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_counted` se calcula como `total_coins + total_bills`. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte no representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
 
 Formula oficial del resumen:
 

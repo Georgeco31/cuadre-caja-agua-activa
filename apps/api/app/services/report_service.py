@@ -29,6 +29,14 @@ def get_cash_summary_report(
         get_cash_session_summary(db=db, cash_session_id=cash_session.id)
         for cash_session in sessions
     ]
+    total_coins = sum(
+        (summary.total_coins for summary in summaries),
+        MONEY_ZERO,
+    )
+    total_bills = sum(
+        (summary.total_bills for summary in summaries),
+        MONEY_ZERO,
+    )
 
     return CashSummaryReport(
         date_from=date_from,
@@ -41,10 +49,9 @@ def get_cash_summary_report(
         closed_sessions=sum(
             1 for cash_session in sessions if cash_session.status == "closed"
         ),
-        total_counted=sum(
-            (summary.total_counted for summary in summaries),
-            MONEY_ZERO,
-        ),
+        total_coins=total_coins,
+        total_bills=total_bills,
+        total_counted=total_coins + total_bills,
         total_pre_count_expenses=sum(
             (summary.total_pre_count_expenses for summary in summaries),
             MONEY_ZERO,
