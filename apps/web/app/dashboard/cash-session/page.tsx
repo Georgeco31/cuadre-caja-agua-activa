@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { CashSessionCard } from "@/components/CashSessionCard";
+import { DateSelector } from "@/components/DateSelector";
 import { DenominationCountTable } from "@/components/DenominationCountTable";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { ExpenseForm } from "@/components/ExpenseForm";
@@ -39,7 +40,9 @@ import type { CashSessionSummary } from "@/types/summary";
 
 export default function CashSessionPage() {
   const router = useRouter();
+  const loadRequestIdRef = useRef(0);
   const [token, setToken] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(getTodayISODate);
   const [cashSession, setCashSession] = useState<CashSession | null>(null);
   const [denominations, setDenominations] = useState<Denomination[]>([]);
   const [countItems, setCountItems] = useState<CountItemDetail[]>([]);
@@ -51,6 +54,8 @@ export default function CashSessionPage() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isMissingCashSession, setIsMissingCashSession] = useState(false);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [isClosing, setIsClosing] = useState(false);
   const [isSubmittingExpense, setIsSubmittingExpense] = useState(false);
@@ -93,33 +98,38 @@ export default function CashSessionPage() {
     }
 
     setToken(storedToken);
-    loadCashSession(storedToken);
+    loadCashSession(storedToken, selectedDate);
   }, [router]);
 
-  async function loadCashSession(activeToken: string) {
+  async function loadCashSession(activeToken: string, sessionDate: string) {
+    const requestId = loadRequestIdRef.current + 1;
+    loadRequestIdRef.current = requestId;
     setIsLoading(true);
     setError("");
+    setMessage("");
+    resetSessionState();
 
     try {
-      const sessionDate = getTodayISODate();
       const [loadedDenominations, loadedSession] = await Promise.all([
         listDenominations(activeToken),
-        getOrCreateCashSession(activeToken, sessionDate),
+        findCashSession(activeToken, sessionDate),
       ]);
-      const [loadedSummary, loadedExpenses, loadedCountItems] =
-        await Promise.all([
-          getCashSessionSummary(activeToken, loadedSession.id),
-          listExpenses(activeToken, loadedSession.id),
-          listCashCountItems(activeToken, loadedSession.id),
-        ]);
+
+      if (requestId !== loadRequestIdRef.current) {
+        return;
+      }
 
       setDenominations(loadedDenominations);
-      setCashSession(loadedSession);
-      setExpenses(loadedExpenses);
-      setSummary(loadedSummary);
-      setCountItems(loadedCountItems);
-      setCountedAmounts(
-        buildCountedAmountMap(loadedDenominations, loadedCountItems),
+      if (!loadedSession) {
+        setIsMissingCashSession(true);
+        setCountedAmounts(buildCountedAmountMap(loadedDenominations, []));
+        return;
+      }
+
+      await loadCashSessionDetails(
+        activeToken,
+        loadedSession,
+        loadedDenominations,
       );
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
@@ -128,28 +138,108 @@ export default function CashSessionPage() {
 
       setError(getErrorMessage(loadError));
     } finally {
-      setIsLoading(false);
+      if (requestId === loadRequestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }
 
-  async function getOrCreateCashSession(activeToken: string, sessionDate: string) {
+  async function findCashSession(activeToken: string, sessionDate: string) {
     try {
       return await getCashSessionByDate(activeToken, sessionDate);
     } catch (sessionError) {
       if (sessionError instanceof ApiError && sessionError.status === 404) {
-        try {
-          return await createCashSession(activeToken, { session_date: sessionDate });
-        } catch (createError) {
-          if (createError instanceof ApiError && createError.status === 409) {
-            return getCashSessionByDate(activeToken, sessionDate);
-          }
-
-          throw createError;
-        }
+        return null;
       }
 
       throw sessionError;
     }
+  }
+
+  async function loadCashSessionDetails(
+    activeToken: string,
+    loadedSession: CashSession,
+    loadedDenominations: Denomination[] = denominations,
+  ) {
+    const [loadedSummary, loadedExpenses, loadedCountItems] =
+      await Promise.all([
+        getCashSessionSummary(activeToken, loadedSession.id),
+        listExpenses(activeToken, loadedSession.id),
+        listCashCountItems(activeToken, loadedSession.id),
+      ]);
+
+    setCashSession(loadedSession);
+    setIsMissingCashSession(false);
+    setExpenses(loadedExpenses);
+    setSummary(loadedSummary);
+    setCountItems(loadedCountItems);
+    setCountedAmounts(
+      buildCountedAmountMap(loadedDenominations, loadedCountItems),
+    );
+  }
+
+  function handleSelectedDateChange(value: string) {
+    if (!value) {
+      return;
+    }
+
+    setSelectedDate(value);
+    if (token && value) {
+      loadCashSession(token, value);
+    }
+  }
+
+  async function handleCreateCashSession() {
+    if (!token || !selectedDate || isCreatingSession) {
+      return;
+    }
+
+    setIsCreatingSession(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const createdSession = await createCashSession(token, {
+        session_date: selectedDate,
+      });
+      const activeDenominations =
+        denominations.length > 0 ? denominations : await listDenominations(token);
+
+      if (denominations.length === 0) {
+        setDenominations(activeDenominations);
+      }
+
+      await loadCashSessionDetails(token, createdSession, activeDenominations);
+      setMessage("Cuadre creado para la fecha seleccionada.");
+    } catch (createError) {
+      if (redirectIfUnauthorized(createError)) {
+        return;
+      }
+
+      if (createError instanceof ApiError && createError.status === 409) {
+        await loadCashSession(token, selectedDate);
+        setMessage(
+          "Ya existía un cuadre para esta fecha. Se cargó el registro existente.",
+        );
+        return;
+      }
+
+      setError(getErrorMessage(createError));
+    } finally {
+      setIsCreatingSession(false);
+    }
+  }
+
+  function resetSessionState() {
+    setCashSession(null);
+    setIsMissingCashSession(false);
+    setCountItems([]);
+    setExpenses([]);
+    setSummary(null);
+    setCountedAmounts({});
+    setSavingId(null);
+    setIsClosing(false);
+    setIsSubmittingExpense(false);
   }
 
   function handleCountedAmountChange(denominationId: number, value: string) {
@@ -298,21 +388,13 @@ export default function CashSessionPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-6">
-        <div className="mx-auto w-full max-w-6xl">
-          <LoadingState label="Cargando cuadre diario..." />
-        </div>
-      </main>
-    );
-  }
-
-  if (!cashSession || !summary) {
-    return (
-      <main className="min-h-screen bg-slate-50 px-4 py-6">
         <div className="mx-auto w-full max-w-6xl space-y-4">
-          {error ? <ErrorMessage message={error} /> : null}
-          <Link className="text-sm font-semibold text-water-700" href="/dashboard">
-            Volver al dashboard
-          </Link>
+          <DateSelector
+            value={selectedDate}
+            disabled
+            onChange={handleSelectedDateChange}
+          />
+          <LoadingState label="Cargando cuadre de caja..." />
         </div>
       </main>
     );
@@ -330,16 +412,16 @@ export default function CashSessionPage() {
               Volver al dashboard
             </Link>
             <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              Cuadre diario
+              Cuadre de caja
             </h1>
           </div>
           <LogoutButton />
         </header>
 
-        <CashSessionCard
-          cashSession={cashSession}
-          isClosing={isClosing}
-          onClose={handleCloseCashSession}
+        <DateSelector
+          value={selectedDate}
+          disabled={isCreatingSession}
+          onChange={handleSelectedDateChange}
         />
 
         {error ? <ErrorMessage message={error} /> : null}
@@ -349,82 +431,135 @@ export default function CashSessionPage() {
           </p>
         ) : null}
 
-        <SummaryCard summary={summary} />
-
-        <div className="grid gap-6 lg:grid-cols-2">
-          <DenominationCountTable
-            title="Monedas"
-            denominations={coins}
-            disabled={isClosed}
-            countedAmounts={countedAmounts}
-            savedDenominationIds={savedDenominationIds}
-            savingId={savingId}
-            onCountedAmountChange={handleCountedAmountChange}
-            onSave={handleSaveCount}
+        {isMissingCashSession ? (
+          <EmptyCashSessionState
+            selectedDate={selectedDate}
+            isCreatingSession={isCreatingSession}
+            onCreate={handleCreateCashSession}
           />
-          <DenominationCountTable
-            title="Billetes"
-            denominations={bills}
-            disabled={isClosed}
-            countedAmounts={countedAmounts}
-            savedDenominationIds={savedDenominationIds}
-            savingId={savingId}
-            onCountedAmountChange={handleCountedAmountChange}
-            onSave={handleSaveCount}
-          />
-        </div>
+        ) : cashSession && summary ? (
+          <>
+            <CashSessionCard
+              cashSession={cashSession}
+              isClosing={isClosing}
+              onClose={handleCloseCashSession}
+            />
 
-        <section aria-labelledby="expenses-title" className="space-y-4">
-          <div>
-            <p className="text-sm font-medium text-water-700">Gastos</p>
-            <h2
-              id="expenses-title"
-              className="mt-1 text-xl font-semibold text-slate-950"
-            >
-              Gastos del cuadre
-            </h2>
-          </div>
+            <SummaryCard summary={summary} />
 
-          <div className="grid gap-6 xl:grid-cols-2">
-            <div className="grid gap-6">
-              <ExpenseForm
-                title="Gastos antes del conteo"
-                eyebrow="Control"
-                helpText="Se registran para control, pero no se restan del total contado."
+            <div className="grid gap-6 lg:grid-cols-2">
+              <DenominationCountTable
+                title="Monedas"
+                denominations={coins}
                 disabled={isClosed}
-                isSubmitting={isSubmittingExpense}
-                expenseTiming="before_count"
-                onSubmit={handleCreateExpense}
+                countedAmounts={countedAmounts}
+                savedDenominationIds={savedDenominationIds}
+                savingId={savingId}
+                onCountedAmountChange={handleCountedAmountChange}
+                onSave={handleSaveCount}
               />
-              <ExpenseList
-                titleId="pre-count-expenses-title"
-                title="Gastos antes del conteo"
-                emptyMessage="Todavía no hay gastos antes del conteo."
-                expenses={preCountExpenses}
+              <DenominationCountTable
+                title="Billetes"
+                denominations={bills}
+                disabled={isClosed}
+                countedAmounts={countedAmounts}
+                savedDenominationIds={savedDenominationIds}
+                savingId={savingId}
+                onCountedAmountChange={handleCountedAmountChange}
+                onSave={handleSaveCount}
               />
             </div>
 
-            <div className="grid gap-6">
-              <ExpenseForm
-                title="Gastos después del conteo"
-                eyebrow="Caja"
-                helpText="Estos gastos sí se restan del total contado."
-                disabled={isClosed}
-                isSubmitting={isSubmittingExpense}
-                expenseTiming="after_count"
-                onSubmit={handleCreateExpense}
-              />
-              <ExpenseList
-                titleId="post-count-expenses-title"
-                title="Gastos después del conteo"
-                emptyMessage="Todavía no hay gastos después del conteo."
-                expenses={postCountExpenses}
-              />
-            </div>
-          </div>
-        </section>
+            <section aria-labelledby="expenses-title" className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-water-700">Gastos</p>
+                <h2
+                  id="expenses-title"
+                  className="mt-1 text-xl font-semibold text-slate-950"
+                >
+                  Gastos del cuadre
+                </h2>
+              </div>
+
+              <div className="grid gap-6 xl:grid-cols-2">
+                <div className="grid gap-6">
+                  <ExpenseForm
+                    title="Gastos antes del conteo"
+                    eyebrow="Control"
+                    helpText="Se registran para control, pero no se restan del total contado."
+                    disabled={isClosed}
+                    isSubmitting={isSubmittingExpense}
+                    expenseTiming="before_count"
+                    onSubmit={handleCreateExpense}
+                  />
+                  <ExpenseList
+                    titleId="pre-count-expenses-title"
+                    title="Gastos antes del conteo"
+                    emptyMessage="Todavía no hay gastos antes del conteo."
+                    expenses={preCountExpenses}
+                  />
+                </div>
+
+                <div className="grid gap-6">
+                  <ExpenseForm
+                    title="Gastos después del conteo"
+                    eyebrow="Caja"
+                    helpText="Estos gastos sí se restan del total contado."
+                    disabled={isClosed}
+                    isSubmitting={isSubmittingExpense}
+                    expenseTiming="after_count"
+                    onSubmit={handleCreateExpense}
+                  />
+                  <ExpenseList
+                    titleId="post-count-expenses-title"
+                    title="Gastos después del conteo"
+                    emptyMessage="Todavía no hay gastos después del conteo."
+                    expenses={postCountExpenses}
+                  />
+                </div>
+              </div>
+            </section>
+          </>
+        ) : null}
       </div>
     </main>
+  );
+}
+
+type EmptyCashSessionStateProps = {
+  selectedDate: string;
+  isCreatingSession: boolean;
+  onCreate: () => void;
+};
+
+function EmptyCashSessionState({
+  selectedDate,
+  isCreatingSession,
+  onCreate,
+}: EmptyCashSessionStateProps) {
+  return (
+    <section className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center shadow-sm">
+      <p className="text-sm font-medium text-water-700">
+        {formatDate(selectedDate)}
+      </p>
+      <h2 className="mt-2 text-xl font-semibold text-slate-950">
+        No existe cuadre para esta fecha.
+      </h2>
+      <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+        Puedes crear un cuadre para registrar conteos, gastos antes del conteo,
+        gastos después del conteo y cierre para la fecha seleccionada.
+      </p>
+      <button
+        className="mt-5 h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+        type="button"
+        onClick={onCreate}
+        disabled={isCreatingSession}
+      >
+        {isCreatingSession
+          ? "Creando cuadre..."
+          : "Crear cuadre para esta fecha"}
+      </button>
+    </section>
   );
 }
 
@@ -432,6 +567,13 @@ function getTodayISODate(): string {
   const now = new Date();
   const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return localDate.toISOString().slice(0, 10);
+}
+
+function formatDate(value: string): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    dateStyle: "long",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
 }
 
 function compareDenominationValue(

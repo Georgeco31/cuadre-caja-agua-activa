@@ -21,7 +21,7 @@ export function CashSessionCard({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-medium text-water-700">
-            Cuadre del día
+            Cuadre seleccionado
           </p>
           <h2 className="mt-1 text-xl font-semibold text-slate-950">
             {formatDate(cashSession.session_date)}

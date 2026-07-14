@@ -3,8 +3,8 @@ import Link from "next/link";
 const actions = [
   {
     href: "/dashboard/cash-session",
-    title: "Registrar cuadre diario",
-    description: "Abrir o continuar el cuadre del día.",
+    title: "Registrar o consultar cuadre",
+    description: "Abrir, crear o continuar el cuadre de una fecha.",
     primary: true,
   },
   {
