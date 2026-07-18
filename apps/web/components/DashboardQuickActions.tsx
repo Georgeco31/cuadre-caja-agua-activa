@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/production",
+    title: "Producción",
+    description: "Registrar producción y envasado diario.",
+    primary: false,
+  },
+  {
     href: "/dashboard/inventory",
     title: "Inventario",
     description: "Controlar stock por ubicación con entradas, salidas y ajustes.",

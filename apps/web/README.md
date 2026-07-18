@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar e inventario manual. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, produccion o rutas, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual y produccion operativa. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, produccion o rutas, consumo de insumos, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -57,6 +57,7 @@ Rutas principales:
 - `/dashboard/delivery-routes`
 - `/dashboard/vehicles`
 - `/dashboard/inventory`
+- `/dashboard/production`
 - `/dashboard/sales/cash`
 - `/dashboard/sales/credit`
 - `/dashboard/receivables`
@@ -90,7 +91,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, inventario, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, inventario, produccion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -161,6 +162,9 @@ http://localhost:3000/login
 - El formulario de inventario registra entradas, salidas, ajustes positivos y ajustes negativos mediante `POST /api/v1/inventory/movements`.
 - El historial permite filtrar y anular movimientos con motivo. Despues de cada alta o anulacion vuelve a consultar stock y movimientos oficiales desde la API.
 - El frontend no calcula el stock ni los costos oficiales y no crea movimientos automaticos desde ventas, caja, cobros, rutas o produccion.
+- La pantalla `/dashboard/production` carga productos activos, permite agregar varios productos con cantidad producida, merma y observacion por item, y registra el lote mediante `POST /api/v1/production/batches`.
+- El historial de produccion permite filtrar por texto, fechas, estado y producto, consultar los snapshots de cada item y anular un registro con motivo mediante `POST /api/v1/production/batches/{id}/void`.
+- Crear o anular produccion no calcula stock en frontend, no modifica inventario y no crea movimientos automaticos.
 - Las ventas y los cobros no modifican automaticamente caja, inventario, rutas o bancos. Este bloque tampoco genera recibos ni aplica un pago a varias ventas.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.

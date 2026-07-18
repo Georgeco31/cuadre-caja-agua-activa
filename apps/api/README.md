@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, y cobros sobre cartera. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico, produccion, nomina, mantenimiento, combustible o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual y produccion operativa. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, integracion automatica de inventario, consumo de insumos, nomina, mantenimiento, combustible o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -359,6 +359,19 @@ Las ubicaciones aceptan los tipos `warehouse`, `vehicle`, `production_area` y `o
 Los movimientos `entry` y `adjustment_in` aumentan stock; `exit` y `adjustment_out` lo reducen. El servicio bloquea las filas relacionadas, impide cantidades negativas, calcula `total_cost` cuando existe costo unitario y guarda snapshots del producto. La anulacion exige motivo, conserva el movimiento como `voided` y aplica el efecto inverso sin permitir stock negativo.
 
 Este bloque mueve inventario solamente mediante estos movimientos manuales. Ventas, caja, cobros, rutas y produccion no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks o movimientos falsos.
+
+## Produccion y envasado base
+
+La migracion `0012_production` crea `production_batches` y `production_items`. Las cantidades producidas y la merma usan `Numeric(14, 3)` y se procesan con `Decimal`. Endpoints autenticados:
+
+- `POST /api/v1/production/batches`
+- `GET /api/v1/production/batches`
+- `GET /api/v1/production/batches/{batch_id}`
+- `POST /api/v1/production/batches/{batch_id}/void`
+
+Cada produccion exige una fecha y al menos un producto existente y activo. El backend genera un numero interno unico, conserva snapshots de SKU, nombre y presentacion, y acepta cantidades producidas mayores a cero y merma mayor o igual a cero. El listado permite filtrar por `date_from`, `date_to`, `status`, `product_id` y `search`.
+
+La anulacion exige motivo, mantiene el lote y sus items con estado `voided` y no borra registros. Crear o anular produccion no cambia `inventory_stocks`, no crea `inventory_movements` y no modifica caja, ventas, cobros o rutas. Los seeds no crean producciones falsas.
 
 Endpoints de gastos dentro de un cuadre:
 

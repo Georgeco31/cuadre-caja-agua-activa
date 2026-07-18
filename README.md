@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, e inventario base con movimientos manuales.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base con movimientos manuales y registro operativo de produccion y envasado.
 
 ## Problema que resuelve
 
@@ -57,6 +57,8 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Ubicaciones de inventario activables e inactivables sin borrado fisico.
 - Stock actual por producto y ubicacion mediante entradas, salidas y ajustes manuales.
 - Historial y anulacion trazable de movimientos con reversion del stock.
+- Registro de produccion y envasado con uno o varios productos activos.
+- Cantidades producidas, merma, snapshots y anulacion logica con motivo.
 
 Quedan fuera del MVP:
 
@@ -70,7 +72,7 @@ Quedan fuera del MVP:
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 33 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera e inventario manual. Las ventas y los abonos son registros comerciales y financieros; todavia no modifican automaticamente caja, inventario, bancos o rutas.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 34 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual y produccion operativa. Las ventas, los abonos y la produccion todavia no modifican automaticamente caja, inventario, bancos o rutas.
 
 ## Stack definido
 
@@ -188,8 +190,9 @@ cuadre-caja-agua-activa/
 - Bloque 31: modulo base de cobros y abonos con pagos parciales o totales, historial y anulacion reversible.
 - Bloque 32: estado de cuenta y reporte de cuentas por cobrar con resumen, filtros y detalle por cliente.
 - Bloque 33: inventario base por ubicacion con stock, movimientos manuales y anulacion reversible.
+- Bloque 34: produccion y envasado base con detalle por producto, snapshots, filtros y anulacion logica.
 
-Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, movimientos automaticos de inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, produccion, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, movimientos automaticos de inventario, integracion produccion-inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

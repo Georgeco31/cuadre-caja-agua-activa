@@ -21,6 +21,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "inventory_movements",
         "inventory_stocks",
         "products",
+        "production_batches",
+        "production_items",
         "sale_items",
         "sales",
     }
@@ -56,6 +58,8 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["inventory_movements"].c.quantity,
         Base.metadata.tables["inventory_movements"].c.unit_cost,
         Base.metadata.tables["inventory_movements"].c.total_cost,
+        Base.metadata.tables["production_items"].c.quantity_produced,
+        Base.metadata.tables["production_items"].c.quantity_waste,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -105,6 +109,15 @@ def test_required_foreign_keys_are_defined() -> None:
     }
     assert _foreign_key_targets("inventory_movements", "created_by") == {
         "users.id",
+    }
+    assert _foreign_key_targets("production_batches", "created_by") == {
+        "users.id",
+    }
+    assert _foreign_key_targets("production_items", "production_batch_id") == {
+        "production_batches.id",
+    }
+    assert _foreign_key_targets("production_items", "product_id") == {
+        "products.id",
     }
 
 
@@ -190,6 +203,16 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_inventory_movements_type",
         "ck_inventory_movements_unit_cost_nonnegative",
         "ck_inventory_movements_void_state",
+    }
+    assert _check_constraint_names("production_batches") == {
+        "ck_production_batches_number_not_blank",
+        "ck_production_batches_status",
+        "ck_production_batches_void_state",
+    }
+    assert _check_constraint_names("production_items") == {
+        "ck_production_items_product_snapshot_not_blank",
+        "ck_production_items_quantity_produced_positive",
+        "ck_production_items_quantity_waste_nonnegative",
     }
 
 

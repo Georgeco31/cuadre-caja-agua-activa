@@ -11,6 +11,8 @@ from app.models.inventory_location import InventoryLocation
 from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
 from app.models.product import Product
+from app.models.production_batch import ProductionBatch
+from app.models.production_item import ProductionItem
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
 from app.models.user import User
@@ -30,6 +32,8 @@ __all__ = [
     "InventoryMovement",
     "InventoryStock",
     "Product",
+    "ProductionBatch",
+    "ProductionItem",
     "Sale",
     "SaleItem",
     "User",
