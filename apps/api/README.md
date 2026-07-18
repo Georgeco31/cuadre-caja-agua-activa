@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, y ventas de contado. El frontend vive en `apps/web`. Todavia no incluye ventas a credito, inventario automatico, produccion, nomina, mantenimiento, combustible, cobros o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, y ventas de contado y a credito. El frontend vive en `apps/web`. Todavia no incluye abonos, pagos parciales, inventario automatico, produccion, nomina, mantenimiento, combustible, cobros o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -286,11 +286,27 @@ El modulo comercial base usa las tablas `sales` y `sale_items` y los endpoints a
 - `GET /api/v1/sales/{sale_id}`
 - `POST /api/v1/sales/{sale_id}/void`
 
-El listado acepta `date_from`, `date_to`, `status`, `customer_id`, `payment_method` y `search`. La busqueda consulta el numero interno de venta y el nombre de cliente guardado como snapshot.
+El listado acepta `date_from`, `date_to`, `status`, `customer_id`, `payment_method`, `sale_type` y `search`. La busqueda consulta el numero interno de venta y el nombre de cliente guardado como snapshot.
 
 Cada venta contiene al menos un producto activo. Si no se envia `unit_price`, se usa el `default_price` del producto. El servicio calcula subtotales y total con `Decimal`, guarda snapshots del cliente y los productos y genera un numero interno unico. Sin cliente se registra `Consumidor final`.
 
-Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. En este bloque las ventas no modifican el cuadre de caja, inventario, rutas, cobros o creditos, y los seeds no crean ventas falsas.
+Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. Una venta de contado guarda `paid_amount = total_amount`, `balance_amount = 0` y `credit_status = none`. Las ventas no modifican el cuadre de caja, inventario, rutas o cobros, y los seeds no crean ventas falsas.
+
+## Ventas a credito
+
+El credito reutiliza `sales` y `sale_items` y agrega los campos `paid_amount`, `balance_amount`, `credit_status` y `due_date`. Endpoints autenticados:
+
+- `POST /api/v1/sales/credit`
+- `GET /api/v1/sales?sale_type=credit`
+- `GET /api/v1/sales/{sale_id}`
+- `POST /api/v1/sales/{sale_id}/void`
+- `GET /api/v1/sales/credit/customer/{customer_id}/balance`
+
+La venta exige un cliente existente, activo y con `credit_allowed = true`. Cuando `credit_limit` es mayor a cero, la deuda activa del cliente mas el nuevo total no puede superarlo; el valor cero significa que no existe un limite definido. La validacion bloquea la fila del cliente durante la transaccion para mantener consistente el limite ante solicitudes concurrentes.
+
+Una venta nueva queda con `sale_type = credit`, `paid_amount = 0`, `balance_amount = total_amount` y `credit_status = pending`. Al anularla conserva sus items, cambia a `status = voided` y `credit_status = voided`, y su saldo deja de contar como deuda activa.
+
+El resumen de balance solo considera ventas a credito activas con saldo mayor a cero. Este bloque crea deuda comercial, pero no registra pagos, abonos, cobros, recibos, movimientos de caja o movimientos de inventario.
 
 Endpoints de gastos dentro de un cuadre:
 
@@ -332,7 +348,7 @@ Filtros opcionales:
 - `date_to`
 - `status`
 
-El reporte suma `total_coins`, `total_bills`, `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_counted` se calcula como `total_coins + total_bills`. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte todavia no incorpora las ventas de contado registradas ni saldo inicial de caja.
+El reporte suma `total_coins`, `total_bills`, `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_counted` se calcula como `total_coins + total_bills`. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte todavia no incorpora las ventas registradas, saldos de credito ni saldo inicial de caja.
 
 Formula oficial del resumen:
 

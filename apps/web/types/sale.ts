@@ -1,5 +1,7 @@
 export type SalePaymentMethod = "cash" | "transfer" | "card" | "other";
 export type SaleStatus = "active" | "voided";
+export type SaleType = "cash" | "credit";
+export type CreditStatus = "none" | "pending" | "paid" | "voided";
 
 export const SALE_PAYMENT_METHOD_LABELS: Record<SalePaymentMethod, string> = {
   cash: "Efectivo",
@@ -10,6 +12,13 @@ export const SALE_PAYMENT_METHOD_LABELS: Record<SalePaymentMethod, string> = {
 
 export const SALE_STATUS_LABELS: Record<SaleStatus, string> = {
   active: "Activa",
+  voided: "Anulada",
+};
+
+export const CREDIT_STATUS_LABELS: Record<CreditStatus, string> = {
+  none: "No aplica",
+  pending: "Pendiente",
+  paid: "Pagada",
   voided: "Anulada",
 };
 
@@ -26,16 +35,20 @@ export type SaleItem = {
   created_at: string;
 };
 
-export type CashSale = {
+export type Sale = {
   id: number;
   sale_number: string;
   sale_date: string;
   customer_id: number | null;
   customer_name_snapshot: string;
-  sale_type: "cash";
+  sale_type: SaleType;
   payment_method: SalePaymentMethod;
   status: SaleStatus;
   total_amount: string;
+  paid_amount: string;
+  balance_amount: string;
+  credit_status: CreditStatus;
+  due_date: string | null;
   notes: string | null;
   void_reason: string | null;
   voided_at: string | null;
@@ -44,6 +57,9 @@ export type CashSale = {
   updated_at: string;
   items: SaleItem[];
 };
+
+export type CashSale = Sale;
+export type CreditSale = Sale;
 
 export type CashSaleItemPayload = {
   product_id: number;
@@ -59,11 +75,28 @@ export type CashSalePayload = {
   items: CashSaleItemPayload[];
 };
 
+export type CreditSalePayload = {
+  sale_date: string;
+  customer_id: number;
+  due_date?: string | null;
+  notes?: string | null;
+  items: CashSaleItemPayload[];
+};
+
 export type CashSaleFilters = {
   date_from?: string;
   date_to?: string;
   status?: SaleStatus | "";
   customer_id?: number;
   payment_method?: SalePaymentMethod | "";
+  sale_type?: SaleType | "";
   search?: string;
+};
+
+export type CustomerCreditBalance = {
+  customer_id: number;
+  customer_name: string;
+  total_credit_sales: string;
+  total_paid: string;
+  total_balance: string;
 };

@@ -68,7 +68,7 @@ export default function CashSalesPage() {
       const [loadedCustomers, loadedProducts, loadedSales] = await Promise.all([
         listCustomers(activeToken, { is_active: true }),
         listProducts(activeToken, { is_active: true }),
-        listCashSales(activeToken),
+        listCashSales(activeToken, { sale_type: "cash" }),
       ]);
       setCustomers(loadedCustomers);
       setProducts(loadedProducts);
@@ -91,6 +91,7 @@ export default function CashSalesPage() {
     setError("");
     try {
       const loadedSales = await listCashSales(activeToken, {
+        sale_type: "cash",
         ...(activeFilters.search ? { search: activeFilters.search } : {}),
         ...(activeFilters.dateFrom ? { date_from: activeFilters.dateFrom } : {}),
         ...(activeFilters.dateTo ? { date_to: activeFilters.dateTo } : {}),

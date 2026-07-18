@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 
 import type { Customer } from "@/types/customer";
 import {
+  CREDIT_STATUS_LABELS,
   SALE_PAYMENT_METHOD_LABELS,
   SALE_STATUS_LABELS,
   type CashSale,
@@ -20,7 +21,8 @@ export type CashSaleFilterValues = {
   paymentMethod: SalePaymentMethod | "";
 };
 
-type CashSaleListProps = {
+export type CashSaleListProps = {
+  mode?: "cash" | "credit";
   sales: CashSale[];
   customers: Customer[];
   filters: CashSaleFilterValues;
@@ -38,6 +40,7 @@ const paymentMethods = Object.keys(
 ) as SalePaymentMethod[];
 
 export function CashSaleList({
+  mode = "cash",
   sales,
   customers,
   filters,
@@ -49,6 +52,7 @@ export function CashSaleList({
   onClearFilters,
   onVoid,
 }: CashSaleListProps) {
+  const isCredit = mode === "credit";
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -60,13 +64,17 @@ export function CashSaleList({
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-2 border-b border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold text-slate-950">
-          Ventas recientes
+          {isCredit ? "Ventas a crédito recientes" : "Ventas recientes"}
         </h2>
         <span className="text-sm text-slate-500">{sales.length}</span>
       </div>
 
       <form
-        className="grid gap-3 border-b border-slate-200 bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-[minmax(180px,2fr)_145px_145px_135px_minmax(170px,1fr)_145px_auto_auto] xl:items-end"
+        className={
+          isCredit
+            ? "grid gap-3 border-b border-slate-200 bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-[minmax(220px,2fr)_145px_145px_135px_minmax(180px,1fr)_auto_auto] xl:items-end"
+            : "grid gap-3 border-b border-slate-200 bg-slate-50 p-4 md:grid-cols-2 xl:grid-cols-[minmax(180px,2fr)_145px_145px_135px_minmax(170px,1fr)_145px_auto_auto] xl:items-end"
+        }
         onSubmit={handleSubmit}
       >
         <FilterField label="Buscar">
@@ -137,26 +145,28 @@ export function CashSaleList({
             ))}
           </select>
         </FilterField>
-        <FilterField label="Pago">
-          <select
-            className={fieldClassName}
-            value={filters.paymentMethod}
-            disabled={isLoading}
-            onChange={(event) =>
-              onFiltersChange({
-                ...filters,
-                paymentMethod: event.target.value as SalePaymentMethod | "",
-              })
-            }
-          >
-            <option value="">Todos</option>
-            {paymentMethods.map((method) => (
-              <option key={method} value={method}>
-                {SALE_PAYMENT_METHOD_LABELS[method]}
-              </option>
-            ))}
-          </select>
-        </FilterField>
+        {!isCredit ? (
+          <FilterField label="Pago">
+            <select
+              className={fieldClassName}
+              value={filters.paymentMethod}
+              disabled={isLoading}
+              onChange={(event) =>
+                onFiltersChange({
+                  ...filters,
+                  paymentMethod: event.target.value as SalePaymentMethod | "",
+                })
+              }
+            >
+              <option value="">Todos</option>
+              {paymentMethods.map((method) => (
+                <option key={method} value={method}>
+                  {SALE_PAYMENT_METHOD_LABELS[method]}
+                </option>
+              ))}
+            </select>
+          </FilterField>
+        ) : null}
         <button
           className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
           type="submit"
@@ -184,13 +194,29 @@ export function CashSaleList({
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1020px] border-collapse text-left text-sm">
+          <table
+            className={
+              isCredit
+                ? "w-full min-w-[1240px] border-collapse text-left text-sm"
+                : "w-full min-w-[1020px] border-collapse text-left text-sm"
+            }
+          >
             <thead className="bg-white text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">Venta</th>
                 <th className="px-4 py-3 font-medium">Cliente</th>
-                <th className="px-4 py-3 font-medium">Pago</th>
+                {isCredit ? (
+                  <th className="px-4 py-3 font-medium">Vencimiento</th>
+                ) : (
+                  <th className="px-4 py-3 font-medium">Pago</th>
+                )}
                 <th className="px-4 py-3 text-right font-medium">Total</th>
+                {isCredit ? (
+                  <>
+                    <th className="px-4 py-3 text-right font-medium">Pagado</th>
+                    <th className="px-4 py-3 text-right font-medium">Saldo</th>
+                  </>
+                ) : null}
                 <th className="px-4 py-3 font-medium">Estado</th>
                 <th className="px-4 py-3 font-medium">Acciones</th>
               </tr>
@@ -203,6 +229,7 @@ export function CashSaleList({
                   <SaleRows
                     key={sale.id}
                     sale={sale}
+                    mode={mode}
                     isExpanded={isExpanded}
                     isVoiding={isVoiding}
                     onToggle={() =>
@@ -222,6 +249,7 @@ export function CashSaleList({
 
 type SaleRowsProps = {
   sale: CashSale;
+  mode: "cash" | "credit";
   isExpanded: boolean;
   isVoiding: boolean;
   onToggle: () => void;
@@ -230,11 +258,13 @@ type SaleRowsProps = {
 
 function SaleRows({
   sale,
+  mode,
   isExpanded,
   isVoiding,
   onToggle,
   onVoid,
 }: SaleRowsProps) {
+  const isCredit = mode === "credit";
   return (
     <>
       <tr>
@@ -248,21 +278,41 @@ function SaleRows({
         <td className="px-4 py-3 align-top text-slate-700">
           {sale.customer_name_snapshot}
         </td>
-        <td className="px-4 py-3 align-top text-slate-700">
-          {SALE_PAYMENT_METHOD_LABELS[sale.payment_method]}
-        </td>
+        {isCredit ? (
+          <td className="px-4 py-3 align-top text-slate-700">
+            {sale.due_date ? formatSaleDate(sale.due_date) : "Sin fecha"}
+          </td>
+        ) : (
+          <td className="px-4 py-3 align-top text-slate-700">
+            {SALE_PAYMENT_METHOD_LABELS[sale.payment_method]}
+          </td>
+        )}
         <td className="px-4 py-3 text-right align-top font-semibold text-slate-950">
           {formatMoney(sale.total_amount)}
         </td>
+        {isCredit ? (
+          <>
+            <td className="px-4 py-3 text-right align-top text-slate-700">
+              {formatMoney(sale.paid_amount)}
+            </td>
+            <td className="px-4 py-3 text-right align-top font-semibold text-amber-700">
+              {formatMoney(sale.balance_amount)}
+            </td>
+          </>
+        ) : null}
         <td className="px-4 py-3 align-top">
           <span
             className={
-              sale.status === "active"
-                ? "inline-flex rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
-                : "inline-flex rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600"
+              isCredit && sale.credit_status === "pending"
+                ? "inline-flex rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700"
+                : sale.status === "active"
+                  ? "inline-flex rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700"
+                  : "inline-flex rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600"
             }
           >
-            {SALE_STATUS_LABELS[sale.status]}
+            {isCredit
+              ? CREDIT_STATUS_LABELS[sale.credit_status]
+              : SALE_STATUS_LABELS[sale.status]}
           </span>
         </td>
         <td className="px-4 py-3 align-top">
@@ -289,7 +339,7 @@ function SaleRows({
       </tr>
       {isExpanded ? (
         <tr>
-          <td className="bg-slate-50 px-4 py-4" colSpan={6}>
+          <td className="bg-slate-50 px-4 py-4" colSpan={isCredit ? 8 : 6}>
             <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
               <div className="overflow-hidden rounded-md border border-slate-200 bg-white">
                 <table className="w-full border-collapse text-left text-xs">
@@ -335,6 +385,13 @@ function SaleRows({
                 </table>
               </div>
               <div className="text-sm text-slate-600">
+                {isCredit ? (
+                  <div className="mb-3 grid grid-cols-3 gap-3">
+                    <DetailAmount label="Total" value={sale.total_amount} />
+                    <DetailAmount label="Pagado" value={sale.paid_amount} />
+                    <DetailAmount label="Saldo" value={sale.balance_amount} />
+                  </div>
+                ) : null}
                 <p>
                   <span className="font-medium text-slate-950">Notas:</span>{" "}
                   {sale.notes ?? "Sin observaciones"}
@@ -353,6 +410,15 @@ function SaleRows({
         </tr>
       ) : null}
     </>
+  );
+}
+
+function DetailAmount({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-medium text-slate-500">{label}</p>
+      <p className="mt-1 font-semibold text-slate-950">{formatMoney(value)}</p>
+    </div>
   );
 }
 

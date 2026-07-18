@@ -1,10 +1,12 @@
 from datetime import date, datetime
+from decimal import Decimal
 
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
+from app.models.customer import Customer
 
 
 def get_sale(db: Session, sale_id: int) -> Sale | None:
@@ -23,6 +25,7 @@ def list_sales(
     status: str | None = None,
     customer_id: int | None = None,
     payment_method: str | None = None,
+    sale_type: str | None = None,
     search: str | None = None,
 ) -> list[Sale]:
     statement = select(Sale).options(selectinload(Sale.items))
@@ -37,6 +40,8 @@ def list_sales(
         statement = statement.where(Sale.customer_id == customer_id)
     if payment_method is not None:
         statement = statement.where(Sale.payment_method == payment_method)
+    if sale_type is not None:
+        statement = statement.where(Sale.sale_type == sale_type)
     if search is not None:
         search_pattern = f"%{search}%"
         statement = statement.where(
@@ -62,6 +67,50 @@ def create_sale_item(db: Session, values: dict[str, object]) -> SaleItem:
     return sale_item
 
 
+def get_customer_for_credit(db: Session, customer_id: int) -> Customer | None:
+    statement = (
+        select(Customer)
+        .where(Customer.id == customer_id)
+        .with_for_update()
+    )
+    return db.scalar(statement)
+
+
+def get_active_credit_balance(db: Session, customer_id: int) -> Decimal:
+    statement = select(
+        func.coalesce(func.sum(Sale.balance_amount), Decimal("0.00"))
+    ).where(
+        Sale.customer_id == customer_id,
+        Sale.sale_type == "credit",
+        Sale.status == "active",
+        Sale.balance_amount > 0,
+    )
+    return Decimal(db.scalar(statement) or Decimal("0.00"))
+
+
+def get_credit_balance_totals(
+    db: Session,
+    customer_id: int,
+) -> tuple[Decimal, Decimal, Decimal]:
+    statement = select(
+        func.coalesce(func.sum(Sale.total_amount), Decimal("0.00")),
+        func.coalesce(func.sum(Sale.paid_amount), Decimal("0.00")),
+        func.coalesce(func.sum(Sale.balance_amount), Decimal("0.00")),
+    ).where(
+        Sale.customer_id == customer_id,
+        Sale.sale_type == "credit",
+        Sale.status == "active",
+        Sale.balance_amount > 0,
+    )
+    row = db.execute(statement).one()
+    total_sales, total_paid, total_balance = row
+    return (
+        Decimal(total_sales),
+        Decimal(total_paid),
+        Decimal(total_balance),
+    )
+
+
 def mark_sale_voided(
     db: Session,
     sale: Sale,
@@ -71,5 +120,8 @@ def mark_sale_voided(
     sale.status = "voided"
     sale.void_reason = reason
     sale.voided_at = voided_at
+    if sale.sale_type == "credit":
+        sale.balance_amount = Decimal("0.00")
+        sale.credit_status = "voided"
     db.add(sale)
     return sale

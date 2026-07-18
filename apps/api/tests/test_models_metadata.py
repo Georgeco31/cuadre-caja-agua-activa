@@ -45,6 +45,8 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["products"].c.default_price,
         Base.metadata.tables["products"].c.cost_estimate,
         Base.metadata.tables["sales"].c.total_amount,
+        Base.metadata.tables["sales"].c.paid_amount,
+        Base.metadata.tables["sales"].c.balance_amount,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -118,7 +120,12 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_vehicles_year_reasonable",
     }
     assert _check_constraint_names("sales") == {
+        "ck_sales_amounts_by_type",
+        "ck_sales_balance_amount_nonnegative",
+        "ck_sales_credit_customer_required",
+        "ck_sales_credit_status",
         "ck_sales_customer_snapshot_not_blank",
+        "ck_sales_paid_amount_nonnegative",
         "ck_sales_payment_method",
         "ck_sales_sale_number_not_blank",
         "ck_sales_sale_type",

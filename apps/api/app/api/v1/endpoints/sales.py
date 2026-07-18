@@ -7,9 +7,12 @@ from app.api.deps import get_current_user, get_db
 from app.models.user import User
 from app.schemas.sale import (
     CashSaleCreate,
+    CreditSaleCreate,
+    CustomerCreditBalance,
     SalePaymentMethod,
     SaleRead,
     SaleStatus,
+    SaleType,
     SaleVoid,
 )
 from app.services import sales as sale_service
@@ -33,6 +36,18 @@ def create_cash_sale(
         raise _http_error(error) from error
 
 
+@router.post("/credit", response_model=SaleRead, status_code=status.HTTP_201_CREATED)
+def create_credit_sale(
+    payload: CreditSaleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        return sale_service.create_credit_sale(db, payload, current_user.id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
 @router.get("", response_model=list[SaleRead])
 def list_sales(
     date_from: date | None = None,
@@ -40,6 +55,7 @@ def list_sales(
     sale_status: SaleStatus | None = Query(default=None, alias="status"),
     customer_id: int | None = None,
     payment_method: SalePaymentMethod | None = None,
+    sale_type: SaleType | None = None,
     search: str | None = None,
     db: Session = Depends(get_db),
 ):
@@ -51,8 +67,23 @@ def list_sales(
             status=sale_status,
             customer_id=customer_id,
             payment_method=payment_method,
+            sale_type=sale_type,
             search=search,
         )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/credit/customer/{customer_id}/balance",
+    response_model=CustomerCreditBalance,
+)
+def get_customer_credit_balance(
+    customer_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return sale_service.get_customer_credit_balance(db, customer_id)
     except ValueError as error:
         raise _http_error(error) from error
 

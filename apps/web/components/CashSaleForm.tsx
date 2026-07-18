@@ -8,15 +8,27 @@ import type { Product } from "@/types/product";
 import {
   SALE_PAYMENT_METHOD_LABELS,
   type CashSalePayload,
+  type CreditSalePayload,
   type SalePaymentMethod,
 } from "@/types/sale";
 
-type CashSaleFormProps = {
+export type CashSaleFormProps = {
+  mode?: "cash";
   customers: Customer[];
   products: Product[];
   isSubmitting?: boolean;
   onSubmit: (payload: CashSalePayload) => Promise<boolean>;
 };
+
+export type CreditSaleFormProps = {
+  mode: "credit";
+  customers: Customer[];
+  products: Product[];
+  isSubmitting?: boolean;
+  onSubmit: (payload: CreditSalePayload) => Promise<boolean>;
+};
+
+type SaleFormProps = CashSaleFormProps | CreditSaleFormProps;
 
 type SaleLine = {
   productId: number;
@@ -28,14 +40,12 @@ const paymentMethods = Object.keys(
   SALE_PAYMENT_METHOD_LABELS,
 ) as SalePaymentMethod[];
 
-export function CashSaleForm({
-  customers,
-  products,
-  isSubmitting = false,
-  onSubmit,
-}: CashSaleFormProps) {
+export function CashSaleForm(props: SaleFormProps) {
+  const { customers, products, isSubmitting = false } = props;
+  const isCredit = props.mode === "credit";
   const [saleDate, setSaleDate] = useState(currentDate());
   const [customerId, setCustomerId] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [paymentMethod, setPaymentMethod] =
     useState<SalePaymentMethod>("cash");
   const [notes, setNotes] = useState("");
@@ -92,6 +102,10 @@ export function CashSaleForm({
       setValidationError("La fecha de venta es obligatoria.");
       return;
     }
+    if (isCredit && !customerId) {
+      setValidationError("Selecciona el cliente de la venta a crédito.");
+      return;
+    }
     if (lines.length === 0) {
       setValidationError("Agrega al menos un producto a la venta.");
       return;
@@ -109,21 +123,32 @@ export function CashSaleForm({
       }
     }
 
-    const saved = await onSubmit({
-      sale_date: saleDate,
-      ...(customerId ? { customer_id: Number(customerId) } : {}),
-      payment_method: paymentMethod,
-      notes: optionalText(notes),
-      items: lines.map((line) => ({
-        product_id: line.productId,
-        quantity: line.quantity,
-        unit_price: line.unitPrice,
-      })),
-    });
+    const items = lines.map((line) => ({
+      product_id: line.productId,
+      quantity: line.quantity,
+      unit_price: line.unitPrice,
+    }));
+    const saved =
+      props.mode === "credit"
+        ? await props.onSubmit({
+            sale_date: saleDate,
+            customer_id: Number(customerId),
+            due_date: dueDate || null,
+            notes: optionalText(notes),
+            items,
+          })
+        : await props.onSubmit({
+            sale_date: saleDate,
+            ...(customerId ? { customer_id: Number(customerId) } : {}),
+            payment_method: paymentMethod,
+            notes: optionalText(notes),
+            items,
+          });
 
     if (saved) {
       setCustomerId("");
       setPaymentMethod("cash");
+      setDueDate("");
       setNotes("");
       setSelectedProductId("");
       setLines([]);
@@ -139,7 +164,7 @@ export function CashSaleForm({
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 px-4 py-3 sm:px-5">
         <h2 className="text-lg font-semibold text-slate-950">
-          Registrar venta
+          {isCredit ? "Registrar venta a crédito" : "Registrar venta"}
         </h2>
       </div>
 
@@ -167,42 +192,67 @@ export function CashSaleForm({
 
           <label className="block">
             <span className="text-sm font-medium text-slate-700">
-              Cliente opcional
+              {isCredit ? "Cliente" : "Cliente opcional"}
             </span>
             <select
               className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
               value={customerId}
+              required={isCredit}
               disabled={isSubmitting}
               onChange={(event) => setCustomerId(event.target.value)}
             >
-              <option value="">Consumidor final</option>
+              <option value="">
+                {isCredit ? "Seleccionar cliente" : "Consumidor final"}
+              </option>
               {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
+                <option
+                  key={customer.id}
+                  value={customer.id}
+                  disabled={isCredit && !customer.credit_allowed}
+                >
                   {customer.name}
+                  {isCredit && !customer.credit_allowed
+                    ? " - Crédito no habilitado"
+                    : ""}
                 </option>
               ))}
             </select>
           </label>
 
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">
-              Método de pago
-            </span>
-            <select
-              className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
-              value={paymentMethod}
-              disabled={isSubmitting}
-              onChange={(event) =>
-                setPaymentMethod(event.target.value as SalePaymentMethod)
-              }
-            >
-              {paymentMethods.map((method) => (
-                <option key={method} value={method}>
-                  {SALE_PAYMENT_METHOD_LABELS[method]}
-                </option>
-              ))}
-            </select>
-          </label>
+          {isCredit ? (
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">
+                Fecha de vencimiento opcional
+              </span>
+              <input
+                className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                type="date"
+                value={dueDate}
+                disabled={isSubmitting}
+                onChange={(event) => setDueDate(event.target.value)}
+              />
+            </label>
+          ) : (
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">
+                Método de pago
+              </span>
+              <select
+                className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+                value={paymentMethod}
+                disabled={isSubmitting}
+                onChange={(event) =>
+                  setPaymentMethod(event.target.value as SalePaymentMethod)
+                }
+              >
+                {paymentMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {SALE_PAYMENT_METHOD_LABELS[method]}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
 
         <label className="block">
@@ -354,13 +404,22 @@ export function CashSaleForm({
             <p className="mt-1 text-2xl font-semibold text-slate-950">
               {formatMoney(total)}
             </p>
+            {isCredit ? (
+              <p className="mt-1 text-sm font-medium text-amber-700">
+                Saldo pendiente estimado: {formatMoney(total)}
+              </p>
+            ) : null}
           </div>
           <button
             className="h-11 rounded-md bg-water-700 px-5 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
             type="submit"
             disabled={isSubmitting || products.length === 0}
           >
-            {isSubmitting ? "Guardando venta..." : "Guardar venta"}
+            {isSubmitting
+              ? "Guardando venta..."
+              : isCredit
+                ? "Guardar venta a crédito"
+                : "Guardar venta"}
           </button>
         </div>
       </form>

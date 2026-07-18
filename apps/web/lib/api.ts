@@ -48,6 +48,8 @@ import type {
   CashSale,
   CashSaleFilters,
   CashSalePayload,
+  CreditSalePayload,
+  CustomerCreditBalance,
 } from "@/types/sale";
 import type { CashSessionSummary } from "@/types/summary";
 import type {
@@ -683,6 +685,9 @@ export async function listCashSales(
   if (filters.payment_method) {
     searchParams.set("payment_method", filters.payment_method);
   }
+  if (filters.sale_type) {
+    searchParams.set("sale_type", filters.sale_type);
+  }
   if (filters.search) {
     searchParams.set("search", filters.search);
   }
@@ -711,6 +716,27 @@ export async function createCashSale(
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   });
+}
+
+export async function createCreditSale(
+  token: string,
+  payload: CreditSalePayload,
+): Promise<CashSale> {
+  return request<CashSale>("/sales/credit", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getCustomerCreditBalance(
+  token: string,
+  customerId: number,
+): Promise<CustomerCreditBalance> {
+  return request<CustomerCreditBalance>(
+    `/sales/credit/customer/${customerId}/balance`,
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function voidCashSale(

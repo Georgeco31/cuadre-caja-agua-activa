@@ -6,6 +6,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 SalePaymentMethod = Literal["cash", "transfer", "card", "other"]
 SaleStatus = Literal["active", "voided"]
+SaleType = Literal["cash", "credit"]
+CreditStatus = Literal["none", "pending", "paid", "voided"]
 
 
 class SaleItemCreate(BaseModel):
@@ -27,6 +29,19 @@ class CashSaleCreate(BaseModel):
     sale_date: date
     customer_id: int | None = Field(default=None, gt=0)
     payment_method: SalePaymentMethod = "cash"
+    notes: str | None = None
+    items: list[SaleItemCreate] = Field(min_length=1)
+
+    @field_validator("notes")
+    @classmethod
+    def normalize_notes(cls, value: str | None) -> str | None:
+        return _normalize_optional_text(value)
+
+
+class CreditSaleCreate(BaseModel):
+    sale_date: date
+    customer_id: int = Field(gt=0)
+    due_date: date | None = None
     notes: str | None = None
     items: list[SaleItemCreate] = Field(min_length=1)
 
@@ -69,10 +84,14 @@ class SaleRead(BaseModel):
     sale_date: date
     customer_id: int | None
     customer_name_snapshot: str
-    sale_type: Literal["cash"]
+    sale_type: SaleType
     payment_method: SalePaymentMethod
     status: SaleStatus
     total_amount: Decimal
+    paid_amount: Decimal
+    balance_amount: Decimal
+    credit_status: CreditStatus
+    due_date: date | None
     notes: str | None
     void_reason: str | None
     voided_at: datetime | None
@@ -82,6 +101,14 @@ class SaleRead(BaseModel):
     items: list[SaleItemRead]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CustomerCreditBalance(BaseModel):
+    customer_id: int
+    customer_name: str
+    total_credit_sales: Decimal
+    total_paid: Decimal
+    total_balance: Decimal
 
 
 def _normalize_optional_text(value: str | None) -> str | None:
