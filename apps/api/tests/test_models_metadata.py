@@ -17,6 +17,9 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "customers",
         "delivery_routes",
         "employees",
+        "inventory_locations",
+        "inventory_movements",
+        "inventory_stocks",
         "products",
         "sale_items",
         "sales",
@@ -49,6 +52,10 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["sales"].c.paid_amount,
         Base.metadata.tables["sales"].c.balance_amount,
         Base.metadata.tables["credit_payments"].c.amount,
+        Base.metadata.tables["inventory_stocks"].c.quantity_on_hand,
+        Base.metadata.tables["inventory_movements"].c.quantity,
+        Base.metadata.tables["inventory_movements"].c.unit_cost,
+        Base.metadata.tables["inventory_movements"].c.total_cost,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -81,6 +88,24 @@ def test_required_foreign_keys_are_defined() -> None:
         "customers.id",
     }
     assert _foreign_key_targets("credit_payments", "created_by") == {"users.id"}
+    assert _foreign_key_targets("inventory_locations", "vehicle_id") == {
+        "vehicles.id",
+    }
+    assert _foreign_key_targets("inventory_stocks", "product_id") == {
+        "products.id",
+    }
+    assert _foreign_key_targets("inventory_stocks", "location_id") == {
+        "inventory_locations.id",
+    }
+    assert _foreign_key_targets("inventory_movements", "product_id") == {
+        "products.id",
+    }
+    assert _foreign_key_targets("inventory_movements", "location_id") == {
+        "inventory_locations.id",
+    }
+    assert _foreign_key_targets("inventory_movements", "created_by") == {
+        "users.id",
+    }
 
 
 def test_model_check_constraints_are_registered() -> None:
@@ -150,6 +175,21 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_credit_payments_payment_method",
         "ck_credit_payments_status",
         "ck_credit_payments_void_state",
+    }
+    assert _check_constraint_names("inventory_locations") == {
+        "ck_inventory_locations_name_not_blank",
+        "ck_inventory_locations_type",
+    }
+    assert _check_constraint_names("inventory_stocks") == {
+        "ck_inventory_stocks_quantity_nonnegative",
+    }
+    assert _check_constraint_names("inventory_movements") == {
+        "ck_inventory_movements_quantity_positive",
+        "ck_inventory_movements_status",
+        "ck_inventory_movements_total_cost_nonnegative",
+        "ck_inventory_movements_type",
+        "ck_inventory_movements_unit_cost_nonnegative",
+        "ck_inventory_movements_void_state",
     }
 
 

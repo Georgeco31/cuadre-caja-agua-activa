@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/inventory",
+    title: "Inventario",
+    description: "Controlar stock por ubicación con entradas, salidas y ajustes.",
+    primary: false,
+  },
+  {
     href: "/dashboard/receivables",
     title: "Cobros y abonos",
     description: "Registrar pagos sobre ventas a crédito.",

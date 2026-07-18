@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, y cartera de cobros, abonos y cuentas por cobrar.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, e inventario base con movimientos manuales.
 
 ## Problema que resuelve
 
@@ -54,11 +54,14 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Historial y anulacion logica de abonos con restauracion del saldo.
 - Resumen general de cuentas por cobrar y listado de clientes con saldo pendiente.
 - Estado de cuenta por cliente con ventas a credito y abonos registrados.
+- Ubicaciones de inventario activables e inactivables sin borrado fisico.
+- Stock actual por producto y ubicacion mediante entradas, salidas y ajustes manuales.
+- Historial y anulacion trazable de movimientos con reversion del stock.
 
 Quedan fuera del MVP:
 
 - Facturacion.
-- Inventario.
+- Automatizacion de inventario por ventas, produccion o rutas.
 - Conciliacion automatica de cobros con caja, bancos o rutas.
 - Cargas, liquidaciones y cierres de ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
@@ -67,7 +70,7 @@ Quedan fuera del MVP:
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 32 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros y reportes de cartera. Las ventas y los abonos son registros comerciales y financieros; todavia no modifican automaticamente caja, inventario, bancos o rutas.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 33 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera e inventario manual. Las ventas y los abonos son registros comerciales y financieros; todavia no modifican automaticamente caja, inventario, bancos o rutas.
 
 ## Stack definido
 
@@ -184,6 +187,7 @@ cuadre-caja-agua-activa/
 - Bloque 30: modulo base de ventas a credito con limite por cliente, saldo pendiente y anulacion logica.
 - Bloque 31: modulo base de cobros y abonos con pagos parciales o totales, historial y anulacion reversible.
 - Bloque 32: estado de cuenta y reporte de cuentas por cobrar con resumen, filtros y detalle por cliente.
+- Bloque 33: inventario base por ubicacion con stock, movimientos manuales y anulacion reversible.
 
 Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, movimientos automaticos de inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, produccion, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 

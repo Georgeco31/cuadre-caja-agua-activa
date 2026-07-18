@@ -40,6 +40,17 @@ import type {
 } from "@/types/employee";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type {
+  InventoryLocation,
+  InventoryLocationFilters,
+  InventoryLocationPayload,
+  InventoryLocationUpdatePayload,
+  InventoryMovement,
+  InventoryMovementFilters,
+  InventoryMovementPayload,
+  InventoryStock,
+  InventoryStockFilters,
+} from "@/types/inventory";
+import type {
   Product,
   ProductFilters,
   ProductPayload,
@@ -905,6 +916,147 @@ export async function listOverdueReceivables(
   return request<OverdueReceivable[]>("/receivables/overdue", {
     headers: authHeaders(token),
   });
+}
+
+export async function listInventoryLocations(
+  token: string,
+  filters: InventoryLocationFilters = {},
+): Promise<InventoryLocation[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.location_type) {
+    searchParams.set("location_type", filters.location_type);
+  }
+  const query = searchParams.toString();
+  return request<InventoryLocation[]>(
+    `/inventory/locations${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createInventoryLocation(
+  token: string,
+  payload: InventoryLocationPayload,
+): Promise<InventoryLocation> {
+  return request<InventoryLocation>("/inventory/locations", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateInventoryLocation(
+  token: string,
+  locationId: number,
+  payload: InventoryLocationUpdatePayload,
+): Promise<InventoryLocation> {
+  return request<InventoryLocation>(`/inventory/locations/${locationId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateInventoryLocation(
+  token: string,
+  locationId: number,
+): Promise<InventoryLocation> {
+  return request<InventoryLocation>(
+    `/inventory/locations/${locationId}/deactivate`,
+    { method: "PATCH", headers: authHeaders(token) },
+  );
+}
+
+export async function activateInventoryLocation(
+  token: string,
+  locationId: number,
+): Promise<InventoryLocation> {
+  return request<InventoryLocation>(
+    `/inventory/locations/${locationId}/activate`,
+    { method: "PATCH", headers: authHeaders(token) },
+  );
+}
+
+export async function listInventoryStocks(
+  token: string,
+  filters: InventoryStockFilters = {},
+): Promise<InventoryStock[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.product_id !== undefined) {
+    searchParams.set("product_id", String(filters.product_id));
+  }
+  if (filters.location_id !== undefined) {
+    searchParams.set("location_id", String(filters.location_id));
+  }
+  if (filters.only_positive !== undefined) {
+    searchParams.set("only_positive", String(filters.only_positive));
+  }
+  const query = searchParams.toString();
+  return request<InventoryStock[]>(
+    `/inventory/stocks${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createInventoryMovement(
+  token: string,
+  payload: InventoryMovementPayload,
+): Promise<InventoryMovement> {
+  return request<InventoryMovement>("/inventory/movements", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listInventoryMovements(
+  token: string,
+  filters: InventoryMovementFilters = {},
+): Promise<InventoryMovement[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.product_id !== undefined) {
+    searchParams.set("product_id", String(filters.product_id));
+  }
+  if (filters.location_id !== undefined) {
+    searchParams.set("location_id", String(filters.location_id));
+  }
+  if (filters.movement_type) {
+    searchParams.set("movement_type", filters.movement_type);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  const query = searchParams.toString();
+  return request<InventoryMovement[]>(
+    `/inventory/movements${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function voidInventoryMovement(
+  token: string,
+  movementId: number,
+  reason: string,
+): Promise<InventoryMovement> {
+  return request<InventoryMovement>(
+    `/inventory/movements/${movementId}/void`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    },
+  );
 }
 
 async function request<T>(

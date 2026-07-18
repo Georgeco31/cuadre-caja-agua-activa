@@ -338,6 +338,28 @@ El estado de cuenta acepta `date_from`, `date_to` e `include_paid`. Devuelve los
 
 Los totales consideran solamente ventas a credito activas. Excluyen ventas anuladas y no cuentan pagos anulados; estos ultimos pueden conservarse en el historial para trazabilidad. El modulo no registra pagos ni modifica caja, inventario, rutas o bancos.
 
+## Inventario base
+
+La migracion `0011_inventory` crea `inventory_locations`, `inventory_stocks` e `inventory_movements`. El stock usa `Numeric(14, 3)` y los costos usan `Numeric(14, 2)`; no se usan valores flotantes. Endpoints autenticados:
+
+- `POST /api/v1/inventory/locations`
+- `GET /api/v1/inventory/locations`
+- `GET /api/v1/inventory/locations/{location_id}`
+- `PATCH /api/v1/inventory/locations/{location_id}`
+- `PATCH /api/v1/inventory/locations/{location_id}/deactivate`
+- `PATCH /api/v1/inventory/locations/{location_id}/activate`
+- `GET /api/v1/inventory/stocks`
+- `POST /api/v1/inventory/movements`
+- `GET /api/v1/inventory/movements`
+- `GET /api/v1/inventory/movements/{movement_id}`
+- `POST /api/v1/inventory/movements/{movement_id}/void`
+
+Las ubicaciones aceptan los tipos `warehouse`, `vehicle`, `production_area` y `other`. Su codigo es opcional y unico cuando existe; se inactivan sin eliminacion fisica. El stock conserva una sola fila por producto y ubicacion.
+
+Los movimientos `entry` y `adjustment_in` aumentan stock; `exit` y `adjustment_out` lo reducen. El servicio bloquea las filas relacionadas, impide cantidades negativas, calcula `total_cost` cuando existe costo unitario y guarda snapshots del producto. La anulacion exige motivo, conserva el movimiento como `voided` y aplica el efecto inverso sin permitir stock negativo.
+
+Este bloque mueve inventario solamente mediante estos movimientos manuales. Ventas, caja, cobros, rutas y produccion no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks o movimientos falsos.
+
 Endpoints de gastos dentro de un cuadre:
 
 - `GET /api/v1/cash-sessions/{cash_session_id}/expenses`

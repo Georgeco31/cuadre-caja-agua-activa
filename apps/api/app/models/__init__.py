@@ -7,6 +7,9 @@ from app.models.denomination import Denomination
 from app.models.delivery_route import DeliveryRoute
 from app.models.employee import Employee
 from app.models.expense import Expense
+from app.models.inventory_location import InventoryLocation
+from app.models.inventory_movement import InventoryMovement
+from app.models.inventory_stock import InventoryStock
 from app.models.product import Product
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
@@ -23,6 +26,9 @@ __all__ = [
     "DeliveryRoute",
     "Employee",
     "Expense",
+    "InventoryLocation",
+    "InventoryMovement",
+    "InventoryStock",
     "Product",
     "Sale",
     "SaleItem",
