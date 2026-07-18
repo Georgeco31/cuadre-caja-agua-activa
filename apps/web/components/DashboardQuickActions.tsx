@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/employees",
+    title: "Empleados",
+    description: "Registrar empleados, cargos y datos base para pagos futuros.",
+    primary: false,
+  },
+  {
     href: "/dashboard/products",
     title: "Productos",
     description: "Registrar productos, presentaciones y precios base.",
@@ -46,7 +52,7 @@ export function DashboardQuickActions() {
         </h2>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {actions.map((action) => (
           <Link
             className={

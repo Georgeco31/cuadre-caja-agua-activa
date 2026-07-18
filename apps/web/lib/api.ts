@@ -21,6 +21,12 @@ import type {
   CorrectionLog,
 } from "@/types/correction";
 import type { Denomination } from "@/types/denomination";
+import type {
+  Employee,
+  EmployeeFilters,
+  EmployeePayload,
+  EmployeeUpdatePayload,
+} from "@/types/employee";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type {
   Product,
@@ -326,6 +332,86 @@ export async function activateCustomer(
   customerId: number,
 ): Promise<Customer> {
   return request<Customer>(`/customers/${customerId}/activate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listEmployees(
+  token: string,
+  filters: EmployeeFilters = {},
+): Promise<Employee[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.employee_type) {
+    searchParams.set("employee_type", filters.employee_type);
+  }
+  if (filters.job_position) {
+    searchParams.set("job_position", filters.job_position);
+  }
+
+  const query = searchParams.toString();
+  return request<Employee[]>(`/employees${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getEmployee(
+  token: string,
+  employeeId: number,
+): Promise<Employee> {
+  return request<Employee>(`/employees/${employeeId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createEmployee(
+  token: string,
+  payload: EmployeePayload,
+): Promise<Employee> {
+  return request<Employee>("/employees", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateEmployee(
+  token: string,
+  employeeId: number,
+  payload: EmployeeUpdatePayload,
+): Promise<Employee> {
+  return request<Employee>(`/employees/${employeeId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateEmployee(
+  token: string,
+  employeeId: number,
+  terminationDate?: string,
+): Promise<Employee> {
+  return request<Employee>(`/employees/${employeeId}/deactivate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    ...(terminationDate
+      ? { body: JSON.stringify({ termination_date: terminationDate }) }
+      : {}),
+  });
+}
+
+export async function activateEmployee(
+  token: string,
+  employeeId: number,
+): Promise<Employee> {
+  return request<Employee>(`/employees/${employeeId}/activate`, {
     method: "PATCH",
     headers: authHeaders(token),
   });

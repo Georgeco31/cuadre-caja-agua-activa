@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, clientes y catalogo base de productos con precios. Todavía no incluye ventas, inventario, cobros, precios especiales, rutas relacionadas, edición de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas y los modulos base de clientes, productos y empleados. Todavía no incluye ventas, inventario, cobros, nomina, precios especiales, rutas relacionadas, edición de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -53,6 +53,7 @@ Rutas principales:
 - `/dashboard/reports`
 - `/dashboard/customers`
 - `/dashboard/products`
+- `/dashboard/employees`
 
 ## Build
 
@@ -81,7 +82,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rápidas hacia caja, historial, reportes, clientes y `/dashboard/products`.
+- El dashboard muestra acciones rápidas hacia caja, historial, reportes, clientes, productos y empleados.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -116,6 +117,11 @@ http://localhost:3000/login
 - El alta usa `POST /api/v1/products` y la edicion usa `PATCH /api/v1/products/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/products/{id}/deactivate` y `PATCH /api/v1/products/{id}/activate`; no se eliminan productos fisicamente.
 - El catalogo muestra presentacion, precio base, costo estimado, retornabilidad y estado, sin crear ventas ni movimientos de inventario.
+- La pantalla `/dashboard/employees` lista empleados desde `GET /api/v1/employees` y permite buscar por nombre, identificacion, telefono, cargo o tipo.
+- El alta usa `POST /api/v1/employees` y la edicion usa `PATCH /api/v1/employees/{id}`.
+- La inactivacion y reactivacion usan `PATCH /api/v1/employees/{id}/deactivate` y `PATCH /api/v1/employees/{id}/activate`; no se eliminan empleados fisicamente.
+- El formulario muestra tipos y frecuencias de pago en español, conserva sus valores internos en ingles y envia el sueldo base como decimal seguro.
+- El modulo de empleados no registra anticipos, pagos, roles de pago, nomina, asistencia, rutas ni camiones.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 
