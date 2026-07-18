@@ -23,6 +23,12 @@ import type {
 import type { Denomination } from "@/types/denomination";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type {
+  Product,
+  ProductFilters,
+  ProductPayload,
+  ProductUpdatePayload,
+} from "@/types/product";
+import type {
   CashSummaryReport,
   CashSummaryReportFilters,
 } from "@/types/report";
@@ -320,6 +326,82 @@ export async function activateCustomer(
   customerId: number,
 ): Promise<Customer> {
   return request<Customer>(`/customers/${customerId}/activate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listProducts(
+  token: string,
+  filters: ProductFilters = {},
+): Promise<Product[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.category) {
+    searchParams.set("category", filters.category);
+  }
+  if (filters.unit) {
+    searchParams.set("unit", filters.unit);
+  }
+
+  const query = searchParams.toString();
+  return request<Product[]>(`/products${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getProduct(
+  token: string,
+  productId: number,
+): Promise<Product> {
+  return request<Product>(`/products/${productId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createProduct(
+  token: string,
+  payload: ProductPayload,
+): Promise<Product> {
+  return request<Product>("/products", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProduct(
+  token: string,
+  productId: number,
+  payload: ProductUpdatePayload,
+): Promise<Product> {
+  return request<Product>(`/products/${productId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateProduct(
+  token: string,
+  productId: number,
+): Promise<Product> {
+  return request<Product>(`/products/${productId}/deactivate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function activateProduct(
+  token: string,
+  productId: number,
+): Promise<Product> {
+  return request<Product>(`/products/${productId}/activate`, {
     method: "PATCH",
     headers: authHeaders(token),
   });

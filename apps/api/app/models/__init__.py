@@ -4,6 +4,7 @@ from app.models.correction_log import CorrectionLog
 from app.models.customer import Customer
 from app.models.denomination import Denomination
 from app.models.expense import Expense
+from app.models.product import Product
 from app.models.user import User
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "Customer",
     "Denomination",
     "Expense",
+    "Product",
     "User",
 ]

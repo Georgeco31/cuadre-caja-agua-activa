@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja y modulo base de clientes.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, clientes y catalogo base de productos con precios.
 
 ## Problema que resuelve
 
@@ -20,7 +20,7 @@ El cuadre de caja necesita una forma clara y consistente de registrar:
 
 ## Alcance actual
 
-El sistema mantiene el modulo de caja como base operativa e incorpora clientes como primer modulo nuevo del ERP:
+El sistema mantiene el modulo de caja como base operativa e incorpora clientes y productos como primeros modulos nuevos del ERP:
 
 - Registro de cuadre diario.
 - Separacion de monedas y billetes.
@@ -33,6 +33,9 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes c
 - Operacion local con backup y restauracion.
 - Registro, consulta, busqueda y edicion de clientes.
 - Activacion e inactivacion de clientes sin borrado fisico.
+- Registro, consulta, busqueda y edicion de productos.
+- Precio base, costo estimado y presentacion por producto.
+- Activacion e inactivacion de productos sin borrado fisico.
 
 Quedan fuera del MVP:
 
@@ -45,7 +48,7 @@ Quedan fuera del MVP:
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. El Bloque 24 implementa solo la base de clientes, sin ventas, creditos, cobros ni rutas relacionadas.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 y 25 implementan las bases de clientes y productos, sin ventas, inventario, produccion, creditos, cobros ni rutas relacionadas.
 
 ## Stack definido
 
@@ -154,6 +157,7 @@ cuadre-caja-agua-activa/
 - Bloque 20: gastos separados entre antes del conteo y despues del conteo, con total final calculado solo contra gastos posteriores al conteo.
 - Bloque 23: documentacion estrategica de la vision Agua Activa ERP, modulos, roadmap y reglas generales.
 - Bloque 24: modulo base de clientes con API autenticada, migracion, pruebas y pantalla de administracion.
+- Bloque 25: catalogo base de productos y precios con API autenticada, migracion, pruebas y pantalla de administracion.
 
 Todavia no se han creado ventas reales, creditos, cobros, abonos, historial de compras de clientes, inventario, rutas relacionadas, compras, proveedores, empleados, roles de pago, camiones, produccion, exportaciones PDF/Excel, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 

@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y el modulo base de clientes. El frontend vive en `apps/web`. Todavia no incluye ventas, cobros, rutas relacionadas, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, clientes y catalogo base de productos con precios. El frontend vive en `apps/web`. Todavia no incluye ventas, inventario, produccion, precios especiales, rutas relacionadas, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -200,7 +200,7 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes y clientes requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes y productos requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -216,6 +216,21 @@ El modulo base de clientes usa la tabla `customers` y los endpoints:
 El listado acepta `search`, `is_active`, `customer_type` y `sector`. La busqueda general consulta nombre, telefonos, sector y tipo de cliente.
 
 `primary_phone` es unico cuando se registra, `credit_limit` usa `Numeric(12, 2)` y no admite valores negativos. Los clientes no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Este modulo no crea ventas, creditos, cobros, abonos, rutas relacionadas ni datos falsos en seeds.
+
+## Productos y precios
+
+El catalogo base usa la tabla `products` y los endpoints:
+
+- `POST /api/v1/products`
+- `GET /api/v1/products`
+- `GET /api/v1/products/{product_id}`
+- `PATCH /api/v1/products/{product_id}`
+- `PATCH /api/v1/products/{product_id}/deactivate`
+- `PATCH /api/v1/products/{product_id}/activate`
+
+El listado acepta `search`, `is_active`, `category` y `unit`. La busqueda general consulta nombre, SKU, categoria y presentacion.
+
+`sku` es unico cuando se registra. `default_price` y `cost_estimate` usan `Numeric(12, 2)` y no admiten valores negativos. Los productos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Este modulo no crea ventas, inventario, produccion, historial de precios, precios especiales ni productos falsos en seeds.
 
 Endpoints de gastos dentro de un cuadre:
 

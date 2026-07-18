@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/products",
+    title: "Productos",
+    description: "Registrar productos, presentaciones y precios base.",
+    primary: false,
+  },
+  {
     href: "/dashboard/customers",
     title: "Clientes",
     description: "Registrar y consultar clientes de Agua Activa.",
@@ -40,7 +46,7 @@ export function DashboardQuickActions() {
         </h2>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {actions.map((action) => (
           <Link
             className={
