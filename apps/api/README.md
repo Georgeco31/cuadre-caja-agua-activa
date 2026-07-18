@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y los modulos base de clientes, productos, empleados, rutas y vehiculos. El frontend vive en `apps/web`. Todavia no incluye ventas, inventario, produccion, nomina, mantenimiento, combustible, cobros o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, y ventas de contado. El frontend vive en `apps/web`. Todavia no incluye ventas a credito, inventario automatico, produccion, nomina, mantenimiento, combustible, cobros o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -200,7 +200,7 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados, rutas y vehiculos requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados, rutas, vehiculos y ventas requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -277,6 +277,21 @@ El listado acepta `search`, `is_active`, `vehicle_type` y `fuel_type`. La busque
 
 `code` y `plate` son unicos cuando se registran y permiten valores nulos. `year`, cuando existe, debe estar entre 1900 y 2100. Los vehiculos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. El chofer es una referencia de texto; no existen relaciones formales con empleados o rutas. Este modulo no crea mantenimiento, combustible, gastos, kilometraje, carga, inventario, asignaciones, rentabilidad ni datos falsos en seeds.
 
+## Ventas de contado
+
+El modulo comercial base usa las tablas `sales` y `sale_items` y los endpoints autenticados:
+
+- `POST /api/v1/sales/cash`
+- `GET /api/v1/sales`
+- `GET /api/v1/sales/{sale_id}`
+- `POST /api/v1/sales/{sale_id}/void`
+
+El listado acepta `date_from`, `date_to`, `status`, `customer_id`, `payment_method` y `search`. La busqueda consulta el numero interno de venta y el nombre de cliente guardado como snapshot.
+
+Cada venta contiene al menos un producto activo. Si no se envia `unit_price`, se usa el `default_price` del producto. El servicio calcula subtotales y total con `Decimal`, guarda snapshots del cliente y los productos y genera un numero interno unico. Sin cliente se registra `Consumidor final`.
+
+Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. En este bloque las ventas no modifican el cuadre de caja, inventario, rutas, cobros o creditos, y los seeds no crean ventas falsas.
+
 Endpoints de gastos dentro de un cuadre:
 
 - `GET /api/v1/cash-sessions/{cash_session_id}/expenses`
@@ -317,7 +332,7 @@ Filtros opcionales:
 - `date_to`
 - `status`
 
-El reporte suma `total_coins`, `total_bills`, `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_counted` se calcula como `total_coins + total_bills`. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte no representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+El reporte suma `total_coins`, `total_bills`, `total_counted`, `total_pre_count_expenses`, `total_post_count_expenses`, `total_expenses` y `final_total` desde los cuadres registrados usando los conteos y gastos guardados. `total_counted` se calcula como `total_coins + total_bills`. `total_expenses` se mantiene como alias de `total_post_count_expenses` para compatibilidad. Si no se envian fechas, la respuesta devuelve `date_from` y `date_to` como `null`. Este reporte todavia no incorpora las ventas de contado registradas ni saldo inicial de caja.
 
 Formula oficial del resumen:
 

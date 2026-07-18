@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/sales/cash",
+    title: "Ventas de contado",
+    description: "Registrar ventas pagadas al momento.",
+    primary: false,
+  },
+  {
     href: "/dashboard/vehicles",
     title: "Vehículos",
     description: "Registrar camiones y vehículos para el control operativo.",

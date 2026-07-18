@@ -44,6 +44,11 @@ import type {
   CashSummaryReport,
   CashSummaryReportFilters,
 } from "@/types/report";
+import type {
+  CashSale,
+  CashSaleFilters,
+  CashSalePayload,
+} from "@/types/sale";
 import type { CashSessionSummary } from "@/types/summary";
 import type {
   Vehicle,
@@ -655,6 +660,68 @@ export async function activateProduct(
   return request<Product>(`/products/${productId}/activate`, {
     method: "PATCH",
     headers: authHeaders(token),
+  });
+}
+
+export async function listCashSales(
+  token: string,
+  filters: CashSaleFilters = {},
+): Promise<CashSale[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.customer_id !== undefined) {
+    searchParams.set("customer_id", String(filters.customer_id));
+  }
+  if (filters.payment_method) {
+    searchParams.set("payment_method", filters.payment_method);
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+
+  const query = searchParams.toString();
+  return request<CashSale[]>(`/sales${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getCashSale(
+  token: string,
+  saleId: number,
+): Promise<CashSale> {
+  return request<CashSale>(`/sales/${saleId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createCashSale(
+  token: string,
+  payload: CashSalePayload,
+): Promise<CashSale> {
+  return request<CashSale>("/sales/cash", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function voidCashSale(
+  token: string,
+  saleId: number,
+  reason: string,
+): Promise<CashSale> {
+  return request<CashSale>(`/sales/${saleId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
   });
 }
 

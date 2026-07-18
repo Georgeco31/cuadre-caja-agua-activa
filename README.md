@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja y modulos base de clientes, productos, empleados, rutas y vehiculos.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, y registro comercial de ventas de contado.
 
 ## Problema que resuelve
 
@@ -20,7 +20,7 @@ El cuadre de caja necesita una forma clara y consistente de registrar:
 
 ## Alcance actual
 
-El sistema mantiene el modulo de caja como base operativa e incorpora clientes, productos, empleados, rutas y vehiculos como primeros modulos nuevos del ERP:
+El sistema mantiene el modulo de caja como base operativa e incorpora clientes, productos, empleados, rutas, vehiculos y ventas de contado como primeros modulos nuevos del ERP:
 
 - Registro de cuadre diario.
 - Separacion de monedas y billetes.
@@ -45,20 +45,22 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Registro, consulta, busqueda y edicion de vehiculos.
 - Placa, tipo, marca, modelo, combustible y capacidad referencial por vehiculo.
 - Activacion e inactivacion de vehiculos sin borrado fisico.
+- Registro de ventas de contado con cliente opcional o consumidor final.
+- Uno o varios productos por venta, con snapshots y calculos oficiales en backend.
+- Consulta, filtros, detalle y anulacion logica de ventas con motivo.
 
 Quedan fuera del MVP:
 
 - Facturacion.
 - Inventario.
-- Ventas, cargas, cobros y cierres de ruta.
+- Ventas a credito, cargas, cobros y cierres de ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
-- Ventas.
 - WhatsApp.
 - Reportes avanzados.
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 28 implementan las bases de clientes, productos, empleados, rutas y vehiculos, sin ventas, inventario, produccion, nomina, anticipos, pagos, mantenimiento, combustible, cobros ni cierres de ruta.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 29 implementan las bases de clientes, productos, empleados, rutas, vehiculos y ventas de contado. Las ventas son registros comerciales y no modifican automaticamente caja o inventario; tampoco crean creditos, cobros ni cierres de ruta.
 
 ## Stack definido
 
@@ -171,8 +173,9 @@ cuadre-caja-agua-activa/
 - Bloque 26: modulo base de empleados con API autenticada, migracion, pruebas y pantalla de administracion.
 - Bloque 27: modulo base de rutas de entrega con API autenticada, migracion, pruebas y pantalla de administracion.
 - Bloque 28: modulo base de vehiculos con API autenticada, migracion, pruebas y pantalla de administracion.
+- Bloque 29: modulo base de ventas de contado con detalle, calculos backend, filtros y anulacion logica.
 
-Todavia no se han creado ventas reales, creditos, cobros, abonos, historial de compras de clientes, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos, pagos, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, produccion, mapas, geolocalizacion, exportaciones PDF/Excel, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado ventas a credito, cobros, abonos, cuentas por cobrar, facturacion electronica, conciliacion entre ventas y caja, movimientos automaticos de inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos, pagos, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, produccion, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

@@ -17,6 +17,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "delivery_routes",
         "employees",
         "products",
+        "sale_items",
+        "sales",
     }
 
     assert expected_tables == set(Base.metadata.tables.keys())
@@ -42,6 +44,9 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["employees"].c.base_salary,
         Base.metadata.tables["products"].c.default_price,
         Base.metadata.tables["products"].c.cost_estimate,
+        Base.metadata.tables["sales"].c.total_amount,
+        Base.metadata.tables["sale_items"].c.unit_price,
+        Base.metadata.tables["sale_items"].c.subtotal,
     ]
 
     for column in monetary_columns:
@@ -63,6 +68,10 @@ def test_required_foreign_keys_are_defined() -> None:
         "cash_sessions.id",
     }
     assert _foreign_key_targets("correction_logs", "created_by") == {"users.id"}
+    assert _foreign_key_targets("sales", "customer_id") == {"customers.id"}
+    assert _foreign_key_targets("sales", "created_by") == {"users.id"}
+    assert _foreign_key_targets("sale_items", "sale_id") == {"sales.id"}
+    assert _foreign_key_targets("sale_items", "product_id") == {"products.id"}
 
 
 def test_model_check_constraints_are_registered() -> None:
@@ -107,6 +116,20 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_vehicles_name_not_blank",
         "ck_vehicles_vehicle_type",
         "ck_vehicles_year_reasonable",
+    }
+    assert _check_constraint_names("sales") == {
+        "ck_sales_customer_snapshot_not_blank",
+        "ck_sales_payment_method",
+        "ck_sales_sale_number_not_blank",
+        "ck_sales_sale_type",
+        "ck_sales_status",
+        "ck_sales_total_amount_nonnegative",
+    }
+    assert _check_constraint_names("sale_items") == {
+        "ck_sale_items_product_snapshot_not_blank",
+        "ck_sale_items_quantity_positive",
+        "ck_sale_items_subtotal_nonnegative",
+        "ck_sale_items_unit_price_nonnegative",
     }
 
 

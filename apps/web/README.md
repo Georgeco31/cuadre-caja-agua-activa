@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas y los modulos base de clientes, productos, empleados, rutas y vehiculos. Todavía no incluye ventas, inventario, cobros, nomina, mantenimiento, combustible, carga o cierre de ruta, edición de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, y ventas de contado. Todavía no incluye ventas a crédito, inventario automático, cobros, nomina, mantenimiento, combustible, carga o cierre de ruta, edición de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -56,6 +56,7 @@ Rutas principales:
 - `/dashboard/employees`
 - `/dashboard/delivery-routes`
 - `/dashboard/vehicles`
+- `/dashboard/sales/cash`
 
 ## Build
 
@@ -84,7 +85,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rápidas hacia caja, historial, reportes, clientes, productos, empleados, rutas y vehiculos.
+- El dashboard muestra acciones rápidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos y ventas de contado.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -134,11 +135,17 @@ http://localhost:3000/login
 - La inactivacion y reactivacion usan `PATCH /api/v1/vehicles/{id}/deactivate` y `PATCH /api/v1/vehicles/{id}/activate`; no se eliminan vehiculos fisicamente.
 - El formulario muestra tipos de vehiculo y combustible en español, conservando los valores internos en ingles.
 - El modulo de vehiculos no registra mantenimiento, combustible, gastos, kilometraje, carga, inventario, rutas asignadas ni rentabilidad.
+- La pantalla `/dashboard/sales/cash` carga clientes y productos activos y lista ventas desde `GET /api/v1/sales`.
+- El formulario permite consumidor final o cliente existente, varios productos, cantidad, precio unitario ajustable, método de pago y notas.
+- El alta usa `POST /api/v1/sales/cash`; el frontend muestra un total estimado y conserva como oficial el total calculado por el backend.
+- El listado permite filtrar por fecha, estado, cliente, método de pago y buscar por número de venta o snapshot del cliente.
+- El detalle muestra los snapshots e importes de cada item. La anulación usa `POST /api/v1/sales/{id}/void`, exige motivo y conserva la venta visible como anulada.
+- Las ventas de este bloque no modifican caja, inventario, rutas, cobros o créditos.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 
 En el detalle de historial, los gastos se muestran separados entre antes del conteo y despues del conteo. Las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
 
-La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo total en monedas, total en billetes, total contado, gastos antes del conteo y gastos despues del conteo. No representa ventas reales porque el sistema aun no registra ventas ni saldo inicial de caja.
+La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo total en monedas, total en billetes, total contado, gastos antes del conteo y gastos despues del conteo. Todavía no incorpora las ventas de contado ni saldo inicial de caja.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.
