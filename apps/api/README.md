@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y los modulos base de clientes, productos y empleados. El frontend vive en `apps/web`. Todavia no incluye ventas, inventario, produccion, nomina, precios especiales, rutas relacionadas, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y los modulos base de clientes, productos, empleados y rutas de entrega. El frontend vive en `apps/web`. Todavia no incluye ventas, inventario, produccion, nomina, cobros o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -200,7 +200,7 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes, clientes, productos y empleados requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados y rutas requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -246,6 +246,21 @@ El modulo base usa la tabla `employees` y los endpoints:
 El listado acepta `search`, `is_active`, `employee_type` y `job_position`. La busqueda general consulta nombres, identificacion, telefonos, cargo y tipo interno.
 
 `identification` es unico cuando se registra y permite valores nulos. `base_salary` usa `Numeric(12, 2)` y no admite valores negativos. Los empleados no se eliminan fisicamente: se inactivan y pueden registrar `termination_date`; al reactivarlos se limpia esa fecha. Este modulo no relaciona empleados con usuarios del sistema y no crea anticipos, pagos, roles de pago, nomina, asistencia, rutas, camiones ni datos falsos en seeds.
+
+## Rutas de entrega
+
+El modulo base usa la tabla `delivery_routes` y los endpoints:
+
+- `POST /api/v1/delivery-routes`
+- `GET /api/v1/delivery-routes`
+- `GET /api/v1/delivery-routes/{route_id}`
+- `PATCH /api/v1/delivery-routes/{route_id}`
+- `PATCH /api/v1/delivery-routes/{route_id}/deactivate`
+- `PATCH /api/v1/delivery-routes/{route_id}/activate`
+
+El listado acepta `search`, `is_active`, `zone` y `sector`. La busqueda general consulta nombre, codigo, zona, sector y dias de atencion.
+
+`code` es unico cuando se registra y permite valores nulos. `expected_daily_cash` usa `Numeric(12, 2)` y no admite valores negativos. Las rutas no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Chofer y vehiculo son referencias de texto; no existen relaciones formales con empleados o camiones. Este modulo no crea ventas, cobros, carga, inventario, liquidacion, cierre de ruta ni datos falsos en seeds.
 
 Endpoints de gastos dentro de un cuadre:
 

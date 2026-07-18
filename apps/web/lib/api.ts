@@ -22,6 +22,12 @@ import type {
 } from "@/types/correction";
 import type { Denomination } from "@/types/denomination";
 import type {
+  DeliveryRoute,
+  DeliveryRouteFilters,
+  DeliveryRoutePayload,
+  DeliveryRouteUpdatePayload,
+} from "@/types/deliveryRoute";
+import type {
   Employee,
   EmployeeFilters,
   EmployeePayload,
@@ -412,6 +418,83 @@ export async function activateEmployee(
   employeeId: number,
 ): Promise<Employee> {
   return request<Employee>(`/employees/${employeeId}/activate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listDeliveryRoutes(
+  token: string,
+  filters: DeliveryRouteFilters = {},
+): Promise<DeliveryRoute[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.zone) {
+    searchParams.set("zone", filters.zone);
+  }
+  if (filters.sector) {
+    searchParams.set("sector", filters.sector);
+  }
+
+  const query = searchParams.toString();
+  return request<DeliveryRoute[]>(
+    `/delivery-routes${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getDeliveryRoute(
+  token: string,
+  routeId: number,
+): Promise<DeliveryRoute> {
+  return request<DeliveryRoute>(`/delivery-routes/${routeId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createDeliveryRoute(
+  token: string,
+  payload: DeliveryRoutePayload,
+): Promise<DeliveryRoute> {
+  return request<DeliveryRoute>("/delivery-routes", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateDeliveryRoute(
+  token: string,
+  routeId: number,
+  payload: DeliveryRouteUpdatePayload,
+): Promise<DeliveryRoute> {
+  return request<DeliveryRoute>(`/delivery-routes/${routeId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateDeliveryRoute(
+  token: string,
+  routeId: number,
+): Promise<DeliveryRoute> {
+  return request<DeliveryRoute>(`/delivery-routes/${routeId}/deactivate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function activateDeliveryRoute(
+  token: string,
+  routeId: number,
+): Promise<DeliveryRoute> {
+  return request<DeliveryRoute>(`/delivery-routes/${routeId}/activate`, {
     method: "PATCH",
     headers: authHeaders(token),
   });

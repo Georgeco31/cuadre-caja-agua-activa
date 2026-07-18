@@ -13,6 +13,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "expenses",
         "correction_logs",
         "customers",
+        "delivery_routes",
         "employees",
         "products",
     }
@@ -36,6 +37,7 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["correction_logs"].c.previous_total,
         Base.metadata.tables["correction_logs"].c.new_total,
         Base.metadata.tables["customers"].c.credit_limit,
+        Base.metadata.tables["delivery_routes"].c.expected_daily_cash,
         Base.metadata.tables["employees"].c.base_salary,
         Base.metadata.tables["products"].c.default_price,
         Base.metadata.tables["products"].c.cost_estimate,
@@ -94,6 +96,10 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_employees_first_name_not_blank",
         "ck_employees_last_name_not_blank",
         "ck_employees_payment_frequency",
+    }
+    assert _check_constraint_names("delivery_routes") == {
+        "ck_delivery_routes_expected_cash_nonnegative",
+        "ck_delivery_routes_name_not_blank",
     }
 
 

@@ -3,6 +3,7 @@ from app.models.cash_session import CashSession
 from app.models.correction_log import CorrectionLog
 from app.models.customer import Customer
 from app.models.denomination import Denomination
+from app.models.delivery_route import DeliveryRoute
 from app.models.employee import Employee
 from app.models.expense import Expense
 from app.models.product import Product
@@ -14,6 +15,7 @@ __all__ = [
     "CorrectionLog",
     "Customer",
     "Denomination",
+    "DeliveryRoute",
     "Employee",
     "Expense",
     "Product",
