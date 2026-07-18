@@ -1,12 +1,12 @@
-# Cuadre de Caja Agua Activa
+# Agua Activa ERP
 
-Aplicacion web responsive para registrar el cuadre diario de caja del negocio Agua Activa.
+Aplicacion web responsive y modular para la operacion interna del negocio Agua Activa.
 
 El proyecto inicio como un sistema para ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario, historial, correcciones y resumen acumulado.
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, gastos separados por momento del conteo y documentacion operativa para prueba piloto local.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja y modulo base de clientes.
 
 ## Problema que resuelve
 
@@ -18,9 +18,9 @@ El cuadre de caja necesita una forma clara y consistente de registrar:
 - Estado del cuadre diario.
 - Correcciones con trazabilidad cuando un cuadre ya este cerrado.
 
-## Alcance del MVP
+## Alcance actual
 
-El MVP actual se enfoca en el modulo de caja:
+El sistema mantiene el modulo de caja como base operativa e incorpora clientes como primer modulo nuevo del ERP:
 
 - Registro de cuadre diario.
 - Separacion de monedas y billetes.
@@ -31,12 +31,13 @@ El MVP actual se enfoca en el modulo de caja:
 - Correcciones con trazabilidad.
 - Resumen acumulado de caja.
 - Operacion local con backup y restauracion.
+- Registro, consulta, busqueda y edicion de clientes.
+- Activacion e inactivacion de clientes sin borrado fisico.
 
 Quedan fuera del MVP:
 
 - Facturacion.
 - Inventario.
-- Clientes.
 - Rutas de reparto.
 - Ventas.
 - WhatsApp.
@@ -44,7 +45,7 @@ Quedan fuera del MVP:
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta estos temas como modulos futuros, no como funcionalidad implementada en este bloque.
+La vision ERP documenta esos temas como modulos futuros. El Bloque 24 implementa solo la base de clientes, sin ventas, creditos, cobros ni rutas relacionadas.
 
 ## Stack definido
 
@@ -152,8 +153,9 @@ cuadre-caja-agua-activa/
 - Bloque 18: documentacion operativa, checklist de uso diario, checklist de validacion MVP y health check local.
 - Bloque 20: gastos separados entre antes del conteo y despues del conteo, con total final calculado solo contra gastos posteriores al conteo.
 - Bloque 23: documentacion estrategica de la vision Agua Activa ERP, modulos, roadmap y reglas generales.
+- Bloque 24: modulo base de clientes con API autenticada, migracion, pruebas y pantalla de administracion.
 
-Todavia no se ha creado ventas reales, clientes, inventario, rutas, compras, proveedores, empleados, roles de pago, camiones, produccion, exportaciones PDF/Excel, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado ventas reales, creditos, cobros, abonos, historial de compras de clientes, inventario, rutas relacionadas, compras, proveedores, empleados, roles de pago, camiones, produccion, exportaciones PDF/Excel, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

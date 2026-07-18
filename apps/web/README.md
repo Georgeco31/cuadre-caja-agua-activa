@@ -1,8 +1,8 @@
-# Frontend - Cuadre de Caja Agua Activa
+# Frontend - Agua Activa ERP
 
-App web Next.js para el MVP de Cuadre de Caja Agua Activa.
+App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo de dashboard, pantalla de cuadre diario, historial con detalle de cuadres, reporte acumulado, gastos separados por momento del conteo e interfaz de correcciones controladas para cuadres cerrados. Todavía no incluye edición de gastos, eliminación de gastos, edición desde historial, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas y modulo base de clientes. Todavía no incluye ventas, cobros, saldos de clientes, rutas relacionadas, edición de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -51,6 +51,7 @@ Rutas principales:
 - `/dashboard/history`
 - `/dashboard/history/[cashSessionId]`
 - `/dashboard/reports`
+- `/dashboard/customers`
 
 ## Build
 
@@ -79,7 +80,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rápidas hacia `/dashboard/cash-session`, `/dashboard/history` y `/dashboard/reports`.
+- El dashboard muestra acciones rápidas hacia caja, historial, reportes y `/dashboard/customers`.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -106,6 +107,10 @@ http://localhost:3000/login
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.
+- La pantalla `/dashboard/customers` lista clientes desde `GET /api/v1/customers` y permite buscar por nombre, telefono, sector o tipo.
+- El alta usa `POST /api/v1/customers` y la edicion usa `PATCH /api/v1/customers/{id}`.
+- La inactivacion y reactivacion usan `PATCH /api/v1/customers/{id}/deactivate` y `PATCH /api/v1/customers/{id}/activate`; no se eliminan clientes fisicamente.
+- El formulario de clientes muestra tipos en español y conserva los valores internos `household`, `store`, `business`, `distributor` y `other`.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 

@@ -1,8 +1,8 @@
-# Backend - Cuadre de Caja Agua Activa
+# Backend - Agua Activa ERP
 
-API minima del proyecto Cuadre de Caja Agua Activa.
+API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, el endpoint de salud, configuracion inicial de PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, logica de cuadres, endpoints API del MVP, seeds iniciales, autenticacion basica de administrador con JWT, gastos separados por momento del conteo y correcciones controladas sobre cuadres cerrados. El frontend vive en `apps/web`. Todavia no incluye cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y el modulo base de clientes. El frontend vive en `apps/web`. Todavia no incluye ventas, cobros, rutas relacionadas, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -200,7 +200,22 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres y denominaciones requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes y clientes requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+
+## Clientes
+
+El modulo base de clientes usa la tabla `customers` y los endpoints:
+
+- `POST /api/v1/customers`
+- `GET /api/v1/customers`
+- `GET /api/v1/customers/{customer_id}`
+- `PATCH /api/v1/customers/{customer_id}`
+- `PATCH /api/v1/customers/{customer_id}/deactivate`
+- `PATCH /api/v1/customers/{customer_id}/activate`
+
+El listado acepta `search`, `is_active`, `customer_type` y `sector`. La busqueda general consulta nombre, telefonos, sector y tipo de cliente.
+
+`primary_phone` es unico cuando se registra, `credit_limit` usa `Numeric(12, 2)` y no admite valores negativos. Los clientes no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Este modulo no crea ventas, creditos, cobros, abonos, rutas relacionadas ni datos falsos en seeds.
 
 Endpoints de gastos dentro de un cuadre:
 

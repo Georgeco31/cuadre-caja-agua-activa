@@ -12,6 +12,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "cash_count_items",
         "expenses",
         "correction_logs",
+        "customers",
     }
 
     assert expected_tables == set(Base.metadata.tables.keys())
@@ -32,6 +33,7 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["expenses"].c.amount,
         Base.metadata.tables["correction_logs"].c.previous_total,
         Base.metadata.tables["correction_logs"].c.new_total,
+        Base.metadata.tables["customers"].c.credit_limit,
     ]
 
     for column in monetary_columns:
@@ -68,6 +70,11 @@ def test_model_check_constraints_are_registered() -> None:
     assert _check_constraint_names("expenses") == {
         "ck_expenses_amount_positive",
         "ck_expenses_expense_timing",
+    }
+    assert _check_constraint_names("customers") == {
+        "ck_customers_credit_limit_nonnegative",
+        "ck_customers_customer_type",
+        "ck_customers_name_not_blank",
     }
 
 

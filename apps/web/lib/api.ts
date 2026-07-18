@@ -8,6 +8,12 @@ import type {
 } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
 import type {
+  Customer,
+  CustomerFilters,
+  CustomerPayload,
+  CustomerUpdatePayload,
+} from "@/types/customer";
+import type {
   CorrectionCountItemPayload,
   CorrectionCountItemResponse,
   CorrectionExpensePayload,
@@ -241,6 +247,82 @@ export async function getCashSummaryReport(
       headers: authHeaders(token),
     },
   );
+}
+
+export async function listCustomers(
+  token: string,
+  filters: CustomerFilters = {},
+): Promise<Customer[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.customer_type) {
+    searchParams.set("customer_type", filters.customer_type);
+  }
+  if (filters.sector) {
+    searchParams.set("sector", filters.sector);
+  }
+
+  const query = searchParams.toString();
+  return request<Customer[]>(`/customers${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getCustomer(
+  token: string,
+  customerId: number,
+): Promise<Customer> {
+  return request<Customer>(`/customers/${customerId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createCustomer(
+  token: string,
+  payload: CustomerPayload,
+): Promise<Customer> {
+  return request<Customer>("/customers", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateCustomer(
+  token: string,
+  customerId: number,
+  payload: CustomerUpdatePayload,
+): Promise<Customer> {
+  return request<Customer>(`/customers/${customerId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateCustomer(
+  token: string,
+  customerId: number,
+): Promise<Customer> {
+  return request<Customer>(`/customers/${customerId}/deactivate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function activateCustomer(
+  token: string,
+  customerId: number,
+): Promise<Customer> {
+  return request<Customer>(`/customers/${customerId}/activate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
 }
 
 async function request<T>(
