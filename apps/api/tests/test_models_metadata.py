@@ -13,6 +13,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "cash_count_items",
         "expenses",
         "correction_logs",
+        "credit_payments",
         "customers",
         "delivery_routes",
         "employees",
@@ -47,6 +48,7 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["sales"].c.total_amount,
         Base.metadata.tables["sales"].c.paid_amount,
         Base.metadata.tables["sales"].c.balance_amount,
+        Base.metadata.tables["credit_payments"].c.amount,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -74,6 +76,11 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("sales", "created_by") == {"users.id"}
     assert _foreign_key_targets("sale_items", "sale_id") == {"sales.id"}
     assert _foreign_key_targets("sale_items", "product_id") == {"products.id"}
+    assert _foreign_key_targets("credit_payments", "sale_id") == {"sales.id"}
+    assert _foreign_key_targets("credit_payments", "customer_id") == {
+        "customers.id",
+    }
+    assert _foreign_key_targets("credit_payments", "created_by") == {"users.id"}
 
 
 def test_model_check_constraints_are_registered() -> None:
@@ -137,6 +144,12 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_sale_items_quantity_positive",
         "ck_sale_items_subtotal_nonnegative",
         "ck_sale_items_unit_price_nonnegative",
+    }
+    assert _check_constraint_names("credit_payments") == {
+        "ck_credit_payments_amount_positive",
+        "ck_credit_payments_payment_method",
+        "ck_credit_payments_status",
+        "ck_credit_payments_void_state",
     }
 
 

@@ -4,9 +4,10 @@ from decimal import Decimal
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.models.credit_payment import CreditPayment
+from app.models.customer import Customer
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
-from app.models.customer import Customer
 
 
 def get_sale(db: Session, sale_id: int) -> Sale | None:
@@ -14,6 +15,16 @@ def get_sale(db: Session, sale_id: int) -> Sale | None:
         select(Sale)
         .options(selectinload(Sale.items))
         .where(Sale.id == sale_id)
+    )
+    return db.scalar(statement)
+
+
+def get_sale_for_update(db: Session, sale_id: int) -> Sale | None:
+    statement = (
+        select(Sale)
+        .options(selectinload(Sale.items))
+        .where(Sale.id == sale_id)
+        .with_for_update()
     )
     return db.scalar(statement)
 
@@ -83,7 +94,6 @@ def get_active_credit_balance(db: Session, customer_id: int) -> Decimal:
         Sale.customer_id == customer_id,
         Sale.sale_type == "credit",
         Sale.status == "active",
-        Sale.balance_amount > 0,
     )
     return Decimal(db.scalar(statement) or Decimal("0.00"))
 
@@ -100,7 +110,6 @@ def get_credit_balance_totals(
         Sale.customer_id == customer_id,
         Sale.sale_type == "credit",
         Sale.status == "active",
-        Sale.balance_amount > 0,
     )
     row = db.execute(statement).one()
     total_sales, total_paid, total_balance = row
@@ -109,6 +118,14 @@ def get_credit_balance_totals(
         Decimal(total_paid),
         Decimal(total_balance),
     )
+
+
+def has_active_credit_payments(db: Session, sale_id: int) -> bool:
+    statement = select(CreditPayment.id).where(
+        CreditPayment.sale_id == sale_id,
+        CreditPayment.status == "active",
+    ).limit(1)
+    return db.scalar(statement) is not None
 
 
 def mark_sale_voided(

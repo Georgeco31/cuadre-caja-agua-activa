@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, y registro comercial de ventas de contado y a credito.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, y cartera base de cobros y abonos.
 
 ## Problema que resuelve
 
@@ -50,19 +50,22 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Consulta, filtros, detalle y anulacion logica de ventas con motivo.
 - Registro de ventas a credito solo para clientes activos y habilitados.
 - Control de limite, saldo pendiente y resumen de deuda activa por cliente.
+- Registro de abonos parciales o pagos totales sobre ventas a credito.
+- Historial y anulacion logica de abonos con restauracion del saldo.
 
 Quedan fuera del MVP:
 
 - Facturacion.
 - Inventario.
-- Abonos, pagos parciales, cargas, cobros y cierres de ruta.
+- Conciliacion automatica de cobros con caja, bancos o rutas.
+- Cargas, liquidaciones y cierres de ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
 - WhatsApp.
 - Reportes avanzados.
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 30 implementan las bases de clientes, productos, empleados, rutas, vehiculos y ventas de contado y a credito. Las ventas son registros comerciales y no modifican automaticamente caja o inventario; el credito crea deuda, pero todavia no registra abonos, cobros ni cierres de ruta.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 31 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, y cobros sobre cartera. Las ventas y los abonos son registros comerciales y financieros; todavia no modifican automaticamente caja, inventario, bancos o rutas.
 
 ## Stack definido
 
@@ -177,8 +180,9 @@ cuadre-caja-agua-activa/
 - Bloque 28: modulo base de vehiculos con API autenticada, migracion, pruebas y pantalla de administracion.
 - Bloque 29: modulo base de ventas de contado con detalle, calculos backend, filtros y anulacion logica.
 - Bloque 30: modulo base de ventas a credito con limite por cliente, saldo pendiente y anulacion logica.
+- Bloque 31: modulo base de cobros y abonos con pagos parciales o totales, historial y anulacion reversible.
 
-Todavia no se han creado cobros, abonos, pagos parciales, estado de cuenta completo, recibos de cobro, facturacion electronica, conciliacion entre ventas y caja, movimientos automaticos de inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos, pagos, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, produccion, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado estado de cuenta completo, recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, movimientos automaticos de inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, produccion, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

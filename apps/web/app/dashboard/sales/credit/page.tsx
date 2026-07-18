@@ -211,8 +211,7 @@ export default function CreditSalesPage() {
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
               Registra ventas pendientes de cobro. Este módulo crea la deuda del
-              cliente, pero los abonos y cobros se registrarán en un bloque
-              posterior.
+              cliente; sus pagos se administran desde Cobros y abonos.
             </p>
           </div>
           <LogoutButton />

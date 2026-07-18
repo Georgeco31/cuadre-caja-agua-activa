@@ -110,7 +110,7 @@ def void_sale(
 
 def _http_error(error: ValueError) -> HTTPException:
     detail = str(error)
-    if "ya esta anulada" in detail:
+    if "ya esta anulada" in detail or "tiene abonos activos" in detail:
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     if "no existe" in detail:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)

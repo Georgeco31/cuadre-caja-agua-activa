@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/receivables",
+    title: "Cobros y abonos",
+    description: "Registrar pagos sobre ventas a crédito.",
+    primary: false,
+  },
+  {
     href: "/dashboard/sales/credit",
     title: "Ventas a crédito",
     description: "Registrar ventas pendientes de cobro.",

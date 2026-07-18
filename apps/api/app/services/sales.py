@@ -136,9 +136,18 @@ def get_sale(db: Session, sale_id: int) -> Sale:
 
 
 def void_sale(db: Session, sale_id: int, reason: str) -> Sale:
-    sale = get_sale(db, sale_id)
+    sale = sale_repository.get_sale_for_update(db, sale_id)
+    if sale is None:
+        raise ValueError("La venta no existe.")
     if sale.status == "voided":
         raise ValueError("La venta ya esta anulada.")
+    if (
+        sale.sale_type == "credit"
+        and sale_repository.has_active_credit_payments(db, sale.id)
+    ):
+        raise ValueError(
+            "La venta tiene abonos activos. Anule primero los abonos."
+        )
 
     sale_repository.mark_sale_voided(
         db,

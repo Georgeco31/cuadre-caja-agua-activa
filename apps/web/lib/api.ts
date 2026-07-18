@@ -8,6 +8,11 @@ import type {
 } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
 import type {
+  CreditPayment,
+  CreditPaymentFilters,
+  CreditPaymentPayload,
+} from "@/types/creditPayment";
+import type {
   Customer,
   CustomerFilters,
   CustomerPayload,
@@ -745,6 +750,70 @@ export async function voidCashSale(
   reason: string,
 ): Promise<CashSale> {
   return request<CashSale>(`/sales/${saleId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function createCreditPayment(
+  token: string,
+  saleId: number,
+  payload: CreditPaymentPayload,
+): Promise<CreditPayment> {
+  return request<CreditPayment>(`/sales/${saleId}/payments`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listSaleCreditPayments(
+  token: string,
+  saleId: number,
+): Promise<CreditPayment[]> {
+  return request<CreditPayment[]>(`/sales/${saleId}/payments`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function listCreditPayments(
+  token: string,
+  filters: CreditPaymentFilters = {},
+): Promise<CreditPayment[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.customer_id !== undefined) {
+    searchParams.set("customer_id", String(filters.customer_id));
+  }
+  if (filters.sale_id !== undefined) {
+    searchParams.set("sale_id", String(filters.sale_id));
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.payment_method) {
+    searchParams.set("payment_method", filters.payment_method);
+  }
+
+  const query = searchParams.toString();
+  return request<CreditPayment[]>(
+    `/credit-payments${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function voidCreditPayment(
+  token: string,
+  paymentId: number,
+  reason: string,
+): Promise<CreditPayment> {
+  return request<CreditPayment>(`/credit-payments/${paymentId}/void`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),

@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, y ventas de contado y a credito. El frontend vive en `apps/web`. Todavia no incluye abonos, pagos parciales, inventario automatico, produccion, nomina, mantenimiento, combustible, cobros o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, y cobros sobre cartera. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico, produccion, nomina, mantenimiento, combustible o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -200,7 +200,7 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados, rutas, vehiculos y ventas requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados, rutas, vehiculos, ventas y cobros requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -290,7 +290,7 @@ El listado acepta `date_from`, `date_to`, `status`, `customer_id`, `payment_meth
 
 Cada venta contiene al menos un producto activo. Si no se envia `unit_price`, se usa el `default_price` del producto. El servicio calcula subtotales y total con `Decimal`, guarda snapshots del cliente y los productos y genera un numero interno unico. Sin cliente se registra `Consumidor final`.
 
-Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. Una venta de contado guarda `paid_amount = total_amount`, `balance_amount = 0` y `credit_status = none`. Las ventas no modifican el cuadre de caja, inventario, rutas o cobros, y los seeds no crean ventas falsas.
+Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. Una venta de contado guarda `paid_amount = total_amount`, `balance_amount = 0` y `credit_status = none`. Las ventas no modifican el cuadre de caja, inventario o rutas, y los seeds no crean ventas falsas.
 
 ## Ventas a credito
 
@@ -306,7 +306,22 @@ La venta exige un cliente existente, activo y con `credit_allowed = true`. Cuand
 
 Una venta nueva queda con `sale_type = credit`, `paid_amount = 0`, `balance_amount = total_amount` y `credit_status = pending`. Al anularla conserva sus items, cambia a `status = voided` y `credit_status = voided`, y su saldo deja de contar como deuda activa.
 
-El resumen de balance solo considera ventas a credito activas con saldo mayor a cero. Este bloque crea deuda comercial, pero no registra pagos, abonos, cobros, recibos, movimientos de caja o movimientos de inventario.
+El resumen de balance considera todas las ventas a credito activas, incluidas las ya pagadas, y excluye ventas anuladas. Devuelve el total vendido, el total pagado y el saldo vigente.
+
+## Cobros y abonos
+
+La tabla `credit_payments` registra pagos sobre una sola venta a credito. Endpoints autenticados:
+
+- `POST /api/v1/sales/{sale_id}/payments`
+- `GET /api/v1/sales/{sale_id}/payments`
+- `GET /api/v1/credit-payments`
+- `POST /api/v1/credit-payments/{payment_id}/void`
+
+El listado general acepta `date_from`, `date_to`, `customer_id`, `sale_id`, `status` y `payment_method`. Los importes usan `Numeric(14, 2)` y los metodos permitidos son `cash`, `transfer`, `card` y `other`.
+
+Un abono solo se registra sobre una venta a credito activa con saldo pendiente. El servicio bloquea la fila de la venta, deriva el cliente desde esa venta, impide sobrepagos, incrementa `paid_amount`, reduce `balance_amount` y cambia `credit_status` a `paid` cuando el saldo llega a cero.
+
+La anulacion exige motivo, conserva el registro con `status = voided` y restaura los importes de la venta. Una venta con abonos activos no puede anularse hasta anular primero esos abonos. Los cobros no crean ventas ni modifican automaticamente caja, inventario, rutas o bancos; los seeds no crean cobros falsos.
 
 Endpoints de gastos dentro de un cuadre:
 

@@ -134,3 +134,8 @@ class Sale(Base):
         cascade="all, delete-orphan",
         order_by="SaleItem.id",
     )
+    payments: Mapped[list["CreditPayment"]] = relationship(
+        "CreditPayment",
+        back_populates="sale",
+        order_by="CreditPayment.id",
+    )

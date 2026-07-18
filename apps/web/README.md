@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, y ventas de contado y a credito. Todavia no incluye pagos o cuotas de credito, cobros, inventario automatico, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, y cobros sobre cartera. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -58,6 +58,7 @@ Rutas principales:
 - `/dashboard/vehicles`
 - `/dashboard/sales/cash`
 - `/dashboard/sales/credit`
+- `/dashboard/receivables`
 
 ## Build
 
@@ -86,7 +87,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, ventas de contado y ventas a credito.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, ventas de contado, ventas a credito y cobros y abonos.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -146,12 +147,16 @@ http://localhost:3000/login
 - El formulario permite varios productos, cantidad, precio unitario ajustable, fecha de vencimiento opcional y notas.
 - El alta usa `POST /api/v1/sales/credit`; el frontend muestra el total y saldo pendiente estimados y conserva como oficiales los importes calculados por el backend.
 - El listado de credito muestra total, pagado, saldo pendiente, vencimiento y estado de credito; permite filtrar, consultar el detalle y anular con motivo.
-- Las ventas de contado y a credito no modifican caja, inventario ni rutas. Este bloque tampoco registra pagos, cuotas o cobros del saldo pendiente.
+- La pantalla `/dashboard/receivables` lista ventas a credito activas con saldo pendiente y permite filtrar por cliente.
+- El formulario exige una venta, fecha, metodo y monto mayor a cero que no supere el saldo visible; ofrece usar el saldo total como monto.
+- El alta usa `POST /api/v1/sales/{id}/payments` y refresca la cartera y el historial con los importes oficiales del backend.
+- El historial usa `GET /api/v1/credit-payments`, muestra metodos y estados en español y permite anular un abono con motivo mediante `POST /api/v1/credit-payments/{id}/void`.
+- Las ventas y los cobros no modifican automaticamente caja, inventario, rutas o bancos. Este bloque tampoco genera recibos ni aplica un pago a varias ventas.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 
 En el detalle de historial, los gastos se muestran separados entre antes del conteo y despues del conteo. Las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
 
-La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo total en monedas, total en billetes, total contado, gastos antes del conteo y gastos despues del conteo. Todavia no incorpora ventas, saldos de credito ni saldo inicial de caja.
+La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo total en monedas, total en billetes, total contado, gastos antes del conteo y gastos despues del conteo. Todavia no incorpora ventas, cobros, saldos de credito ni saldo inicial de caja.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.
