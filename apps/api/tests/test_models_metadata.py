@@ -7,6 +7,7 @@ import app.models  # noqa: F401
 def test_initial_tables_are_registered_in_metadata() -> None:
     expected_tables = {
         "users",
+        "vehicles",
         "cash_sessions",
         "denominations",
         "cash_count_items",
@@ -100,6 +101,12 @@ def test_model_check_constraints_are_registered() -> None:
     assert _check_constraint_names("delivery_routes") == {
         "ck_delivery_routes_expected_cash_nonnegative",
         "ck_delivery_routes_name_not_blank",
+    }
+    assert _check_constraint_names("vehicles") == {
+        "ck_vehicles_fuel_type",
+        "ck_vehicles_name_not_blank",
+        "ck_vehicles_vehicle_type",
+        "ck_vehicles_year_reasonable",
     }
 
 

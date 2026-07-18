@@ -8,6 +8,7 @@ from app.models.employee import Employee
 from app.models.expense import Expense
 from app.models.product import Product
 from app.models.user import User
+from app.models.vehicle import Vehicle
 
 __all__ = [
     "CashCountItem",
@@ -20,4 +21,5 @@ __all__ = [
     "Expense",
     "Product",
     "User",
+    "Vehicle",
 ]

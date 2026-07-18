@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y los modulos base de clientes, productos, empleados y rutas de entrega. El frontend vive en `apps/web`. Todavia no incluye ventas, inventario, produccion, nomina, cobros o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja y los modulos base de clientes, productos, empleados, rutas y vehiculos. El frontend vive en `apps/web`. Todavia no incluye ventas, inventario, produccion, nomina, mantenimiento, combustible, cobros o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -200,7 +200,7 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados y rutas requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados, rutas y vehiculos requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -261,6 +261,21 @@ El modulo base usa la tabla `delivery_routes` y los endpoints:
 El listado acepta `search`, `is_active`, `zone` y `sector`. La busqueda general consulta nombre, codigo, zona, sector y dias de atencion.
 
 `code` es unico cuando se registra y permite valores nulos. `expected_daily_cash` usa `Numeric(12, 2)` y no admite valores negativos. Las rutas no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Chofer y vehiculo son referencias de texto; no existen relaciones formales con empleados o camiones. Este modulo no crea ventas, cobros, carga, inventario, liquidacion, cierre de ruta ni datos falsos en seeds.
+
+## Vehiculos
+
+El modulo base usa la tabla `vehicles` y los endpoints:
+
+- `POST /api/v1/vehicles`
+- `GET /api/v1/vehicles`
+- `GET /api/v1/vehicles/{vehicle_id}`
+- `PATCH /api/v1/vehicles/{vehicle_id}`
+- `PATCH /api/v1/vehicles/{vehicle_id}/deactivate`
+- `PATCH /api/v1/vehicles/{vehicle_id}/activate`
+
+El listado acepta `search`, `is_active`, `vehicle_type` y `fuel_type`. La busqueda general consulta nombre, placa, codigo, tipo, marca y modelo.
+
+`code` y `plate` son unicos cuando se registran y permiten valores nulos. `year`, cuando existe, debe estar entre 1900 y 2100. Los vehiculos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. El chofer es una referencia de texto; no existen relaciones formales con empleados o rutas. Este modulo no crea mantenimiento, combustible, gastos, kilometraje, carga, inventario, asignaciones, rentabilidad ni datos falsos en seeds.
 
 Endpoints de gastos dentro de un cuadre:
 

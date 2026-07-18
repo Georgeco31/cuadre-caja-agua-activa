@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas y los modulos base de clientes, productos, empleados y rutas de entrega. Todavía no incluye ventas, inventario, cobros, nomina, carga o cierre de ruta, edición de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas y los modulos base de clientes, productos, empleados, rutas y vehiculos. Todavía no incluye ventas, inventario, cobros, nomina, mantenimiento, combustible, carga o cierre de ruta, edición de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -55,6 +55,7 @@ Rutas principales:
 - `/dashboard/products`
 - `/dashboard/employees`
 - `/dashboard/delivery-routes`
+- `/dashboard/vehicles`
 
 ## Build
 
@@ -83,7 +84,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rápidas hacia caja, historial, reportes, clientes, productos, empleados y rutas.
+- El dashboard muestra acciones rápidas hacia caja, historial, reportes, clientes, productos, empleados, rutas y vehiculos.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -128,6 +129,11 @@ http://localhost:3000/login
 - La inactivacion y reactivacion usan `PATCH /api/v1/delivery-routes/{id}/deactivate` y `PATCH /api/v1/delivery-routes/{id}/activate`; no se eliminan rutas fisicamente.
 - El listado muestra zona, sector, dias de atencion, referencias textuales de chofer/vehiculo y efectivo diario esperado.
 - El modulo de rutas no registra ventas, cobros, carga de camion, inventario, liquidaciones ni cierres de ruta.
+- La pantalla `/dashboard/vehicles` lista vehiculos desde `GET /api/v1/vehicles` y permite buscar por nombre, placa, codigo, tipo, marca o modelo.
+- El alta usa `POST /api/v1/vehicles` y la edicion usa `PATCH /api/v1/vehicles/{id}`.
+- La inactivacion y reactivacion usan `PATCH /api/v1/vehicles/{id}/deactivate` y `PATCH /api/v1/vehicles/{id}/activate`; no se eliminan vehiculos fisicamente.
+- El formulario muestra tipos de vehiculo y combustible en español, conservando los valores internos en ingles.
+- El modulo de vehiculos no registra mantenimiento, combustible, gastos, kilometraje, carga, inventario, rutas asignadas ni rentabilidad.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 

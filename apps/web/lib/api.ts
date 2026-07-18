@@ -45,6 +45,12 @@ import type {
   CashSummaryReportFilters,
 } from "@/types/report";
 import type { CashSessionSummary } from "@/types/summary";
+import type {
+  Vehicle,
+  VehicleFilters,
+  VehiclePayload,
+  VehicleUpdatePayload,
+} from "@/types/vehicle";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1";
 
@@ -495,6 +501,82 @@ export async function activateDeliveryRoute(
   routeId: number,
 ): Promise<DeliveryRoute> {
   return request<DeliveryRoute>(`/delivery-routes/${routeId}/activate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listVehicles(
+  token: string,
+  filters: VehicleFilters = {},
+): Promise<Vehicle[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.vehicle_type) {
+    searchParams.set("vehicle_type", filters.vehicle_type);
+  }
+  if (filters.fuel_type) {
+    searchParams.set("fuel_type", filters.fuel_type);
+  }
+
+  const query = searchParams.toString();
+  return request<Vehicle[]>(`/vehicles${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getVehicle(
+  token: string,
+  vehicleId: number,
+): Promise<Vehicle> {
+  return request<Vehicle>(`/vehicles/${vehicleId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createVehicle(
+  token: string,
+  payload: VehiclePayload,
+): Promise<Vehicle> {
+  return request<Vehicle>("/vehicles", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateVehicle(
+  token: string,
+  vehicleId: number,
+  payload: VehicleUpdatePayload,
+): Promise<Vehicle> {
+  return request<Vehicle>(`/vehicles/${vehicleId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateVehicle(
+  token: string,
+  vehicleId: number,
+): Promise<Vehicle> {
+  return request<Vehicle>(`/vehicles/${vehicleId}/deactivate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function activateVehicle(
+  token: string,
+  vehicleId: number,
+): Promise<Vehicle> {
+  return request<Vehicle>(`/vehicles/${vehicleId}/activate`, {
     method: "PATCH",
     headers: authHeaders(token),
   });

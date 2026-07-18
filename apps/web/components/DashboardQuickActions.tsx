@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/vehicles",
+    title: "Vehículos",
+    description: "Registrar camiones y vehículos para el control operativo.",
+    primary: false,
+  },
+  {
     href: "/dashboard/delivery-routes",
     title: "Rutas",
     description: "Registrar rutas y zonas de entrega para el control operativo.",
