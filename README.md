@@ -2,7 +2,11 @@
 
 Aplicacion web responsive para registrar el cuadre diario de caja del negocio Agua Activa.
 
-El proyecto busca ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario, historial, correcciones y resumen acumulado. En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, gastos separados por momento del conteo y documentacion operativa para prueba piloto local.
+El proyecto inicio como un sistema para ordenar el cierre de caja diario mediante el registro de monedas, billetes, gastos realizados con dinero de caja, totales calculados, cierre diario, historial, correcciones y resumen acumulado.
+
+A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
+
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, gastos separados por momento del conteo y documentacion operativa para prueba piloto local.
 
 ## Problema que resuelve
 
@@ -16,7 +20,7 @@ El cuadre de caja necesita una forma clara y consistente de registrar:
 
 ## Alcance del MVP
 
-El MVP se enfoca solamente en:
+El MVP actual se enfoca en el modulo de caja:
 
 - Registro de cuadre diario.
 - Separacion de monedas y billetes.
@@ -39,6 +43,8 @@ Quedan fuera del MVP:
 - Reportes avanzados.
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
+
+La vision ERP documenta estos temas como modulos futuros, no como funcionalidad implementada en este bloque.
 
 ## Stack definido
 
@@ -104,7 +110,11 @@ cuadre-caja-agua-activa/
 │   ├── 05-backup-restauracion.md
 │   ├── 06-prueba-piloto-local.md
 │   ├── 07-checklist-uso-diario.md
-│   └── 08-checklist-validacion-mvp.md
+│   ├── 08-checklist-validacion-mvp.md
+│   ├── 09-vision-erp-agua-activa.md
+│   ├── 10-modulos-erp.md
+│   ├── 11-roadmap-erp.md
+│   └── 12-reglas-negocio-erp.md
 ├── scripts/
 │   ├── backup-db.sh
 │   ├── check-health.sh
@@ -141,8 +151,9 @@ cuadre-caja-agua-activa/
 - Bloque 17: filtros de historial por fecha desde, fecha hasta y estado.
 - Bloque 18: documentacion operativa, checklist de uso diario, checklist de validacion MVP y health check local.
 - Bloque 20: gastos separados entre antes del conteo y despues del conteo, con total final calculado solo contra gastos posteriores al conteo.
+- Bloque 23: documentacion estrategica de la vision Agua Activa ERP, modulos, roadmap y reglas generales.
 
-Todavia no se ha creado reportes avanzados, exportaciones PDF/Excel, ventas reales, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se ha creado ventas reales, clientes, inventario, rutas, compras, proveedores, empleados, roles de pago, camiones, produccion, exportaciones PDF/Excel, edicion desde historial, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 
@@ -155,6 +166,10 @@ Todavia no se ha creado reportes avanzados, exportaciones PDF/Excel, ventas real
 - `docs/06-prueba-piloto-local.md`: guia para ejecutar una prueba piloto local.
 - `docs/07-checklist-uso-diario.md`: checklist operativo para el cierre diario.
 - `docs/08-checklist-validacion-mvp.md`: checklist tecnico funcional del MVP.
+- `docs/09-vision-erp-agua-activa.md`: vision estrategica de Agua Activa ERP.
+- `docs/10-modulos-erp.md`: modulos proyectados del ERP.
+- `docs/11-roadmap-erp.md`: roadmap por fases hacia Agua Activa ERP.
+- `docs/12-reglas-negocio-erp.md`: reglas generales para crecer hacia ERP.
 
 ## Ejecucion local con Docker
 
