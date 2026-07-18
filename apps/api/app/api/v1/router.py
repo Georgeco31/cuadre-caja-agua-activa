@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     employees,
     health,
     products,
+    receivables,
     reports,
     sales,
     vehicles,
@@ -26,6 +27,7 @@ api_router.include_router(denominations.router)
 api_router.include_router(employees.router)
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(products.router)
+api_router.include_router(receivables.router)
 api_router.include_router(reports.router)
 api_router.include_router(sales.router)
 api_router.include_router(vehicles.router)

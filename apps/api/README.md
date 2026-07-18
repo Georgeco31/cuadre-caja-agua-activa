@@ -323,6 +323,21 @@ Un abono solo se registra sobre una venta a credito activa con saldo pendiente. 
 
 La anulacion exige motivo, conserva el registro con `status = voided` y restaura los importes de la venta. Una venta con abonos activos no puede anularse hasta anular primero esos abonos. Los cobros no crean ventas ni modifican automaticamente caja, inventario, rutas o bancos; los seeds no crean cobros falsos.
 
+## Cuentas por cobrar
+
+El modulo de consulta reutiliza `customers`, `sales`, `sale_items` y `credit_payments`; no requiere una tabla ni una migracion adicional. Sus endpoints autenticados y de solo lectura son:
+
+- `GET /api/v1/receivables/summary`
+- `GET /api/v1/receivables/customers`
+- `GET /api/v1/receivables/customers/{customer_id}/statement`
+- `GET /api/v1/receivables/overdue`
+
+El resumen general devuelve clientes con saldo, total vendido a credito, total pagado y saldo pendiente. El listado por cliente acepta `search`, `only_with_balance`, `is_active`, `date_from` y `date_to`; la busqueda consulta nombre y telefonos del cliente.
+
+El estado de cuenta acepta `date_from`, `date_to` e `include_paid`. Devuelve los datos del cliente, totales oficiales, ventas a credito y el historial de pagos de esas ventas. Los filtros de fecha se aplican a la fecha de venta para mantener conciliados el detalle y sus totales. El listado de vencidos incluye ventas activas con fecha de vencimiento anterior a hoy y saldo mayor a cero.
+
+Los totales consideran solamente ventas a credito activas. Excluyen ventas anuladas y no cuentan pagos anulados; estos ultimos pueden conservarse en el historial para trazabilidad. El modulo no registra pagos ni modifica caja, inventario, rutas o bancos.
+
 Endpoints de gastos dentro de un cuadre:
 
 - `GET /api/v1/cash-sessions/{cash_session_id}/expenses`

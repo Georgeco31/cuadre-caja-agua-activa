@@ -246,7 +246,15 @@ export default function ReceivablesPage() {
               automáticamente.
             </p>
           </div>
-          <LogoutButton />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              className="inline-flex h-10 items-center justify-center rounded-md border border-water-700 bg-white px-4 text-sm font-semibold text-water-700 transition hover:bg-water-50"
+              href="/dashboard/receivables/reports"
+            >
+              Ver cuentas por cobrar
+            </Link>
+            <LogoutButton />
+          </div>
         </header>
 
         {error ? <ErrorMessage message={error} /> : null}

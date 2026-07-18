@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, y cobros sobre cartera. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera y reportes de cuentas por cobrar. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -59,6 +59,8 @@ Rutas principales:
 - `/dashboard/sales/cash`
 - `/dashboard/sales/credit`
 - `/dashboard/receivables`
+- `/dashboard/receivables/reports`
+- `/dashboard/receivables/reports/[customerId]`
 
 ## Build
 
@@ -87,7 +89,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, ventas de contado, ventas a credito y cobros y abonos.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -151,6 +153,9 @@ http://localhost:3000/login
 - El formulario exige una venta, fecha, metodo y monto mayor a cero que no supere el saldo visible; ofrece usar el saldo total como monto.
 - El alta usa `POST /api/v1/sales/{id}/payments` y refresca la cartera y el historial con los importes oficiales del backend.
 - El historial usa `GET /api/v1/credit-payments`, muestra metodos y estados en español y permite anular un abono con motivo mediante `POST /api/v1/credit-payments/{id}/void`.
+- La pantalla `/dashboard/receivables/reports` muestra el resumen oficial de cartera y permite filtrar clientes por texto, fecha de venta, estado activo y presencia de saldo pendiente.
+- La ruta `/dashboard/receivables/reports/[customerId]` muestra el estado de cuenta del cliente con sus ventas a credito, vencimientos, estados e historial de abonos.
+- Los totales de cartera provienen del backend y estas pantallas no registran ni modifican ventas o pagos.
 - Las ventas y los cobros no modifican automaticamente caja, inventario, rutas o bancos. Este bloque tampoco genera recibos ni aplica un pago a varias ventas.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.

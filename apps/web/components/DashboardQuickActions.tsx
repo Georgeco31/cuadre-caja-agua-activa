@@ -8,6 +8,12 @@ const actions = [
     primary: false,
   },
   {
+    href: "/dashboard/receivables/reports",
+    title: "Cuentas por cobrar",
+    description: "Consultar clientes con saldo pendiente y estado de cuenta.",
+    primary: false,
+  },
+  {
     href: "/dashboard/sales/credit",
     title: "Ventas a crédito",
     description: "Registrar ventas pendientes de cobro.",

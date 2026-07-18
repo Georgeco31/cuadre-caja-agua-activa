@@ -50,6 +50,15 @@ import type {
   CashSummaryReportFilters,
 } from "@/types/report";
 import type {
+  CustomerStatement,
+  CustomerStatementFilters,
+  OverdueReceivable,
+  ReceivableCustomer,
+  ReceivableCustomerFilters,
+  ReceivablesSummary,
+  ReceivablesSummaryFilters,
+} from "@/types/receivable";
+import type {
   CashSale,
   CashSaleFilters,
   CashSalePayload,
@@ -817,6 +826,84 @@ export async function voidCreditPayment(
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),
+  });
+}
+
+export async function getReceivablesSummary(
+  token: string,
+  filters: ReceivablesSummaryFilters = {},
+): Promise<ReceivablesSummary> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  const query = searchParams.toString();
+  return request<ReceivablesSummary>(
+    `/receivables/summary${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function listReceivableCustomers(
+  token: string,
+  filters: ReceivableCustomerFilters = {},
+): Promise<ReceivableCustomer[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.only_with_balance !== undefined) {
+    searchParams.set(
+      "only_with_balance",
+      String(filters.only_with_balance),
+    );
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  const query = searchParams.toString();
+  return request<ReceivableCustomer[]>(
+    `/receivables/customers${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getCustomerStatement(
+  token: string,
+  customerId: number,
+  filters: CustomerStatementFilters = {},
+): Promise<CustomerStatement> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.include_paid !== undefined) {
+    searchParams.set("include_paid", String(filters.include_paid));
+  }
+  const query = searchParams.toString();
+  return request<CustomerStatement>(
+    `/receivables/customers/${customerId}/statement${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function listOverdueReceivables(
+  token: string,
+): Promise<OverdueReceivable[]> {
+  return request<OverdueReceivable[]>("/receivables/overdue", {
+    headers: authHeaders(token),
   });
 }
 
