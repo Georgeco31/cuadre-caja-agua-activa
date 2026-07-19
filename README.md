@@ -59,11 +59,13 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Historial y anulacion trazable de movimientos con reversion del stock.
 - Registro de produccion y envasado con uno o varios productos activos.
 - Cantidades producidas, merma, snapshots y anulacion logica con motivo.
+- Aplicacion explicita de produccion a una ubicacion de inventario.
+- Entradas de stock por cantidad neta y anulacion transaccional trazable.
 
 Quedan fuera del MVP:
 
 - Facturacion.
-- Automatizacion de inventario por ventas, produccion o rutas.
+- Automatizacion de inventario por ventas o rutas.
 - Conciliacion automatica de cobros con caja, bancos o rutas.
 - Cargas, liquidaciones y cierres de ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
@@ -72,7 +74,7 @@ Quedan fuera del MVP:
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 34 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual y produccion operativa. Las ventas, los abonos y la produccion todavia no modifican automaticamente caja, inventario, bancos o rutas.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 35 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion operativa y su aplicacion explicita a inventario. Registrar una produccion no mueve stock por si solo; las ventas y los abonos tampoco modifican automaticamente caja, inventario, bancos o rutas.
 
 ## Stack definido
 
@@ -191,8 +193,9 @@ cuadre-caja-agua-activa/
 - Bloque 32: estado de cuenta y reporte de cuentas por cobrar con resumen, filtros y detalle por cliente.
 - Bloque 33: inventario base por ubicacion con stock, movimientos manuales y anulacion reversible.
 - Bloque 34: produccion y envasado base con detalle por producto, snapshots, filtros y anulacion logica.
+- Bloque 35: aplicacion explicita y reversible de produccion a inventario con trazabilidad por movimiento.
 
-Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, movimientos automaticos de inventario, integracion produccion-inventario, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, descuento de inventario por ventas, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

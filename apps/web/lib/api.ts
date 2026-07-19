@@ -60,6 +60,8 @@ import type {
   ProductionBatch,
   ProductionBatchFilters,
   ProductionBatchPayload,
+  ProductionInventoryApplication,
+  ProductionInventoryApplyPayload,
 } from "@/types/production";
 import type {
   CashSummaryReport,
@@ -1121,6 +1123,46 @@ export async function voidProductionBatch(
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),
   });
+}
+
+export async function applyProductionToInventory(
+  token: string,
+  batchId: number,
+  payload: ProductionInventoryApplyPayload,
+): Promise<ProductionInventoryApplication> {
+  return request<ProductionInventoryApplication>(
+    `/production/batches/${batchId}/apply-inventory`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function getProductionInventoryApplication(
+  token: string,
+  batchId: number,
+): Promise<ProductionInventoryApplication> {
+  return request<ProductionInventoryApplication>(
+    `/production/batches/${batchId}/inventory-application`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function voidProductionInventoryApplication(
+  token: string,
+  applicationId: number,
+  reason: string,
+): Promise<ProductionInventoryApplication> {
+  return request<ProductionInventoryApplication>(
+    `/production/inventory-applications/${applicationId}/void`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    },
+  );
 }
 
 async function request<T>(

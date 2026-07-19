@@ -22,6 +22,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "inventory_stocks",
         "products",
         "production_batches",
+        "production_inventory_application_items",
+        "production_inventory_applications",
         "production_items",
         "sale_items",
         "sales",
@@ -60,6 +62,9 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["inventory_movements"].c.total_cost,
         Base.metadata.tables["production_items"].c.quantity_produced,
         Base.metadata.tables["production_items"].c.quantity_waste,
+        Base.metadata.tables[
+            "production_inventory_application_items"
+        ].c.quantity_applied,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -119,6 +124,34 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("production_items", "product_id") == {
         "products.id",
     }
+    assert _foreign_key_targets(
+        "production_inventory_applications",
+        "production_batch_id",
+    ) == {"production_batches.id"}
+    assert _foreign_key_targets(
+        "production_inventory_applications",
+        "location_id",
+    ) == {"inventory_locations.id"}
+    assert _foreign_key_targets(
+        "production_inventory_applications",
+        "created_by",
+    ) == {"users.id"}
+    assert _foreign_key_targets(
+        "production_inventory_application_items",
+        "application_id",
+    ) == {"production_inventory_applications.id"}
+    assert _foreign_key_targets(
+        "production_inventory_application_items",
+        "production_item_id",
+    ) == {"production_items.id"}
+    assert _foreign_key_targets(
+        "production_inventory_application_items",
+        "product_id",
+    ) == {"products.id"}
+    assert _foreign_key_targets(
+        "production_inventory_application_items",
+        "inventory_movement_id",
+    ) == {"inventory_movements.id"}
 
 
 def test_model_check_constraints_are_registered() -> None:
@@ -213,6 +246,16 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_production_items_product_snapshot_not_blank",
         "ck_production_items_quantity_produced_positive",
         "ck_production_items_quantity_waste_nonnegative",
+        "ck_production_items_waste_not_greater_than_produced",
+    }
+    assert _check_constraint_names("production_inventory_applications") == {
+        "ck_production_inventory_applications_status",
+        "ck_production_inventory_applications_void_state",
+    }
+    assert _check_constraint_names(
+        "production_inventory_application_items",
+    ) == {
+        "ck_production_inventory_application_items_quantity_positive",
     }
 
 

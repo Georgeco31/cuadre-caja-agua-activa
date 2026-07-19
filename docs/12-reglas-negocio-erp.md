@@ -47,7 +47,10 @@ Este documento define reglas generales para crecer desde el modulo actual de caj
 ## Reglas sobre inventario y produccion
 
 - El inventario debe moverse por entradas, salidas, devoluciones o ajustes documentados.
-- La produccion debe aumentar inventario disponible cuando corresponda.
+- Registrar produccion no aumenta inventario automaticamente.
+- La produccion aumenta inventario solo mediante una aplicacion explicita, documentada y reversible a una ubicacion activa.
+- La cantidad aplicada es la producida menos la merma; un resultado cero no genera movimiento.
+- Una produccion con aplicacion activa no puede aplicarse otra vez ni anularse antes de revertir esa aplicacion.
 - Las ventas deben disminuir inventario cuando el flujo se implemente.
 - El inventario por camion debe poder compararse contra carga, ventas y retorno.
 

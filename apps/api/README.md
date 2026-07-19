@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual y produccion operativa. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, integracion automatica de inventario, consumo de insumos, nomina, mantenimiento, combustible o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion operativa y aplicacion explicita de produccion a inventario. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas o rutas, consumo de insumos, nomina, mantenimiento, combustible o cierres de ruta, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -358,7 +358,7 @@ Las ubicaciones aceptan los tipos `warehouse`, `vehicle`, `production_area` y `o
 
 Los movimientos `entry` y `adjustment_in` aumentan stock; `exit` y `adjustment_out` lo reducen. El servicio bloquea las filas relacionadas, impide cantidades negativas, calcula `total_cost` cuando existe costo unitario y guarda snapshots del producto. La anulacion exige motivo, conserva el movimiento como `voided` y aplica el efecto inverso sin permitir stock negativo.
 
-Este bloque mueve inventario solamente mediante estos movimientos manuales. Ventas, caja, cobros, rutas y produccion no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks o movimientos falsos.
+El inventario puede moverse mediante operaciones manuales o mediante una aplicacion explicita de produccion. Ventas, caja, cobros y rutas no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks, movimientos o aplicaciones falsas.
 
 ## Produccion y envasado base
 
@@ -368,10 +368,15 @@ La migracion `0012_production` crea `production_batches` y `production_items`. L
 - `GET /api/v1/production/batches`
 - `GET /api/v1/production/batches/{batch_id}`
 - `POST /api/v1/production/batches/{batch_id}/void`
+- `POST /api/v1/production/batches/{batch_id}/apply-inventory`
+- `GET /api/v1/production/batches/{batch_id}/inventory-application`
+- `POST /api/v1/production/inventory-applications/{application_id}/void`
 
-Cada produccion exige una fecha y al menos un producto existente y activo. El backend genera un numero interno unico, conserva snapshots de SKU, nombre y presentacion, y acepta cantidades producidas mayores a cero y merma mayor o igual a cero. El listado permite filtrar por `date_from`, `date_to`, `status`, `product_id` y `search`.
+Cada produccion exige una fecha y al menos un producto existente y activo. El backend genera un numero interno unico, conserva snapshots de SKU, nombre y presentacion, y acepta cantidades producidas mayores a cero y merma entre cero y la cantidad producida. El listado permite filtrar por `date_from`, `date_to`, `status`, `product_id` y `search`.
 
-La anulacion exige motivo, mantiene el lote y sus items con estado `voided` y no borra registros. Crear o anular produccion no cambia `inventory_stocks`, no crea `inventory_movements` y no modifica caja, ventas, cobros o rutas. Los seeds no crean producciones falsas.
+La migracion `0013_prod_inventory` agrega `production_inventory_applications` y `production_inventory_application_items`. Crear una produccion sigue sin modificar inventario. La accion `apply-inventory` exige una ubicacion activa, calcula `quantity_produced - quantity_waste`, omite items con neto cero y crea entradas y stock en una sola transaccion. Solo puede existir una aplicacion activa por lote.
+
+La anulacion de una aplicacion exige motivo, anula sus movimientos y revierte el stock sin permitir cantidades negativas. Todos los registros se conservan. Un lote con aplicacion activa no puede anularse hasta revertirla; un movimiento vinculado tampoco puede anularse directamente desde inventario mientras la aplicacion siga activa. Los seeds no crean producciones ni aplicaciones falsas y este flujo no modifica caja, ventas, cobros o rutas.
 
 Endpoints de gastos dentro de un cuadre:
 

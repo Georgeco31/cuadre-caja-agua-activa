@@ -24,6 +24,10 @@ class ProductionItem(Base):
             "quantity_waste >= 0",
             name="ck_production_items_quantity_waste_nonnegative",
         ),
+        CheckConstraint(
+            "quantity_waste <= quantity_produced",
+            name="ck_production_items_waste_not_greater_than_produced",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)

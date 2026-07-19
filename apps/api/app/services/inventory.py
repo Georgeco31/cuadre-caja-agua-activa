@@ -8,6 +8,7 @@ from app.models.inventory_location import InventoryLocation
 from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
 from app.repositories import inventory
+from app.repositories import production_inventory as production_inventory_repository
 from app.schemas.inventory import (
     InventoryLocationCreate,
     InventoryLocationUpdate,
@@ -109,6 +110,16 @@ def create_movement(
     payload: InventoryMovementCreate,
     created_by: int,
 ) -> InventoryMovement:
+    movement = create_movement_in_transaction(db, payload, created_by)
+    _commit_movement(db, movement, "No se pudo registrar el movimiento.")
+    return _get_movement_after_commit(db, movement.id)
+
+
+def create_movement_in_transaction(
+    db: Session,
+    payload: InventoryMovementCreate,
+    created_by: int,
+) -> InventoryMovement:
     product = inventory.get_product(db, payload.product_id, for_update=True)
     if product is None:
         raise ValueError("El producto no existe.")
@@ -180,8 +191,7 @@ def create_movement(
             "created_by": created_by,
         },
     )
-    _commit_movement(db, movement, "No se pudo registrar el movimiento.")
-    return _get_movement_after_commit(db, movement.id)
+    return movement
 
 
 def list_movements(
@@ -218,11 +228,34 @@ def void_movement(
     movement_id: int,
     reason: str,
 ) -> InventoryMovement:
+    movement = void_movement_in_transaction(db, movement_id, reason)
+    _commit_movement(db, movement, "No se pudo anular el movimiento.")
+    return _get_movement_after_commit(db, movement.id)
+
+
+def void_movement_in_transaction(
+    db: Session,
+    movement_id: int,
+    reason: str,
+    *,
+    voided_at: datetime | None = None,
+    allow_production_application: bool = False,
+) -> InventoryMovement:
     movement = inventory.get_movement(db, movement_id, for_update=True)
     if movement is None:
         raise ValueError("El movimiento de inventario no existe.")
     if movement.status == "voided":
         raise ValueError("El movimiento de inventario ya esta anulado.")
+    if (
+        not allow_production_application
+        and production_inventory_repository.has_active_application_for_movement(
+            db,
+            movement.id,
+        )
+    ):
+        raise ValueError(
+            "Anule la aplicacion a inventario desde produccion.",
+        )
 
     product = inventory.get_product(db, movement.product_id, for_update=True)
     location = inventory.get_location(db, movement.location_id, for_update=True)
@@ -254,10 +287,9 @@ def void_movement(
         db,
         movement,
         reason,
-        datetime.now(timezone.utc),
+        voided_at or datetime.now(timezone.utc),
     )
-    _commit_movement(db, movement, "No se pudo anular el movimiento.")
-    return _get_movement_after_commit(db, movement.id)
+    return movement
 
 
 def _ensure_location_code_available(
@@ -315,4 +347,3 @@ def _normalize_filter(value: str | None) -> str | None:
         return None
     normalized_value = value.strip()
     return normalized_value or None
-

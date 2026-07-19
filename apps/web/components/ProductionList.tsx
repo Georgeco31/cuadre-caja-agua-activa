@@ -2,10 +2,13 @@
 
 import { useState, type FormEvent, type ReactNode } from "react";
 
+import type { InventoryLocation } from "@/types/inventory";
 import type { Product } from "@/types/product";
 import {
   PRODUCTION_STATUS_LABELS,
   type ProductionBatch,
+  type ProductionInventoryApplication,
+  type ProductionInventoryApplyPayload,
   type ProductionStatus,
 } from "@/types/production";
 
@@ -20,13 +23,28 @@ export type ProductionFilterValues = {
 type ProductionListProps = {
   batches: ProductionBatch[];
   products: Product[];
+  locations: InventoryLocation[];
+  inventoryApplications: Record<
+    number,
+    ProductionInventoryApplication | undefined
+  >;
   filters: ProductionFilterValues;
   isLoading?: boolean;
   voidingBatchId?: number | null;
+  applyingBatchId?: number | null;
+  voidingApplicationId?: number | null;
   onFiltersChange: (filters: ProductionFilterValues) => void;
   onFilter: () => void;
   onClear: () => void;
   onVoid: (batch: ProductionBatch) => void;
+  onApplyInventory: (
+    batch: ProductionBatch,
+    payload: ProductionInventoryApplyPayload,
+  ) => Promise<boolean>;
+  onVoidInventoryApplication: (
+    batch: ProductionBatch,
+    application: ProductionInventoryApplication,
+  ) => void;
 };
 
 const statuses: ProductionStatus[] = ["active", "voided"];
@@ -34,13 +52,19 @@ const statuses: ProductionStatus[] = ["active", "voided"];
 export function ProductionList({
   batches,
   products,
+  locations,
+  inventoryApplications,
   filters,
   isLoading = false,
   voidingBatchId = null,
+  applyingBatchId = null,
+  voidingApplicationId = null,
   onFiltersChange,
   onFilter,
   onClear,
   onVoid,
+  onApplyInventory,
+  onVoidInventoryApplication,
 }: ProductionListProps) {
   const [expandedBatchId, setExpandedBatchId] = useState<number | null>(null);
 
@@ -162,7 +186,7 @@ export function ProductionList({
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1020px] border-collapse text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">Número</th>
@@ -171,12 +195,14 @@ export function ProductionList({
                 <th className="px-4 py-3 text-right font-medium">Producido</th>
                 <th className="px-4 py-3 text-right font-medium">Merma</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
+                <th className="px-4 py-3 font-medium">Inventario</th>
                 <th className="px-4 py-3 font-medium">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {batches.map((batch) => {
                 const isExpanded = batch.id === expandedBatchId;
+                const inventoryApplication = inventoryApplications[batch.id];
                 return (
                   <FragmentRows key={batch.id}>
                     <tr>
@@ -207,6 +233,11 @@ export function ProductionList({
                         </span>
                       </td>
                       <td className="px-4 py-3 align-top">
+                        <InventoryApplicationBadge
+                          application={inventoryApplication}
+                        />
+                      </td>
+                      <td className="px-4 py-3 align-top">
                         <div className="flex items-center gap-3">
                           <button
                             className="font-semibold text-water-700 hover:text-water-500"
@@ -234,8 +265,21 @@ export function ProductionList({
                     </tr>
                     {isExpanded ? (
                       <tr>
-                        <td className="bg-slate-50 px-4 py-4" colSpan={7}>
-                          <ProductionDetail batch={batch} />
+                        <td className="bg-slate-50 px-4 py-4" colSpan={8}>
+                          <ProductionDetail
+                            batch={batch}
+                            locations={locations}
+                            inventoryApplication={inventoryApplication}
+                            isApplying={applyingBatchId === batch.id}
+                            isVoidingApplication={
+                              inventoryApplication?.application_id ===
+                              voidingApplicationId
+                            }
+                            onApplyInventory={onApplyInventory}
+                            onVoidInventoryApplication={
+                              onVoidInventoryApplication
+                            }
+                          />
                         </td>
                       </tr>
                     ) : null}
@@ -250,7 +294,29 @@ export function ProductionList({
   );
 }
 
-function ProductionDetail({ batch }: { batch: ProductionBatch }) {
+function ProductionDetail({
+  batch,
+  locations,
+  inventoryApplication,
+  isApplying,
+  isVoidingApplication,
+  onApplyInventory,
+  onVoidInventoryApplication,
+}: {
+  batch: ProductionBatch;
+  locations: InventoryLocation[];
+  inventoryApplication: ProductionInventoryApplication | undefined;
+  isApplying: boolean;
+  isVoidingApplication: boolean;
+  onApplyInventory: (
+    batch: ProductionBatch,
+    payload: ProductionInventoryApplyPayload,
+  ) => Promise<boolean>;
+  onVoidInventoryApplication: (
+    batch: ProductionBatch,
+    application: ProductionInventoryApplication,
+  ) => void;
+}) {
   return (
     <div className="space-y-3">
       <div className="grid gap-2 text-sm sm:grid-cols-2">
@@ -272,6 +338,7 @@ function ProductionDetail({ batch }: { batch: ProductionBatch }) {
               <th className="px-3 py-2 font-medium">Producto</th>
               <th className="px-3 py-2 text-right font-medium">Producido</th>
               <th className="px-3 py-2 text-right font-medium">Merma</th>
+              <th className="px-3 py-2 text-right font-medium">Neto</th>
               <th className="px-3 py-2 font-medium">Observación</th>
             </tr>
           </thead>
@@ -295,6 +362,9 @@ function ProductionDetail({ batch }: { batch: ProductionBatch }) {
                 <td className="px-3 py-2 text-right text-slate-700">
                   {formatQuantity(item.quantity_waste)}
                 </td>
+                <td className="px-3 py-2 text-right font-semibold text-emerald-700">
+                  {formatQuantity(netQuantity(item))}
+                </td>
                 <td className="px-3 py-2 text-slate-700">
                   {item.notes ?? "Sin observación"}
                 </td>
@@ -303,6 +373,262 @@ function ProductionDetail({ batch }: { batch: ProductionBatch }) {
           </tbody>
         </table>
       </div>
+      <ProductionInventoryPanel
+        batch={batch}
+        locations={locations}
+        application={inventoryApplication}
+        isApplying={isApplying}
+        isVoiding={isVoidingApplication}
+        onApply={onApplyInventory}
+        onVoid={onVoidInventoryApplication}
+      />
+    </div>
+  );
+}
+
+function ProductionInventoryPanel({
+  batch,
+  locations,
+  application,
+  isApplying,
+  isVoiding,
+  onApply,
+  onVoid,
+}: {
+  batch: ProductionBatch;
+  locations: InventoryLocation[];
+  application: ProductionInventoryApplication | undefined;
+  isApplying: boolean;
+  isVoiding: boolean;
+  onApply: (
+    batch: ProductionBatch,
+    payload: ProductionInventoryApplyPayload,
+  ) => Promise<boolean>;
+  onVoid: (
+    batch: ProductionBatch,
+    application: ProductionInventoryApplication,
+  ) => void;
+}) {
+  const [locationId, setLocationId] = useState("");
+  const [movementDate, setMovementDate] = useState(batch.production_date);
+  const [notes, setNotes] = useState("");
+  const hasNetQuantity = batch.items.some(
+    (item) => toThousandths(netQuantity(item)) > 0,
+  );
+
+  async function handleApply(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const selectedLocation = locations.find(
+      (location) => location.id === Number(locationId),
+    );
+    if (!selectedLocation || !movementDate) {
+      return;
+    }
+    const confirmed = window.confirm(
+      `Aplicar la producción ${batch.production_number} a ${selectedLocation.name}?`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    const saved = await onApply(batch, {
+      location_id: selectedLocation.id,
+      movement_date: movementDate,
+      notes: notes.trim() || null,
+    });
+    if (saved) {
+      setNotes("");
+    }
+  }
+
+  return (
+    <div className="border-t border-slate-200 pt-4">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-950">
+            Aplicación a inventario
+          </h3>
+          <p className="mt-1 text-sm text-slate-600">
+            Solo las cantidades netas positivas generan entradas de inventario.
+          </p>
+        </div>
+        <InventoryApplicationBadge application={application} />
+      </div>
+
+      {!application ? (
+        <p className="mt-4 text-sm text-slate-600">Cargando estado...</p>
+      ) : application.state === "applied" ? (
+        <div className="mt-4 space-y-3">
+          <dl className="grid gap-3 text-sm sm:grid-cols-3">
+            <ApplicationValue
+              label="Ubicación"
+              value={application.location_name ?? "Sin ubicación"}
+            />
+            <ApplicationValue
+              label="Fecha de movimiento"
+              value={
+                application.items[0]
+                  ? formatDate(application.items[0].movement_date)
+                  : "Sin fecha"
+              }
+            />
+            <ApplicationValue
+              label="Aplicado"
+              value={
+                application.applied_at
+                  ? formatDateTime(application.applied_at)
+                  : "Sin fecha"
+              }
+            />
+          </dl>
+          <div className="overflow-x-auto border-y border-slate-200 bg-white">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead className="bg-slate-50 text-slate-600">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Producto</th>
+                  <th className="px-3 py-2 text-right font-medium">Cantidad</th>
+                  <th className="px-3 py-2 text-right font-medium">Movimiento</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {application.items.map((item) => (
+                  <tr key={item.id}>
+                    <td className="px-3 py-2 text-slate-950">
+                      {productName(batch, item.product_id)}
+                    </td>
+                    <td className="px-3 py-2 text-right font-semibold text-slate-950">
+                      {formatQuantity(item.quantity_applied)}
+                    </td>
+                    <td className="px-3 py-2 text-right text-slate-700">
+                      #{item.inventory_movement_id}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-end">
+            <button
+              className="h-10 rounded-md border border-red-300 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:border-slate-200 disabled:text-slate-400"
+              type="button"
+              disabled={isVoiding}
+              onClick={() => onVoid(batch, application)}
+            >
+              {isVoiding ? "Anulando aplicación..." : "Anular aplicación"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {application.state === "voided" ? (
+            <p className="mt-4 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+              La aplicación anterior a {application.location_name ?? "inventario"}
+              {application.void_reason
+                ? ` fue anulada: ${application.void_reason}`
+                : " fue anulada."}
+            </p>
+          ) : null}
+          {batch.status === "active" ? (
+            <form
+              className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4"
+              onSubmit={handleApply}
+            >
+              <FilterField label="Ubicación de destino">
+                <select
+                  className={fieldClassName}
+                  value={locationId}
+                  required
+                  disabled={isApplying || locations.length === 0}
+                  onChange={(event) => setLocationId(event.target.value)}
+                >
+                  <option value="">Seleccionar ubicación</option>
+                  {locations.map((location) => (
+                    <option key={location.id} value={location.id}>
+                      {location.name}
+                    </option>
+                  ))}
+                </select>
+              </FilterField>
+              <FilterField label="Fecha de movimiento">
+                <input
+                  className={fieldClassName}
+                  type="date"
+                  value={movementDate}
+                  required
+                  disabled={isApplying}
+                  onChange={(event) => setMovementDate(event.target.value)}
+                />
+              </FilterField>
+              <FilterField label="Nota opcional">
+                <input
+                  className={fieldClassName}
+                  value={notes}
+                  maxLength={300}
+                  disabled={isApplying}
+                  onChange={(event) => setNotes(event.target.value)}
+                />
+              </FilterField>
+              <div className="flex items-end">
+                <button
+                  className="h-10 w-full rounded-md bg-emerald-700 px-4 text-sm font-semibold text-white hover:bg-emerald-600 disabled:bg-slate-300"
+                  type="submit"
+                  disabled={
+                    isApplying ||
+                    !locationId ||
+                    !movementDate ||
+                    !hasNetQuantity
+                  }
+                >
+                  {isApplying ? "Aplicando..." : "Aplicar a inventario"}
+                </button>
+              </div>
+              {locations.length === 0 ? (
+                <p className="text-sm text-amber-800 md:col-span-2 xl:col-span-4">
+                  No hay ubicaciones activas disponibles.
+                </p>
+              ) : null}
+              {!hasNetQuantity ? (
+                <p className="text-sm text-amber-800 md:col-span-2 xl:col-span-4">
+                  Esta producción no tiene una cantidad neta positiva para aplicar.
+                </p>
+              ) : null}
+            </form>
+          ) : null}
+        </>
+      )}
+    </div>
+  );
+}
+
+function InventoryApplicationBadge({
+  application,
+}: {
+  application: ProductionInventoryApplication | undefined;
+}) {
+  if (!application) {
+    return <span className="text-xs text-slate-500">Consultando...</span>;
+  }
+  const styles = {
+    not_applied: "bg-amber-50 text-amber-800",
+    applied: "bg-emerald-50 text-emerald-700",
+    voided: "bg-slate-200 text-slate-700",
+  }[application.state];
+  const label = {
+    not_applied: "Pendiente",
+    applied: "Aplicada",
+    voided: "Aplicación anulada",
+  }[application.state];
+  return (
+    <span className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ${styles}`}>
+      {label}
+    </span>
+  );
+}
+
+function ApplicationValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-medium text-slate-500">{label}</dt>
+      <dd className="mt-1 font-semibold text-slate-950">{value}</dd>
     </div>
   );
 }
@@ -347,6 +673,22 @@ function toThousandths(value: string): number {
   return Number(units) * 1000 + Number(decimals.padEnd(3, "0").slice(0, 3));
 }
 
+function netQuantity(item: ProductionBatch["items"][number]): string {
+  const totalThousandths =
+    toThousandths(item.quantity_produced) -
+    toThousandths(item.quantity_waste);
+  const units = Math.floor(totalThousandths / 1000);
+  const decimals = String(totalThousandths % 1000).padStart(3, "0");
+  return `${units}.${decimals}`;
+}
+
+function productName(batch: ProductionBatch, productId: number): string {
+  return (
+    batch.items.find((item) => item.product_id === productId)
+      ?.product_name_snapshot ?? `Producto #${productId}`
+  );
+}
+
 function formatQuantity(value: string): string {
   const [units, decimals = ""] = value.split(".");
   const visibleDecimals = decimals
@@ -360,4 +702,11 @@ function formatDate(value: string): string {
   return new Intl.DateTimeFormat("es-EC", { dateStyle: "medium" }).format(
     new Date(`${value}T00:00:00`),
   );
+}
+
+function formatDateTime(value: string): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }

@@ -14,17 +14,24 @@ import {
 } from "@/components/ProductionList";
 import {
   ApiError,
+  applyProductionToInventory,
   createProductionBatch,
+  getProductionInventoryApplication,
+  listInventoryLocations,
   listProductionBatches,
   listProducts,
   voidProductionBatch,
+  voidProductionInventoryApplication,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import type { InventoryLocation } from "@/types/inventory";
 import type { Product } from "@/types/product";
 import type {
   ProductionBatch,
   ProductionBatchFilters,
   ProductionBatchPayload,
+  ProductionInventoryApplication,
+  ProductionInventoryApplyPayload,
 } from "@/types/production";
 
 const emptyFilters: ProductionFilterValues = {
@@ -39,7 +46,11 @@ export default function ProductionPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [locations, setLocations] = useState<InventoryLocation[]>([]);
   const [batches, setBatches] = useState<ProductionBatch[]>([]);
+  const [inventoryApplications, setInventoryApplications] = useState<
+    Record<number, ProductionInventoryApplication | undefined>
+  >({});
   const [filters, setFilters] =
     useState<ProductionFilterValues>(emptyFilters);
   const [appliedFilters, setAppliedFilters] =
@@ -47,10 +58,18 @@ export default function ProductionPage() {
   const [voidingBatch, setVoidingBatch] = useState<ProductionBatch | null>(null);
   const [voidReason, setVoidReason] = useState("");
   const [voidValidationError, setVoidValidationError] = useState("");
+  const [voidingInventory, setVoidingInventory] = useState<{
+    batch: ProductionBatch;
+    application: ProductionInventoryApplication;
+  } | null>(null);
+  const [inventoryVoidReason, setInventoryVoidReason] = useState("");
+  const [inventoryVoidError, setInventoryVoidError] = useState("");
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [isFiltering, setIsFiltering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isVoiding, setIsVoiding] = useState(false);
+  const [applyingBatchId, setApplyingBatchId] = useState<number | null>(null);
+  const [isVoidingInventory, setIsVoidingInventory] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -68,12 +87,19 @@ export default function ProductionPage() {
     setIsInitialLoading(true);
     setError("");
     try {
-      const [loadedProducts, loadedBatches] = await Promise.all([
+      const [loadedProducts, loadedLocations, loadedBatches] = await Promise.all([
         listProducts(activeToken, { is_active: true }),
+        listInventoryLocations(activeToken, { is_active: true }),
         listProductionBatches(activeToken),
       ]);
+      const loadedApplications = await loadInventoryApplications(
+        activeToken,
+        loadedBatches,
+      );
       setProducts(loadedProducts);
+      setLocations(loadedLocations);
       setBatches(loadedBatches);
+      setInventoryApplications(loadedApplications);
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -95,7 +121,12 @@ export default function ProductionPage() {
         activeToken,
         toApiFilters(activeFilters),
       );
+      const loadedApplications = await loadInventoryApplications(
+        activeToken,
+        loadedBatches,
+      );
       setBatches(loadedBatches);
+      setInventoryApplications(loadedApplications);
       setAppliedFilters({ ...activeFilters });
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
@@ -136,6 +167,83 @@ export default function ProductionPage() {
     setVoidReason("");
     setVoidValidationError("");
     clearNotices();
+  }
+
+  async function handleApplyInventory(
+    batch: ProductionBatch,
+    payload: ProductionInventoryApplyPayload,
+  ): Promise<boolean> {
+    if (!token) {
+      return false;
+    }
+    setApplyingBatchId(batch.id);
+    clearNotices();
+    try {
+      const application = await applyProductionToInventory(
+        token,
+        batch.id,
+        payload,
+      );
+      setMessage(
+        `Producción ${batch.production_number} aplicada a ${application.location_name}.`,
+      );
+      await loadBatches(token, appliedFilters);
+      return true;
+    } catch (applyError) {
+      if (redirectIfUnauthorized(applyError)) {
+        return false;
+      }
+      setError(getErrorMessage(applyError));
+      return false;
+    } finally {
+      setApplyingBatchId(null);
+    }
+  }
+
+  function handleOpenInventoryVoid(
+    batch: ProductionBatch,
+    application: ProductionInventoryApplication,
+  ) {
+    setVoidingInventory({ batch, application });
+    setInventoryVoidReason("");
+    setInventoryVoidError("");
+    clearNotices();
+  }
+
+  async function handleVoidInventoryApplication(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    if (!token || !voidingInventory?.application.application_id) {
+      return;
+    }
+    const reason = inventoryVoidReason.trim();
+    if (!reason) {
+      setInventoryVoidError("El motivo de anulación es obligatorio.");
+      return;
+    }
+    setIsVoidingInventory(true);
+    setInventoryVoidError("");
+    try {
+      await voidProductionInventoryApplication(
+        token,
+        voidingInventory.application.application_id,
+        reason,
+      );
+      setMessage(
+        `Aplicación de ${voidingInventory.batch.production_number} anulada.`,
+      );
+      setVoidingInventory(null);
+      setInventoryVoidReason("");
+      await loadBatches(token, appliedFilters);
+    } catch (voidError) {
+      if (redirectIfUnauthorized(voidError)) {
+        return;
+      }
+      setInventoryVoidError(getErrorMessage(voidError));
+    } finally {
+      setIsVoidingInventory(false);
+    }
   }
 
   async function handleVoidProduction(event: FormEvent<HTMLFormElement>) {
@@ -210,8 +318,8 @@ export default function ProductionPage() {
         </header>
 
         <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Este registro no aumenta inventario ni crea movimientos automáticos.
-          La entrada a stock se realizará en un bloque posterior.
+          La producción no aumenta inventario automáticamente hasta que se
+          aplique a una ubicación.
         </p>
 
         {error ? <ErrorMessage message={error} /> : null}
@@ -233,9 +341,17 @@ export default function ProductionPage() {
             <ProductionList
               batches={batches}
               products={products}
+              locations={locations}
+              inventoryApplications={inventoryApplications}
               filters={filters}
               isLoading={isFiltering}
               voidingBatchId={isVoiding ? voidingBatch?.id : null}
+              applyingBatchId={applyingBatchId}
+              voidingApplicationId={
+                isVoidingInventory
+                  ? voidingInventory?.application.application_id
+                  : null
+              }
               onFiltersChange={setFilters}
               onFilter={() => token && loadBatches(token, filters)}
               onClear={() => {
@@ -245,6 +361,8 @@ export default function ProductionPage() {
                 }
               }}
               onVoid={handleOpenVoid}
+              onApplyInventory={handleApplyInventory}
+              onVoidInventoryApplication={handleOpenInventoryVoid}
             />
           </>
         )}
@@ -315,7 +433,95 @@ export default function ProductionPage() {
           </form>
         </div>
       ) : null}
+
+      {voidingInventory ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="void-production-inventory-title"
+        >
+          <form
+            className="w-full max-w-lg rounded-lg border border-slate-200 bg-white shadow-xl"
+            onSubmit={handleVoidInventoryApplication}
+          >
+            <div className="border-b border-slate-200 px-5 py-4">
+              <h2
+                className="text-lg font-semibold text-slate-950"
+                id="void-production-inventory-title"
+              >
+                Anular aplicación a inventario
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                {voidingInventory.batch.production_number} · {" "}
+                {voidingInventory.application.location_name}
+              </p>
+            </div>
+            <div className="space-y-4 p-5">
+              {inventoryVoidError ? (
+                <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {inventoryVoidError}
+                </p>
+              ) : null}
+              <label className="block">
+                <span className="text-sm font-medium text-slate-700">
+                  Motivo de anulación
+                </span>
+                <textarea
+                  className="mt-1 min-h-24 w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-slate-950 outline-none focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:bg-slate-100"
+                  value={inventoryVoidReason}
+                  required
+                  disabled={isVoidingInventory}
+                  onChange={(event) =>
+                    setInventoryVoidReason(event.target.value)
+                  }
+                />
+              </label>
+              <p className="text-sm text-slate-600">
+                Los movimientos se conservarán anulados y el stock se revertirá.
+                La operación fallará si el stock actual resultaría negativo.
+              </p>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button
+                  className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:text-slate-400"
+                  type="button"
+                  disabled={isVoidingInventory}
+                  onClick={() => setVoidingInventory(null)}
+                >
+                  Cancelar
+                </button>
+                <button
+                  className="h-10 rounded-md bg-red-700 px-4 text-sm font-semibold text-white hover:bg-red-600 disabled:bg-slate-300"
+                  type="submit"
+                  disabled={isVoidingInventory}
+                >
+                  {isVoidingInventory
+                    ? "Anulando..."
+                    : "Confirmar anulación"}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </main>
+  );
+}
+
+async function loadInventoryApplications(
+  token: string,
+  batches: ProductionBatch[],
+): Promise<Record<number, ProductionInventoryApplication>> {
+  const applications = await Promise.all(
+    batches.map((batch) =>
+      getProductionInventoryApplication(token, batch.id),
+    ),
+  );
+  return Object.fromEntries(
+    applications.map((application) => [
+      application.production_batch_id,
+      application,
+    ]),
   );
 }
 

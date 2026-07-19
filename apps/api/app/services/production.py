@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.models.production_batch import ProductionBatch
 from app.repositories import products
 from app.repositories import production as production_repository
+from app.repositories import production_inventory as application_repository
 from app.schemas.production import ProductionBatchCreate, ProductionItemCreate
 
 
@@ -84,6 +85,10 @@ def void_production_batch(
         raise ValueError("La produccion no existe.")
     if batch.status == "voided":
         raise ValueError("La produccion ya esta anulada.")
+    if application_repository.get_active_application_for_batch(db, batch.id):
+        raise ValueError(
+            "Primero anule la aplicacion a inventario antes de anular la produccion.",
+        )
 
     production_repository.mark_production_batch_voided(
         db,

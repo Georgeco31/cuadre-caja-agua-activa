@@ -52,3 +52,39 @@ export type ProductionBatchFilters = {
   product_id?: number;
   search?: string;
 };
+
+export type ProductionInventoryState = "not_applied" | "applied" | "voided";
+export type ProductionInventoryApplicationStatus = "active" | "voided";
+
+export type ProductionInventoryApplicationItem = {
+  id: number;
+  application_id: number;
+  production_item_id: number;
+  product_id: number;
+  inventory_movement_id: number;
+  movement_date: string;
+  quantity_applied: string;
+  created_at: string;
+};
+
+export type ProductionInventoryApplication = {
+  state: ProductionInventoryState;
+  application_id: number | null;
+  production_batch_id: number;
+  location_id: number | null;
+  location_name: string | null;
+  status: ProductionInventoryApplicationStatus | null;
+  applied_at: string | null;
+  void_reason: string | null;
+  voided_at: string | null;
+  created_by: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+  items: ProductionInventoryApplicationItem[];
+};
+
+export type ProductionInventoryApplyPayload = {
+  location_id: number;
+  movement_date: string;
+  notes?: string | null;
+};

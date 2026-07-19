@@ -2,7 +2,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 ProductionStatus = Literal["active", "voided"]
 
@@ -26,6 +26,14 @@ class ProductionItemCreate(BaseModel):
     @classmethod
     def normalize_notes(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)
+
+    @model_validator(mode="after")
+    def validate_waste_not_greater_than_produced(self):
+        if self.quantity_waste > self.quantity_produced:
+            raise ValueError(
+                "La merma no puede ser mayor que la cantidad producida.",
+            )
+        return self
 
 
 class ProductionBatchCreate(BaseModel):

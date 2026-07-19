@@ -63,3 +63,10 @@ class ProductionBatch(Base):
         cascade="all, delete-orphan",
         order_by="ProductionItem.id",
     )
+    inventory_applications: Mapped[
+        list["ProductionInventoryApplication"]
+    ] = relationship(
+        "ProductionInventoryApplication",
+        back_populates="production_batch",
+        order_by="ProductionInventoryApplication.id",
+    )

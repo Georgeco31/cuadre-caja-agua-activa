@@ -13,6 +13,12 @@ from app.models.inventory_stock import InventoryStock
 from app.models.product import Product
 from app.models.production_batch import ProductionBatch
 from app.models.production_item import ProductionItem
+from app.models.production_inventory_application import (
+    ProductionInventoryApplication,
+)
+from app.models.production_inventory_application_item import (
+    ProductionInventoryApplicationItem,
+)
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
 from app.models.user import User
@@ -34,6 +40,8 @@ __all__ = [
     "Product",
     "ProductionBatch",
     "ProductionItem",
+    "ProductionInventoryApplication",
+    "ProductionInventoryApplicationItem",
     "Sale",
     "SaleItem",
     "User",
