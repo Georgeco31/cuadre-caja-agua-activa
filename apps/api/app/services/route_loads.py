@@ -10,6 +10,7 @@ from app.models.product import Product
 from app.models.route_load import RouteLoad
 from app.repositories import inventory as inventory_repository
 from app.repositories import route_loads as route_loads_repository
+from app.repositories import route_returns as route_returns_repository
 from app.schemas.inventory import InventoryMovementCreate
 from app.schemas.route_load import RouteLoadCreate
 from app.services import inventory as inventory_service
@@ -191,6 +192,10 @@ def void_route_load(
         raise ValueError("La carga de ruta no existe.")
     if route_load.status == "voided":
         raise ValueError("La carga de ruta ya esta anulada.")
+    if route_returns_repository.has_active_return_for_load(db, route_load.id):
+        raise ValueError(
+            "Primero anule el retorno de ruta antes de anular la carga.",
+        )
 
     voided_at = datetime.now(timezone.utc)
     movement_reason = f"Carga de ruta anulada {route_load.load_number}: {reason}"

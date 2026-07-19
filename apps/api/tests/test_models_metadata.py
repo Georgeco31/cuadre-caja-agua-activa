@@ -27,6 +27,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "production_items",
         "route_load_items",
         "route_loads",
+        "route_return_items",
+        "route_returns",
         "sale_items",
         "sales",
     }
@@ -68,6 +70,7 @@ def test_money_columns_use_numeric() -> None:
             "production_inventory_application_items"
         ].c.quantity_applied,
         Base.metadata.tables["route_load_items"].c.quantity_loaded,
+        Base.metadata.tables["route_return_items"].c.quantity_returned,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -178,6 +181,37 @@ def test_required_foreign_keys_are_defined() -> None:
     ) == {"inventory_movements.id"}
     assert _foreign_key_targets(
         "route_load_items",
+        "destination_entry_movement_id",
+    ) == {"inventory_movements.id"}
+    assert _foreign_key_targets("route_returns", "route_load_id") == {
+        "route_loads.id",
+    }
+    assert _foreign_key_targets("route_returns", "route_id") == {
+        "delivery_routes.id",
+    }
+    assert _foreign_key_targets("route_returns", "vehicle_id") == {"vehicles.id"}
+    assert _foreign_key_targets("route_returns", "source_location_id") == {
+        "inventory_locations.id",
+    }
+    assert _foreign_key_targets("route_returns", "destination_location_id") == {
+        "inventory_locations.id",
+    }
+    assert _foreign_key_targets("route_returns", "created_by") == {"users.id"}
+    assert _foreign_key_targets("route_return_items", "route_return_id") == {
+        "route_returns.id",
+    }
+    assert _foreign_key_targets("route_return_items", "route_load_item_id") == {
+        "route_load_items.id",
+    }
+    assert _foreign_key_targets("route_return_items", "product_id") == {
+        "products.id",
+    }
+    assert _foreign_key_targets(
+        "route_return_items",
+        "source_exit_movement_id",
+    ) == {"inventory_movements.id"}
+    assert _foreign_key_targets(
+        "route_return_items",
         "destination_entry_movement_id",
     ) == {"inventory_movements.id"}
 
@@ -294,6 +328,16 @@ def test_model_check_constraints_are_registered() -> None:
     assert _check_constraint_names("route_load_items") == {
         "ck_route_load_items_product_snapshot_not_blank",
         "ck_route_load_items_quantity_positive",
+    }
+    assert _check_constraint_names("route_returns") == {
+        "ck_route_returns_locations_different",
+        "ck_route_returns_number_not_blank",
+        "ck_route_returns_status",
+        "ck_route_returns_void_state",
+    }
+    assert _check_constraint_names("route_return_items") == {
+        "ck_route_return_items_product_snapshot_not_blank",
+        "ck_route_return_items_quantity_positive",
     }
 
 

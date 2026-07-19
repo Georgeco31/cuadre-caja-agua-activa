@@ -358,7 +358,7 @@ Las ubicaciones aceptan los tipos `warehouse`, `vehicle`, `production_area` y `o
 
 Los movimientos `entry` y `adjustment_in` aumentan stock; `exit` y `adjustment_out` lo reducen. El servicio bloquea las filas relacionadas, impide cantidades negativas, calcula `total_cost` cuando existe costo unitario y guarda snapshots del producto. La anulacion exige motivo, conserva el movimiento como `voided` y aplica el efecto inverso sin permitir stock negativo.
 
-El inventario puede moverse mediante operaciones manuales, una aplicacion explicita de produccion o una carga de camion explicita. Ventas, caja y cobros no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks, movimientos, aplicaciones o cargas falsas.
+El inventario puede moverse mediante operaciones manuales, una aplicacion explicita de produccion, una carga de camion o un retorno de ruta explicito. Ventas, caja y cobros no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks, movimientos, aplicaciones, cargas o retornos falsos.
 
 ## Produccion y envasado base
 
@@ -389,7 +389,20 @@ La migracion `0014_route_loads` crea `route_loads` y `route_load_items`. Endpoin
 
 Una carga exige fecha, ruta activa, vehiculo activo, origen activo, destino activo de tipo `vehicle` y al menos un producto activo. Si el destino esta vinculado a un vehiculo, debe coincidir con el seleccionado. Cada item crea una salida en el origen y una entrada en el destino usando `Numeric(14, 3)` y la logica transaccional de inventario. El listado acepta `date_from`, `date_to`, `status`, `route_id`, `vehicle_id`, `product_id` y `search`.
 
-La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Este modulo no registra ventas, cobros, dinero de ruta, devoluciones, liquidaciones ni cierres, y los seeds no crean cargas falsas.
+La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Una carga con retorno activo exige anular primero ese retorno. Este modulo no registra ventas, cobros, dinero de ruta, liquidaciones ni cierres, y los seeds no crean cargas falsas.
+
+## Retorno de ruta
+
+La migracion `0015_route_returns` crea `route_returns` y `route_return_items`. Endpoints autenticados:
+
+- `POST /api/v1/route-returns`
+- `GET /api/v1/route-returns`
+- `GET /api/v1/route-returns/{return_id}`
+- `POST /api/v1/route-returns/{return_id}/void`
+
+Un retorno exige fecha, una carga activa, un destino activo que no sea de tipo `vehicle` y al menos un item perteneciente a la carga. La ruta, el vehiculo y la ubicacion origen se copian desde la carga. Cada cantidad usa `Numeric(14, 3)`, debe ser positiva, no puede superar lo cargado ni el stock disponible en el vehiculo y genera una salida del vehiculo y una entrada en el destino dentro de una sola transaccion.
+
+Solo puede existir un retorno activo por carga; los retornos anulados se conservan como historial. La anulacion exige motivo, conserva items y movimientos, revierte el stock sin permitir negativos y habilita nuevamente la carga para otro retorno. Los movimientos de un retorno activo no pueden anularse manualmente. Este modulo no registra ventas, cobros, caja, dinero entregado, diferencias, liquidaciones ni cierres de ruta, y los seeds no crean retornos falsos.
 
 Endpoints de gastos dentro de un cuadre:
 

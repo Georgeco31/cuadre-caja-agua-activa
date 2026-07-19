@@ -73,6 +73,11 @@ import type {
   RouteLoadPayload,
 } from "@/types/routeLoad";
 import type {
+  RouteReturn,
+  RouteReturnFilters,
+  RouteReturnPayload,
+} from "@/types/routeReturn";
+import type {
   CustomerStatement,
   CustomerStatementFilters,
   OverdueReceivable,
@@ -1228,6 +1233,74 @@ export async function voidRouteLoad(
   reason: string,
 ): Promise<RouteLoad> {
   return request<RouteLoad>(`/route-loads/${loadId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function createRouteReturn(
+  token: string,
+  payload: RouteReturnPayload,
+): Promise<RouteReturn> {
+  return request<RouteReturn>("/route-returns", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listRouteReturns(
+  token: string,
+  filters: RouteReturnFilters = {},
+): Promise<RouteReturn[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.route_id !== undefined) {
+    searchParams.set("route_id", String(filters.route_id));
+  }
+  if (filters.vehicle_id !== undefined) {
+    searchParams.set("vehicle_id", String(filters.vehicle_id));
+  }
+  if (filters.route_load_id !== undefined) {
+    searchParams.set("route_load_id", String(filters.route_load_id));
+  }
+  if (filters.product_id !== undefined) {
+    searchParams.set("product_id", String(filters.product_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<RouteReturn[]>(
+    `/route-returns${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getRouteReturn(
+  token: string,
+  returnId: number,
+): Promise<RouteReturn> {
+  return request<RouteReturn>(`/route-returns/${returnId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function voidRouteReturn(
+  token: string,
+  returnId: number,
+  reason: string,
+): Promise<RouteReturn> {
+  return request<RouteReturn>(`/route-returns/${returnId}/void`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),

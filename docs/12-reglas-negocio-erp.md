@@ -54,6 +54,11 @@ Este documento define reglas generales para crecer desde el modulo actual de caj
 - Una carga de camion debe trasladar stock mediante una salida del origen y una entrada al inventario del vehiculo en una sola transaccion.
 - La carga debe referenciar una ruta y un vehiculo activos, conservar sus movimientos y poder anularse sin dejar stock negativo.
 - Registrar una carga no registra ventas, cobros, dinero entregado ni cierre de ruta.
+- Un retorno de ruta debe partir de una carga activa y trasladar stock desde la ubicacion del vehiculo hacia una ubicacion activa no vehicular.
+- Cada producto retornado debe pertenecer a la carga y no puede superar la cantidad cargada ni el stock disponible en el vehiculo.
+- Solo puede existir un retorno activo por carga. Una carga con retorno activo no puede anularse hasta revertir ese retorno.
+- Anular un retorno conserva su cabecera, items y movimientos, y revierte el stock sin permitir cantidades negativas.
+- Registrar un retorno no registra ventas, cobros, dinero entregado, diferencias ni cierre de ruta.
 - Las ventas deben disminuir inventario cuando el flujo se implemente.
 - El inventario por camion debe poder compararse contra carga, ventas y retorno.
 

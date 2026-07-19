@@ -197,8 +197,9 @@ cuadre-caja-agua-activa/
 - Bloque 34: produccion y envasado base con detalle por producto, snapshots, filtros y anulacion logica.
 - Bloque 35: aplicacion explicita y reversible de produccion a inventario con trazabilidad por movimiento.
 - Bloque 36: carga de camion desde inventario origen hacia una ubicacion de vehiculo, asociada a ruta y reversible.
+- Bloque 37: retorno de productos desde una carga activa hacia una ubicacion no vehicular, trazable y reversible.
 
-Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, descuento de inventario por ventas, devolucion o liquidacion de inventario de ruta, cierre de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, descuento de inventario por ventas, liquidacion de inventario de ruta, cierre de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

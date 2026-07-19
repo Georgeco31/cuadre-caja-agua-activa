@@ -10,6 +10,7 @@ from app.models.inventory_stock import InventoryStock
 from app.repositories import inventory
 from app.repositories import production_inventory as production_inventory_repository
 from app.repositories import route_loads as route_loads_repository
+from app.repositories import route_returns as route_returns_repository
 from app.schemas.inventory import (
     InventoryLocationCreate,
     InventoryLocationUpdate,
@@ -242,6 +243,7 @@ def void_movement_in_transaction(
     voided_at: datetime | None = None,
     allow_production_application: bool = False,
     allow_route_load: bool = False,
+    allow_route_return: bool = False,
 ) -> InventoryMovement:
     movement = inventory.get_movement(db, movement_id, for_update=True)
     if movement is None:
@@ -263,6 +265,11 @@ def void_movement_in_transaction(
         and route_loads_repository.has_active_load_for_movement(db, movement.id)
     ):
         raise ValueError("Anule la carga desde el modulo de cargas de camion.")
+    if (
+        not allow_route_return
+        and route_returns_repository.has_active_return_for_movement(db, movement.id)
+    ):
+        raise ValueError("Anule el retorno desde el modulo de retornos de ruta.")
 
     product = inventory.get_product(db, movement.product_id, for_update=True)
     location = inventory.get_location(db, movement.location_id, for_update=True)

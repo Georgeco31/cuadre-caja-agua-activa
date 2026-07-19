@@ -59,6 +59,7 @@ Rutas principales:
 - `/dashboard/inventory`
 - `/dashboard/production`
 - `/dashboard/route-loads`
+- `/dashboard/route-returns`
 - `/dashboard/sales/cash`
 - `/dashboard/sales/credit`
 - `/dashboard/receivables`
@@ -172,6 +173,10 @@ http://localhost:3000/login
 - La pantalla `/dashboard/route-loads` carga rutas, vehiculos, ubicaciones y productos activos, muestra stock oficial disponible en el origen y registra una carga mediante `POST /api/v1/route-loads`.
 - Cada carga traslada inventario desde el origen hacia una ubicacion tipo `vehicle`. El listado permite filtrar, consultar movimientos vinculados y anular con motivo mediante `POST /api/v1/route-loads/{id}/void`.
 - Despues de crear o anular una carga, la pantalla vuelve a consultar cargas y stock oficial. No calcula stock, registra ventas, cobros, dinero entregado, devoluciones, liquidaciones ni cierres de ruta.
+- La pantalla `/dashboard/route-returns` lista retornos y carga las cargas activas que todavia no tienen un retorno activo.
+- Al seleccionar una carga muestra ruta, vehiculo, ubicacion origen, productos, cantidad cargada y stock oficial en el vehiculo. El usuario elige un destino activo no vehicular y registra solo las cantidades que regresan.
+- El alta usa `POST /api/v1/route-returns`; el listado permite filtrar, consultar movimientos vinculados y anular con motivo mediante `POST /api/v1/route-returns/{id}/void`.
+- Despues de crear o anular un retorno, la pantalla vuelve a consultar retornos, cargas y stock oficial. No registra ventas, cobros, caja, dinero entregado, diferencias, liquidaciones ni cierres de ruta.
 - Las ventas y los cobros no modifican automaticamente caja, inventario, rutas o bancos. Este bloque tampoco genera recibos ni aplica un pago a varias ventas.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
