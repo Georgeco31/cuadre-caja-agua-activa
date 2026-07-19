@@ -19,6 +19,8 @@ from app.models.production_inventory_application import (
 from app.models.production_inventory_application_item import (
     ProductionInventoryApplicationItem,
 )
+from app.models.route_load import RouteLoad
+from app.models.route_load_item import RouteLoadItem
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
 from app.models.user import User
@@ -42,6 +44,8 @@ __all__ = [
     "ProductionItem",
     "ProductionInventoryApplication",
     "ProductionInventoryApplicationItem",
+    "RouteLoad",
+    "RouteLoadItem",
     "Sale",
     "SaleItem",
     "User",

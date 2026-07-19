@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion operativa y aplicacion explicita de produccion a inventario. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas o rutas, consumo de insumos, nomina, mantenimiento, combustible o cierres de ruta, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario y carga de camion. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, devolucion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -260,7 +260,7 @@ El modulo base usa la tabla `delivery_routes` y los endpoints:
 
 El listado acepta `search`, `is_active`, `zone` y `sector`. La busqueda general consulta nombre, codigo, zona, sector y dias de atencion.
 
-`code` es unico cuando se registra y permite valores nulos. `expected_daily_cash` usa `Numeric(12, 2)` y no admite valores negativos. Las rutas no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Chofer y vehiculo son referencias de texto; no existen relaciones formales con empleados o camiones. Este modulo no crea ventas, cobros, carga, inventario, liquidacion, cierre de ruta ni datos falsos en seeds.
+`code` es unico cuando se registra y permite valores nulos. `expected_daily_cash` usa `Numeric(12, 2)` y no admite valores negativos. Las rutas no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Chofer y vehiculo son referencias de texto; no existen relaciones formales con empleados o camiones. La administracion de rutas no mueve inventario por si sola; el modulo separado de cargas referencia rutas activas.
 
 ## Vehiculos
 
@@ -275,7 +275,7 @@ El modulo base usa la tabla `vehicles` y los endpoints:
 
 El listado acepta `search`, `is_active`, `vehicle_type` y `fuel_type`. La busqueda general consulta nombre, placa, codigo, tipo, marca y modelo.
 
-`code` y `plate` son unicos cuando se registran y permiten valores nulos. `year`, cuando existe, debe estar entre 1900 y 2100. Los vehiculos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. El chofer es una referencia de texto; no existen relaciones formales con empleados o rutas. Este modulo no crea mantenimiento, combustible, gastos, kilometraje, carga, inventario, asignaciones, rentabilidad ni datos falsos en seeds.
+`code` y `plate` son unicos cuando se registran y permiten valores nulos. `year`, cuando existe, debe estar entre 1900 y 2100. Los vehiculos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. El chofer es una referencia de texto; no existen relaciones formales con empleados o rutas. La administracion de vehiculos no mueve inventario por si sola; una carga puede referenciar un vehiculo activo y su ubicacion de inventario.
 
 ## Ventas de contado
 
@@ -358,7 +358,7 @@ Las ubicaciones aceptan los tipos `warehouse`, `vehicle`, `production_area` y `o
 
 Los movimientos `entry` y `adjustment_in` aumentan stock; `exit` y `adjustment_out` lo reducen. El servicio bloquea las filas relacionadas, impide cantidades negativas, calcula `total_cost` cuando existe costo unitario y guarda snapshots del producto. La anulacion exige motivo, conserva el movimiento como `voided` y aplica el efecto inverso sin permitir stock negativo.
 
-El inventario puede moverse mediante operaciones manuales o mediante una aplicacion explicita de produccion. Ventas, caja, cobros y rutas no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks, movimientos o aplicaciones falsas.
+El inventario puede moverse mediante operaciones manuales, una aplicacion explicita de produccion o una carga de camion explicita. Ventas, caja y cobros no crean ni modifican stock automaticamente, y los seeds no crean ubicaciones, stocks, movimientos, aplicaciones o cargas falsas.
 
 ## Produccion y envasado base
 
@@ -377,6 +377,19 @@ Cada produccion exige una fecha y al menos un producto existente y activo. El ba
 La migracion `0013_prod_inventory` agrega `production_inventory_applications` y `production_inventory_application_items`. Crear una produccion sigue sin modificar inventario. La accion `apply-inventory` exige una ubicacion activa, calcula `quantity_produced - quantity_waste`, omite items con neto cero y crea entradas y stock en una sola transaccion. Solo puede existir una aplicacion activa por lote.
 
 La anulacion de una aplicacion exige motivo, anula sus movimientos y revierte el stock sin permitir cantidades negativas. Todos los registros se conservan. Un lote con aplicacion activa no puede anularse hasta revertirla; un movimiento vinculado tampoco puede anularse directamente desde inventario mientras la aplicacion siga activa. Los seeds no crean producciones ni aplicaciones falsas y este flujo no modifica caja, ventas, cobros o rutas.
+
+## Carga de camion
+
+La migracion `0014_route_loads` crea `route_loads` y `route_load_items`. Endpoints autenticados:
+
+- `POST /api/v1/route-loads`
+- `GET /api/v1/route-loads`
+- `GET /api/v1/route-loads/{load_id}`
+- `POST /api/v1/route-loads/{load_id}/void`
+
+Una carga exige fecha, ruta activa, vehiculo activo, origen activo, destino activo de tipo `vehicle` y al menos un producto activo. Si el destino esta vinculado a un vehiculo, debe coincidir con el seleccionado. Cada item crea una salida en el origen y una entrada en el destino usando `Numeric(14, 3)` y la logica transaccional de inventario. El listado acepta `date_from`, `date_to`, `status`, `route_id`, `vehicle_id`, `product_id` y `search`.
+
+La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Este modulo no registra ventas, cobros, dinero de ruta, devoluciones, liquidaciones ni cierres, y los seeds no crean cargas falsas.
 
 Endpoints de gastos dentro de un cuadre:
 

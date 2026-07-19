@@ -68,6 +68,11 @@ import type {
   CashSummaryReportFilters,
 } from "@/types/report";
 import type {
+  RouteLoad,
+  RouteLoadFilters,
+  RouteLoadPayload,
+} from "@/types/routeLoad";
+import type {
   CustomerStatement,
   CustomerStatementFilters,
   OverdueReceivable,
@@ -1163,6 +1168,70 @@ export async function voidProductionInventoryApplication(
       body: JSON.stringify({ reason }),
     },
   );
+}
+
+export async function createRouteLoad(
+  token: string,
+  payload: RouteLoadPayload,
+): Promise<RouteLoad> {
+  return request<RouteLoad>("/route-loads", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listRouteLoads(
+  token: string,
+  filters: RouteLoadFilters = {},
+): Promise<RouteLoad[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.route_id !== undefined) {
+    searchParams.set("route_id", String(filters.route_id));
+  }
+  if (filters.vehicle_id !== undefined) {
+    searchParams.set("vehicle_id", String(filters.vehicle_id));
+  }
+  if (filters.product_id !== undefined) {
+    searchParams.set("product_id", String(filters.product_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<RouteLoad[]>(`/route-loads${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getRouteLoad(
+  token: string,
+  loadId: number,
+): Promise<RouteLoad> {
+  return request<RouteLoad>(`/route-loads/${loadId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function voidRouteLoad(
+  token: string,
+  loadId: number,
+  reason: string,
+): Promise<RouteLoad> {
+  return request<RouteLoad>(`/route-loads/${loadId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
 }
 
 async function request<T>(

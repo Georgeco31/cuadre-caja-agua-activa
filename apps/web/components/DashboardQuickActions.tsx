@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/route-loads",
+    title: "Carga de camión",
+    description: "Mover productos desde bodega hacia un vehículo para una ruta.",
+    primary: false,
+  },
+  {
     href: "/dashboard/production",
     title: "Producción",
     description: "Registrar producción y envasado diario.",

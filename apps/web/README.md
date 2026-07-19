@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion operativa y aplicacion explicita de produccion a inventario. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas o rutas, consumo de insumos, nomina, mantenimiento, combustible, carga o cierre de ruta, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario y carga de camion. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, devolucion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -58,6 +58,7 @@ Rutas principales:
 - `/dashboard/vehicles`
 - `/dashboard/inventory`
 - `/dashboard/production`
+- `/dashboard/route-loads`
 - `/dashboard/sales/cash`
 - `/dashboard/sales/credit`
 - `/dashboard/receivables`
@@ -91,7 +92,7 @@ http://localhost:3000/login
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, inventario, produccion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, inventario, produccion, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -135,12 +136,12 @@ http://localhost:3000/login
 - El alta usa `POST /api/v1/delivery-routes` y la edicion usa `PATCH /api/v1/delivery-routes/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/delivery-routes/{id}/deactivate` y `PATCH /api/v1/delivery-routes/{id}/activate`; no se eliminan rutas fisicamente.
 - El listado muestra zona, sector, dias de atencion, referencias textuales de chofer/vehiculo y efectivo diario esperado.
-- El modulo de rutas no registra ventas, cobros, carga de camion, inventario, liquidaciones ni cierres de ruta.
+- La administracion de rutas no mueve inventario. El modulo separado de carga de camion puede seleccionar rutas activas.
 - La pantalla `/dashboard/vehicles` lista vehiculos desde `GET /api/v1/vehicles` y permite buscar por nombre, placa, codigo, tipo, marca o modelo.
 - El alta usa `POST /api/v1/vehicles` y la edicion usa `PATCH /api/v1/vehicles/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/vehicles/{id}/deactivate` y `PATCH /api/v1/vehicles/{id}/activate`; no se eliminan vehiculos fisicamente.
 - El formulario muestra tipos de vehiculo y combustible en español, conservando los valores internos en ingles.
-- El modulo de vehiculos no registra mantenimiento, combustible, gastos, kilometraje, carga, inventario, rutas asignadas ni rentabilidad.
+- La administracion de vehiculos no mueve inventario. El modulo separado de carga puede seleccionar un vehiculo activo y su ubicacion.
 - La pantalla `/dashboard/sales/cash` carga clientes y productos activos y lista solamente ventas con `sale_type=cash` desde `GET /api/v1/sales`.
 - El formulario permite consumidor final o cliente existente, varios productos, cantidad, precio unitario ajustable, método de pago y notas.
 - El alta usa `POST /api/v1/sales/cash`; el frontend muestra un total estimado y conserva como oficial el total calculado por el backend.
@@ -168,6 +169,9 @@ http://localhost:3000/login
 - La aplicacion exige ubicacion y confirmacion, usa `POST /api/v1/production/batches/{id}/apply-inventory` y vuelve a consultar el lote y su trazabilidad.
 - Una aplicacion activa muestra ubicacion, fecha y movimientos generados. Puede anularse con motivo mediante `POST /api/v1/production/inventory-applications/{id}/void`; la API revierte el stock oficial.
 - Una produccion anulada no puede aplicarse. Una produccion con aplicacion activa exige anular primero esa aplicacion.
+- La pantalla `/dashboard/route-loads` carga rutas, vehiculos, ubicaciones y productos activos, muestra stock oficial disponible en el origen y registra una carga mediante `POST /api/v1/route-loads`.
+- Cada carga traslada inventario desde el origen hacia una ubicacion tipo `vehicle`. El listado permite filtrar, consultar movimientos vinculados y anular con motivo mediante `POST /api/v1/route-loads/{id}/void`.
+- Despues de crear o anular una carga, la pantalla vuelve a consultar cargas y stock oficial. No calcula stock, registra ventas, cobros, dinero entregado, devoluciones, liquidaciones ni cierres de ruta.
 - Las ventas y los cobros no modifican automaticamente caja, inventario, rutas o bancos. Este bloque tampoco genera recibos ni aplica un pago a varias ventas.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.

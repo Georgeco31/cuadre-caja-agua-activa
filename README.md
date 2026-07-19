@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base con movimientos manuales y registro operativo de produccion y envasado.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion y carga de camion hacia una ruta.
 
 ## Problema que resuelve
 
@@ -61,20 +61,22 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Cantidades producidas, merma, snapshots y anulacion logica con motivo.
 - Aplicacion explicita de produccion a una ubicacion de inventario.
 - Entradas de stock por cantidad neta y anulacion transaccional trazable.
+- Carga explicita de productos desde una ubicacion origen hacia el inventario de un vehiculo.
+- Salida y entrada vinculadas a ruta, vehiculo y carga, con anulacion reversible.
 
 Quedan fuera del MVP:
 
 - Facturacion.
-- Automatizacion de inventario por ventas o rutas.
+- Descuento automatico de inventario por ventas.
 - Conciliacion automatica de cobros con caja, bancos o rutas.
-- Cargas, liquidaciones y cierres de ruta.
+- Devoluciones, liquidaciones y cierres de ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
 - WhatsApp.
 - Reportes avanzados.
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 35 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion operativa y su aplicacion explicita a inventario. Registrar una produccion no mueve stock por si solo; las ventas y los abonos tampoco modifican automaticamente caja, inventario, bancos o rutas.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 36 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario y carga de camion. Registrar una produccion no mueve stock por si solo; una carga explicita si traslada stock entre ubicaciones. Las ventas y los abonos no modifican automaticamente caja, inventario, bancos o rutas.
 
 ## Stack definido
 
@@ -194,8 +196,9 @@ cuadre-caja-agua-activa/
 - Bloque 33: inventario base por ubicacion con stock, movimientos manuales y anulacion reversible.
 - Bloque 34: produccion y envasado base con detalle por producto, snapshots, filtros y anulacion logica.
 - Bloque 35: aplicacion explicita y reversible de produccion a inventario con trazabilidad por movimiento.
+- Bloque 36: carga de camion desde inventario origen hacia una ubicacion de vehiculo, asociada a ruta y reversible.
 
-Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, descuento de inventario por ventas, inventario por ruta o vehiculo, carga o cierre de ruta, liquidaciones, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion entre ventas, cobros y caja, descuento de inventario por ventas, devolucion o liquidacion de inventario de ruta, cierre de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 
