@@ -9,6 +9,7 @@ from app.models.inventory_location import InventoryLocation
 from app.models.product import Product
 from app.models.route_load import RouteLoad
 from app.repositories import inventory as inventory_repository
+from app.repositories import route_closures as route_closures_repository
 from app.repositories import credit_payments as credit_payments_repository
 from app.repositories import route_loads as route_loads_repository
 from app.repositories import route_returns as route_returns_repository
@@ -190,6 +191,18 @@ def get_active_route_load_for_link(db: Session, load_id: int) -> RouteLoad:
         raise ValueError("La carga de ruta no existe.")
     if route_load.status != "active":
         raise ValueError("No se puede asociar actividad a una carga anulada.")
+    _raise_if_financially_closed(db, route_load.id)
+    return route_load
+
+
+def ensure_route_load_is_financially_open(
+    db: Session,
+    load_id: int,
+) -> RouteLoad:
+    route_load = route_loads_repository.get_route_load_for_update(db, load_id)
+    if route_load is None:
+        raise ValueError("La carga de ruta no existe.")
+    _raise_if_financially_closed(db, route_load.id)
     return route_load
 
 
@@ -203,6 +216,7 @@ def void_route_load(
         raise ValueError("La carga de ruta no existe.")
     if route_load.status == "voided":
         raise ValueError("La carga de ruta ya esta anulada.")
+    _raise_if_financially_closed(db, route_load.id)
     if route_returns_repository.has_active_return_for_load(db, route_load.id):
         raise ValueError(
             "Primero anule el retorno de ruta antes de anular la carga.",
@@ -259,6 +273,14 @@ def void_route_load(
     if voided_load is None:
         raise RuntimeError("La carga anulada no pudo recuperarse.")
     return voided_load
+
+
+def _raise_if_financially_closed(db: Session, load_id: int) -> None:
+    if route_closures_repository.has_active_closure_for_load(db, load_id):
+        raise ValueError(
+            "La carga ya tiene un cierre financiero activo. "
+            "Primero anule el cierre financiero.",
+        )
 
 
 def _get_locations_for_update(

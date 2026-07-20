@@ -15,6 +15,7 @@ from app.repositories import route_returns as route_returns_repository
 from app.schemas.inventory import InventoryMovementCreate
 from app.schemas.route_return import RouteReturnCreate
 from app.services import inventory as inventory_service
+from app.services import route_loads as route_loads_service
 
 QUANTITY_QUANTUM = Decimal("0.001")
 
@@ -32,6 +33,7 @@ def create_route_return(
         raise ValueError("La carga de ruta no existe.")
     if route_load.status != "active":
         raise ValueError("No se puede registrar un retorno sobre una carga anulada.")
+    route_loads_service.ensure_route_load_is_financially_open(db, route_load.id)
     if route_returns_repository.has_active_return_for_load(db, route_load.id):
         raise ValueError("La carga ya tiene un retorno activo.")
 
@@ -189,6 +191,10 @@ def void_route_return(
         raise ValueError("El retorno de ruta no existe.")
     if route_return.status == "voided":
         raise ValueError("El retorno de ruta ya esta anulado.")
+    route_loads_service.ensure_route_load_is_financially_open(
+        db,
+        route_return.route_load_id,
+    )
 
     voided_at = datetime.now(timezone.utc)
     movement_reason = (

@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/route-closures",
+    title: "Cierre de ruta",
+    description: "Comparar efectivo esperado contra efectivo entregado por una ruta.",
+    primary: false,
+  },
+  {
     href: "/dashboard/route-activity",
     title: "Actividad de ruta",
     description: "Consultar ventas y cobros asociados a una carga de ruta.",

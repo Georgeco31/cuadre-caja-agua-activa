@@ -390,7 +390,7 @@ La migracion `0014_route_loads` crea `route_loads` y `route_load_items`. Endpoin
 
 Una carga exige fecha, ruta activa, vehiculo activo, origen activo, destino activo de tipo `vehicle` y al menos un producto activo. Si el destino esta vinculado a un vehiculo, debe coincidir con el seleccionado. Cada item crea una salida en el origen y una entrada en el destino usando `Numeric(14, 3)` y la logica transaccional de inventario. El listado acepta `date_from`, `date_to`, `status`, `route_id`, `vehicle_id`, `product_id` y `search`.
 
-La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Una carga con retorno activo exige anular primero ese retorno y una carga con ventas o cobros activos asociados no puede anularse. La consulta `commercial-activity` separa ventas de contado, ventas a credito y cobros, agrupa productos y calcula el efectivo esperado como ventas de contado mas cobros. No liquida dinero, modifica caja, descuenta inventario por ventas ni cierra la ruta.
+La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Una carga con retorno activo exige anular primero ese retorno y una carga con ventas o cobros activos asociados no puede anularse. La consulta `commercial-activity` separa ventas de contado, ventas a credito y cobros, agrupa productos y calcula el efectivo esperado como ventas de contado mas cobros. Una carga con cierre financiero activo no admite nuevas ventas, cobros o retornos asociados, ni la anulacion de esas operaciones o de la propia carga.
 
 ## Retorno de ruta
 
@@ -403,7 +403,23 @@ La migracion `0015_route_returns` crea `route_returns` y `route_return_items`. E
 
 Un retorno exige fecha, una carga activa, un destino activo que no sea de tipo `vehicle` y al menos un item perteneciente a la carga. La ruta, el vehiculo y la ubicacion origen se copian desde la carga. Cada cantidad usa `Numeric(14, 3)`, debe ser positiva, no puede superar lo cargado ni el stock disponible en el vehiculo y genera una salida del vehiculo y una entrada en el destino dentro de una sola transaccion.
 
-Solo puede existir un retorno activo por carga; los retornos anulados se conservan como historial. La anulacion exige motivo, conserva items y movimientos, revierte el stock sin permitir negativos y habilita nuevamente la carga para otro retorno. Los movimientos de un retorno activo no pueden anularse manualmente. Este modulo no registra ventas, cobros, caja, dinero entregado, diferencias, liquidaciones ni cierres de ruta, y los seeds no crean retornos falsos.
+Solo puede existir un retorno activo por carga; los retornos anulados se conservan como historial. La anulacion exige motivo, conserva items y movimientos, revierte el stock sin permitir negativos y habilita nuevamente la carga para otro retorno. Los movimientos de un retorno activo no pueden anularse manualmente. Este modulo no registra ventas, cobros, caja, dinero entregado, diferencias ni liquidaciones, y los seeds no crean retornos falsos.
+
+## Cierre financiero de ruta
+
+La migracion `0017_route_closures` crea `route_closures`. Endpoints autenticados:
+
+- `POST /api/v1/route-closures`
+- `GET /api/v1/route-closures`
+- `GET /api/v1/route-closures/{closure_id}`
+- `POST /api/v1/route-closures/{closure_id}/void`
+- `GET /api/v1/route-loads/{load_id}/financial-closure`
+
+El cierre exige una carga activa, fecha, efectivo entregado mayor o igual a cero y notas opcionales. El backend toma la actividad comercial oficial de la carga y congela snapshots de carga, ruta y vehiculo junto con ventas de contado, ventas a credito, cobros y efectivo esperado. El efectivo esperado es `ventas de contado + cobros`; las ventas a credito no se suman. La diferencia se calcula como `efectivo entregado - efectivo esperado`.
+
+Solo puede existir un cierre activo por carga. El listado acepta filtros de fecha, estado, ruta, vehiculo y texto; el detalle conserva todos los importes y snapshots. La anulacion exige motivo, mantiene el cierre como historial y permite crear otro cierre para la misma carga.
+
+Mientras exista un cierre activo se bloquean la anulacion de la carga, la creacion de ventas, cobros o retornos asociados y la anulacion de ventas, cobros o retornos ya vinculados. El cierre no crea cuadres, gastos, movimientos de caja, movimientos de inventario, ventas ni cobros, y los seeds no crean cierres falsos.
 
 Endpoints de gastos dentro de un cuadre:
 

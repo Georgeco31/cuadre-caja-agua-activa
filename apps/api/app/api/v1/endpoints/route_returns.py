@@ -82,7 +82,11 @@ def void_route_return(
 
 def _http_error(error: ValueError) -> HTTPException:
     detail = str(error)
-    if "ya esta anulado" in detail or "retorno activo" in detail:
+    if (
+        "ya esta anulado" in detail
+        or "retorno activo" in detail
+        or "cierre financiero activo" in detail
+    ):
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     if "no existe" in detail:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)

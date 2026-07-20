@@ -27,6 +27,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "production_items",
         "route_load_items",
         "route_loads",
+        "route_closures",
         "route_return_items",
         "route_returns",
         "sale_items",
@@ -71,6 +72,12 @@ def test_money_columns_use_numeric() -> None:
         ].c.quantity_applied,
         Base.metadata.tables["route_load_items"].c.quantity_loaded,
         Base.metadata.tables["route_return_items"].c.quantity_returned,
+        Base.metadata.tables["route_closures"].c.cash_sales_total,
+        Base.metadata.tables["route_closures"].c.credit_sales_total,
+        Base.metadata.tables["route_closures"].c.payments_total,
+        Base.metadata.tables["route_closures"].c.expected_cash_total,
+        Base.metadata.tables["route_closures"].c.delivered_cash_total,
+        Base.metadata.tables["route_closures"].c.difference_amount,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
     ]
@@ -178,6 +185,18 @@ def test_required_foreign_keys_are_defined() -> None:
     }
     assert _foreign_key_targets("route_load_items", "product_id") == {
         "products.id",
+    }
+    assert _foreign_key_targets("route_closures", "route_load_id") == {
+        "route_loads.id",
+    }
+    assert _foreign_key_targets("route_closures", "route_id") == {
+        "delivery_routes.id",
+    }
+    assert _foreign_key_targets("route_closures", "vehicle_id") == {
+        "vehicles.id",
+    }
+    assert _foreign_key_targets("route_closures", "created_by") == {
+        "users.id",
     }
     assert _foreign_key_targets(
         "route_load_items",

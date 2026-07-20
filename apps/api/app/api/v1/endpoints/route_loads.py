@@ -12,7 +12,9 @@ from app.schemas.route_load import (
     RouteLoadVoid,
 )
 from app.schemas.route_activity import RouteCommercialActivityRead
+from app.schemas.route_closure import RouteLoadFinancialClosureRead
 from app.services import route_activity as route_activity_service
+from app.services import route_closures as route_closures_service
 from app.services import route_loads as route_loads_service
 
 router = APIRouter(
@@ -82,6 +84,20 @@ def get_route_load_commercial_activity(
         raise _http_error(error) from error
 
 
+@router.get(
+    "/{load_id}/financial-closure",
+    response_model=RouteLoadFinancialClosureRead,
+)
+def get_route_load_financial_closure(
+    load_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return route_closures_service.get_financial_closure_for_load(db, load_id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
 @router.post("/{load_id}/void", response_model=RouteLoadRead)
 def void_route_load(
     load_id: int,
@@ -96,7 +112,7 @@ def void_route_load(
 
 def _http_error(error: ValueError) -> HTTPException:
     detail = str(error)
-    if "ya esta anulada" in detail:
+    if "ya esta anulada" in detail or "cierre financiero activo" in detail:
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     if "no existe" in detail:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)

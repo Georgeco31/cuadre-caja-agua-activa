@@ -120,6 +120,11 @@ def void_credit_payment(
         raise ValueError("El abono no existe.")
     if payment.status == "voided":
         raise ValueError("El abono ya esta anulado.")
+    if payment.route_load_id is not None:
+        route_load_service.ensure_route_load_is_financially_open(
+            db,
+            payment.route_load_id,
+        )
 
     sale = payment_repository.get_sale_for_update(db, payment.sale_id)
     if sale is None:

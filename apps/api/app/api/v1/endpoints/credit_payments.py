@@ -101,6 +101,10 @@ def _http_error(error: ValueError) -> HTTPException:
     detail = str(error)
     if "no existe" in detail:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
-    if "ya esta" in detail or "tiene abonos activos" in detail:
+    if (
+        "ya esta" in detail
+        or "tiene abonos activos" in detail
+        or "cierre financiero activo" in detail
+    ):
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)

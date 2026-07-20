@@ -74,6 +74,12 @@ import type {
 } from "@/types/routeLoad";
 import type { RouteCommercialActivity } from "@/types/routeActivity";
 import type {
+  RouteClosure,
+  RouteClosureFilters,
+  RouteClosurePayload,
+  RouteLoadFinancialClosure,
+} from "@/types/routeClosure";
+import type {
   RouteReturn,
   RouteReturnFilters,
   RouteReturnPayload,
@@ -1242,6 +1248,81 @@ export async function getRouteCommercialActivity(
     `/route-loads/${loadId}/commercial-activity`,
     { headers: authHeaders(token) },
   );
+}
+
+export async function getRouteLoadFinancialClosure(
+  token: string,
+  loadId: number,
+): Promise<RouteLoadFinancialClosure> {
+  return request<RouteLoadFinancialClosure>(
+    `/route-loads/${loadId}/financial-closure`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createRouteClosure(
+  token: string,
+  payload: RouteClosurePayload,
+): Promise<RouteClosure> {
+  return request<RouteClosure>("/route-closures", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listRouteClosures(
+  token: string,
+  filters: RouteClosureFilters = {},
+): Promise<RouteClosure[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.route_id !== undefined) {
+    searchParams.set("route_id", String(filters.route_id));
+  }
+  if (filters.vehicle_id !== undefined) {
+    searchParams.set("vehicle_id", String(filters.vehicle_id));
+  }
+  if (filters.route_load_id !== undefined) {
+    searchParams.set("route_load_id", String(filters.route_load_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<RouteClosure[]>(
+    `/route-closures${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getRouteClosure(
+  token: string,
+  closureId: number,
+): Promise<RouteClosure> {
+  return request<RouteClosure>(`/route-closures/${closureId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function voidRouteClosure(
+  token: string,
+  closureId: number,
+  reason: string,
+): Promise<RouteClosure> {
+  return request<RouteClosure>(`/route-closures/${closureId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
 }
 
 export async function voidRouteLoad(

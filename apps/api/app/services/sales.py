@@ -148,6 +148,11 @@ def void_sale(db: Session, sale_id: int, reason: str) -> Sale:
         raise ValueError("La venta no existe.")
     if sale.status == "voided":
         raise ValueError("La venta ya esta anulada.")
+    if sale.route_load_id is not None:
+        route_load_service.ensure_route_load_is_financially_open(
+            db,
+            sale.route_load_id,
+        )
     if (
         sale.sale_type == "credit"
         and sale_repository.has_active_credit_payments(db, sale.id)
