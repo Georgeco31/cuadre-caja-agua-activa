@@ -18,11 +18,13 @@ import {
   listCashSales,
   listCustomers,
   listProducts,
+  listRouteLoads,
   voidCashSale,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type { Customer } from "@/types/customer";
 import type { Product } from "@/types/product";
+import type { RouteLoad } from "@/types/routeLoad";
 import type { CashSale, CashSalePayload } from "@/types/sale";
 
 const emptyFilters: CashSaleFilterValues = {
@@ -39,6 +41,7 @@ export default function CashSalesPage() {
   const [token, setToken] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [routeLoads, setRouteLoads] = useState<RouteLoad[]>([]);
   const [sales, setSales] = useState<CashSale[]>([]);
   const [filters, setFilters] = useState<CashSaleFilterValues>(emptyFilters);
   const [appliedFilters, setAppliedFilters] =
@@ -65,13 +68,16 @@ export default function CashSalesPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [loadedCustomers, loadedProducts, loadedSales] = await Promise.all([
+      const [loadedCustomers, loadedProducts, loadedRouteLoads, loadedSales] =
+        await Promise.all([
         listCustomers(activeToken, { is_active: true }),
         listProducts(activeToken, { is_active: true }),
+        listRouteLoads(activeToken, { status: "active" }),
         listCashSales(activeToken, { sale_type: "cash" }),
       ]);
       setCustomers(loadedCustomers);
       setProducts(loadedProducts);
+      setRouteLoads(loadedRouteLoads);
       setSales(loadedSales);
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
@@ -237,6 +243,7 @@ export default function CashSalesPage() {
             <CashSaleForm
               customers={customers}
               products={products}
+              routeLoads={routeLoads}
               isSubmitting={isSaving}
               onSubmit={handleCreateSale}
             />

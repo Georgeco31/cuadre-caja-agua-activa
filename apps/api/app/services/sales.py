@@ -14,6 +14,7 @@ from app.schemas.sale import (
     CustomerCreditBalance,
     SaleItemCreate,
 )
+from app.services import route_loads as route_load_service
 
 MONEY_QUANTUM = Decimal("0.01")
 
@@ -23,6 +24,7 @@ def create_cash_sale(
     payload: CashSaleCreate,
     created_by: int,
 ) -> Sale:
+    route_load_id = _validate_route_load(db, payload.route_load_id)
     customer_id = payload.customer_id
     customer_name_snapshot = "Consumidor final"
     if customer_id is not None:
@@ -39,6 +41,7 @@ def create_cash_sale(
             "sale_date": payload.sale_date,
             "customer_id": customer_id,
             "customer_name_snapshot": customer_name_snapshot,
+            "route_load_id": route_load_id,
             "sale_type": "cash",
             "payment_method": payload.payment_method,
             "status": "active",
@@ -59,6 +62,7 @@ def create_credit_sale(
     payload: CreditSaleCreate,
     created_by: int,
 ) -> Sale:
+    route_load_id = _validate_route_load(db, payload.route_load_id)
     customer = sale_repository.get_customer_for_credit(db, payload.customer_id)
     if customer is None:
         raise ValueError("El cliente no existe.")
@@ -89,6 +93,7 @@ def create_credit_sale(
             "sale_date": payload.sale_date,
             "customer_id": customer.id,
             "customer_name_snapshot": customer.name,
+            "route_load_id": route_load_id,
             "sale_type": "credit",
             "payment_method": "other",
             "status": "active",
@@ -112,6 +117,7 @@ def list_sales(
     customer_id: int | None = None,
     payment_method: str | None = None,
     sale_type: str | None = None,
+    route_load_id: int | None = None,
     search: str | None = None,
 ) -> list[Sale]:
     if date_from is not None and date_to is not None and date_from > date_to:
@@ -124,6 +130,7 @@ def list_sales(
         customer_id=customer_id,
         payment_method=payment_method,
         sale_type=sale_type,
+        route_load_id=route_load_id,
         search=_normalize_filter(search),
     )
 
@@ -246,3 +253,9 @@ def _normalize_filter(value: str | None) -> str | None:
         return None
     normalized_value = value.strip()
     return normalized_value or None
+
+
+def _validate_route_load(db: Session, route_load_id: int | None) -> int | None:
+    if route_load_id is None:
+        return None
+    return route_load_service.get_active_route_load_for_link(db, route_load_id).id

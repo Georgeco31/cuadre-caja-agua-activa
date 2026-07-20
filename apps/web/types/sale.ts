@@ -49,6 +49,11 @@ export type Sale = {
   balance_amount: string;
   credit_status: CreditStatus;
   due_date: string | null;
+  route_load_id: number | null;
+  route_load_number: string | null;
+  route_name: string | null;
+  route_vehicle_name: string | null;
+  route_load_status: "active" | "voided" | null;
   notes: string | null;
   void_reason: string | null;
   voided_at: string | null;
@@ -70,6 +75,7 @@ export type CashSaleItemPayload = {
 export type CashSalePayload = {
   sale_date: string;
   customer_id?: number | null;
+  route_load_id?: number | null;
   payment_method: SalePaymentMethod;
   notes?: string | null;
   items: CashSaleItemPayload[];
@@ -78,6 +84,7 @@ export type CashSalePayload = {
 export type CreditSalePayload = {
   sale_date: string;
   customer_id: number;
+  route_load_id?: number | null;
   due_date?: string | null;
   notes?: string | null;
   items: CashSaleItemPayload[];
@@ -90,6 +97,7 @@ export type CashSaleFilters = {
   customer_id?: number;
   payment_method?: SalePaymentMethod | "";
   sale_type?: SaleType | "";
+  route_load_id?: number;
   search?: string;
 };
 

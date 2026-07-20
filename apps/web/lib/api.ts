@@ -72,6 +72,7 @@ import type {
   RouteLoadFilters,
   RouteLoadPayload,
 } from "@/types/routeLoad";
+import type { RouteCommercialActivity } from "@/types/routeActivity";
 import type {
   RouteReturn,
   RouteReturnFilters,
@@ -730,6 +731,9 @@ export async function listCashSales(
   if (filters.sale_type) {
     searchParams.set("sale_type", filters.sale_type);
   }
+  if (filters.route_load_id !== undefined) {
+    searchParams.set("route_load_id", String(filters.route_load_id));
+  }
   if (filters.search) {
     searchParams.set("search", filters.search);
   }
@@ -830,6 +834,9 @@ export async function listCreditPayments(
   }
   if (filters.sale_id !== undefined) {
     searchParams.set("sale_id", String(filters.sale_id));
+  }
+  if (filters.route_load_id !== undefined) {
+    searchParams.set("route_load_id", String(filters.route_load_id));
   }
   if (filters.status) {
     searchParams.set("status", filters.status);
@@ -1225,6 +1232,16 @@ export async function getRouteLoad(
   return request<RouteLoad>(`/route-loads/${loadId}`, {
     headers: authHeaders(token),
   });
+}
+
+export async function getRouteCommercialActivity(
+  token: string,
+  loadId: number,
+): Promise<RouteCommercialActivity> {
+  return request<RouteCommercialActivity>(
+    `/route-loads/${loadId}/commercial-activity`,
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function voidRouteLoad(

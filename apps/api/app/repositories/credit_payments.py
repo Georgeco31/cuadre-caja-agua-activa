@@ -1,10 +1,11 @@
 from datetime import date, datetime
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.credit_payment import CreditPayment
 from app.models.sale import Sale
+from app.models.route_load import RouteLoad
 
 
 def get_sale_for_update(db: Session, sale_id: int) -> Sale | None:
@@ -23,6 +24,10 @@ def get_credit_payment(
         .options(
             selectinload(CreditPayment.sale),
             selectinload(CreditPayment.customer),
+            joinedload(CreditPayment.route_load).joinedload(
+                RouteLoad.delivery_route,
+            ),
+            joinedload(CreditPayment.route_load).joinedload(RouteLoad.vehicle),
         )
         .where(CreditPayment.id == payment_id)
     )
@@ -39,10 +44,13 @@ def list_credit_payments(
     sale_id: int | None = None,
     status: str | None = None,
     payment_method: str | None = None,
+    route_load_id: int | None = None,
 ) -> list[CreditPayment]:
     statement = select(CreditPayment).options(
         selectinload(CreditPayment.sale),
         selectinload(CreditPayment.customer),
+        joinedload(CreditPayment.route_load).joinedload(RouteLoad.delivery_route),
+        joinedload(CreditPayment.route_load).joinedload(RouteLoad.vehicle),
     )
 
     if date_from is not None:
@@ -59,12 +67,26 @@ def list_credit_payments(
         statement = statement.where(
             CreditPayment.payment_method == payment_method
         )
+    if route_load_id is not None:
+        statement = statement.where(CreditPayment.route_load_id == route_load_id)
 
     statement = statement.order_by(
         CreditPayment.payment_date.desc(),
         CreditPayment.id.desc(),
     )
     return list(db.scalars(statement))
+
+
+def has_active_payments_for_route_load(db: Session, route_load_id: int) -> bool:
+    statement = (
+        select(CreditPayment.id)
+        .where(
+            CreditPayment.route_load_id == route_load_id,
+            CreditPayment.status == "active",
+        )
+        .limit(1)
+    )
+    return db.scalar(statement) is not None
 
 
 def create_credit_payment(

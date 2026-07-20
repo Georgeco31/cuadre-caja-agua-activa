@@ -28,6 +28,7 @@ class SaleItemCreate(BaseModel):
 class CashSaleCreate(BaseModel):
     sale_date: date
     customer_id: int | None = Field(default=None, gt=0)
+    route_load_id: int | None = Field(default=None, gt=0)
     payment_method: SalePaymentMethod = "cash"
     notes: str | None = None
     items: list[SaleItemCreate] = Field(min_length=1)
@@ -41,6 +42,7 @@ class CashSaleCreate(BaseModel):
 class CreditSaleCreate(BaseModel):
     sale_date: date
     customer_id: int = Field(gt=0)
+    route_load_id: int | None = Field(default=None, gt=0)
     due_date: date | None = None
     notes: str | None = None
     items: list[SaleItemCreate] = Field(min_length=1)
@@ -84,6 +86,11 @@ class SaleRead(BaseModel):
     sale_date: date
     customer_id: int | None
     customer_name_snapshot: str
+    route_load_id: int | None
+    route_load_number: str | None
+    route_name: str | None
+    route_vehicle_name: str | None
+    route_load_status: SaleStatus | None
     sale_type: SaleType
     payment_method: SalePaymentMethod
     status: SaleStatus

@@ -28,6 +28,11 @@ export type CreditPayment = {
   payment_date: string;
   amount: string;
   payment_method: CreditPaymentMethod;
+  route_load_id: number | null;
+  route_load_number: string | null;
+  route_name: string | null;
+  route_vehicle_name: string | null;
+  route_load_status: "active" | "voided" | null;
   status: CreditPaymentStatus;
   notes: string | null;
   void_reason: string | null;
@@ -42,6 +47,7 @@ export type CreditPayment = {
 
 export type CreditPaymentPayload = {
   payment_date: string;
+  route_load_id?: number | null;
   amount: string;
   payment_method: CreditPaymentMethod;
   notes?: string | null;
@@ -52,6 +58,7 @@ export type CreditPaymentFilters = {
   date_to?: string;
   customer_id?: number;
   sale_id?: number;
+  route_load_id?: number;
   status?: CreditPaymentStatus | "";
   payment_method?: CreditPaymentMethod | "";
 };

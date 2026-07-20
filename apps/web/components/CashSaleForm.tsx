@@ -5,6 +5,7 @@ import { useMemo, useState, type FormEvent } from "react";
 
 import type { Customer } from "@/types/customer";
 import type { Product } from "@/types/product";
+import type { RouteLoad } from "@/types/routeLoad";
 import {
   SALE_PAYMENT_METHOD_LABELS,
   type CashSalePayload,
@@ -16,6 +17,7 @@ export type CashSaleFormProps = {
   mode?: "cash";
   customers: Customer[];
   products: Product[];
+  routeLoads: RouteLoad[];
   isSubmitting?: boolean;
   onSubmit: (payload: CashSalePayload) => Promise<boolean>;
 };
@@ -24,6 +26,7 @@ export type CreditSaleFormProps = {
   mode: "credit";
   customers: Customer[];
   products: Product[];
+  routeLoads: RouteLoad[];
   isSubmitting?: boolean;
   onSubmit: (payload: CreditSalePayload) => Promise<boolean>;
 };
@@ -41,11 +44,12 @@ const paymentMethods = Object.keys(
 ) as SalePaymentMethod[];
 
 export function CashSaleForm(props: SaleFormProps) {
-  const { customers, products, isSubmitting = false } = props;
+  const { customers, products, routeLoads, isSubmitting = false } = props;
   const isCredit = props.mode === "credit";
   const [saleDate, setSaleDate] = useState(currentDate());
   const [customerId, setCustomerId] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [routeLoadId, setRouteLoadId] = useState("");
   const [paymentMethod, setPaymentMethod] =
     useState<SalePaymentMethod>("cash");
   const [notes, setNotes] = useState("");
@@ -133,6 +137,9 @@ export function CashSaleForm(props: SaleFormProps) {
         ? await props.onSubmit({
             sale_date: saleDate,
             customer_id: Number(customerId),
+            ...(routeLoadId
+              ? { route_load_id: Number(routeLoadId) }
+              : {}),
             due_date: dueDate || null,
             notes: optionalText(notes),
             items,
@@ -140,6 +147,9 @@ export function CashSaleForm(props: SaleFormProps) {
         : await props.onSubmit({
             sale_date: saleDate,
             ...(customerId ? { customer_id: Number(customerId) } : {}),
+            ...(routeLoadId
+              ? { route_load_id: Number(routeLoadId) }
+              : {}),
             payment_method: paymentMethod,
             notes: optionalText(notes),
             items,
@@ -149,6 +159,7 @@ export function CashSaleForm(props: SaleFormProps) {
       setCustomerId("");
       setPaymentMethod("cash");
       setDueDate("");
+      setRouteLoadId("");
       setNotes("");
       setSelectedProductId("");
       setLines([]);
@@ -254,6 +265,25 @@ export function CashSaleForm(props: SaleFormProps) {
             </label>
           )}
         </div>
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">
+            Carga de ruta opcional
+          </span>
+          <select
+            className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+            value={routeLoadId}
+            disabled={isSubmitting}
+            onChange={(event) => setRouteLoadId(event.target.value)}
+          >
+            <option value="">Venta sin carga de ruta</option>
+            {routeLoads.map((load) => (
+              <option key={load.id} value={load.id}>
+                {load.load_number} · {load.route_name} · {load.vehicle_name}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Notas</span>

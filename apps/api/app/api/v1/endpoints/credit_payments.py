@@ -64,6 +64,7 @@ def list_credit_payments(
         alias="status",
     ),
     payment_method: CreditPaymentMethod | None = None,
+    route_load_id: int | None = Query(default=None, gt=0),
     db: Session = Depends(get_db),
 ):
     try:
@@ -75,6 +76,7 @@ def list_credit_payments(
             sale_id=sale_id,
             status=payment_status,
             payment_method=payment_method,
+            route_load_id=route_load_id,
         )
     except ValueError as error:
         raise _http_error(error) from error

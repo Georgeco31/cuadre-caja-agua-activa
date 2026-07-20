@@ -56,6 +56,7 @@ def list_sales(
     customer_id: int | None = None,
     payment_method: SalePaymentMethod | None = None,
     sale_type: SaleType | None = None,
+    route_load_id: int | None = Query(default=None, gt=0),
     search: str | None = None,
     db: Session = Depends(get_db),
 ):
@@ -68,6 +69,7 @@ def list_sales(
             customer_id=customer_id,
             payment_method=payment_method,
             sale_type=sale_type,
+            route_load_id=route_load_id,
             search=search,
         )
     except ValueError as error:

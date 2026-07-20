@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario y carga de camion. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, devolucion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno y actividad comercial por ruta. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -60,6 +60,7 @@ Rutas principales:
 - `/dashboard/production`
 - `/dashboard/route-loads`
 - `/dashboard/route-returns`
+- `/dashboard/route-activity`
 - `/dashboard/sales/cash`
 - `/dashboard/sales/credit`
 - `/dashboard/receivables`
@@ -144,17 +145,17 @@ http://localhost:3000/login
 - El formulario muestra tipos de vehiculo y combustible en español, conservando los valores internos en ingles.
 - La administracion de vehiculos no mueve inventario. El modulo separado de carga puede seleccionar un vehiculo activo y su ubicacion.
 - La pantalla `/dashboard/sales/cash` carga clientes y productos activos y lista solamente ventas con `sale_type=cash` desde `GET /api/v1/sales`.
-- El formulario permite consumidor final o cliente existente, varios productos, cantidad, precio unitario ajustable, método de pago y notas.
+- El formulario permite consumidor final o cliente existente, varios productos, cantidad, precio unitario ajustable, método de pago, notas y una carga de ruta activa opcional.
 - El alta usa `POST /api/v1/sales/cash`; el frontend muestra un total estimado y conserva como oficial el total calculado por el backend.
 - El listado permite filtrar por fecha, estado, cliente, método de pago y buscar por número de venta o snapshot del cliente.
 - El detalle muestra los snapshots e importes de cada item. La anulación usa `POST /api/v1/sales/{id}/void`, exige motivo y conserva la venta visible como anulada.
 - La pantalla `/dashboard/sales/credit` carga clientes y productos activos y lista solamente ventas con `sale_type=credit`.
 - El formulario de credito exige un cliente existente. Los clientes sin credito habilitado se muestran deshabilitados y no se ofrece consumidor final.
-- El formulario permite varios productos, cantidad, precio unitario ajustable, fecha de vencimiento opcional y notas.
+- El formulario permite varios productos, cantidad, precio unitario ajustable, fecha de vencimiento opcional, notas y una carga de ruta activa opcional.
 - El alta usa `POST /api/v1/sales/credit`; el frontend muestra el total y saldo pendiente estimados y conserva como oficiales los importes calculados por el backend.
 - El listado de credito muestra total, pagado, saldo pendiente, vencimiento y estado de credito; permite filtrar, consultar el detalle y anular con motivo.
 - La pantalla `/dashboard/receivables` lista ventas a credito activas con saldo pendiente y permite filtrar por cliente.
-- El formulario exige una venta, fecha, metodo y monto mayor a cero que no supere el saldo visible; ofrece usar el saldo total como monto.
+- El formulario exige una venta, fecha, metodo y monto mayor a cero que no supere el saldo visible; ofrece usar el saldo total como monto y permite asociar una carga de ruta activa de forma opcional.
 - El alta usa `POST /api/v1/sales/{id}/payments` y refresca la cartera y el historial con los importes oficiales del backend.
 - El historial usa `GET /api/v1/credit-payments`, muestra metodos y estados en español y permite anular un abono con motivo mediante `POST /api/v1/credit-payments/{id}/void`.
 - La pantalla `/dashboard/receivables/reports` muestra el resumen oficial de cartera y permite filtrar clientes por texto, fecha de venta, estado activo y presencia de saldo pendiente.
@@ -177,7 +178,8 @@ http://localhost:3000/login
 - Al seleccionar una carga muestra ruta, vehiculo, ubicacion origen, productos, cantidad cargada y stock oficial en el vehiculo. El usuario elige un destino activo no vehicular y registra solo las cantidades que regresan.
 - El alta usa `POST /api/v1/route-returns`; el listado permite filtrar, consultar movimientos vinculados y anular con motivo mediante `POST /api/v1/route-returns/{id}/void`.
 - Despues de crear o anular un retorno, la pantalla vuelve a consultar retornos, cargas y stock oficial. No registra ventas, cobros, caja, dinero entregado, diferencias, liquidaciones ni cierres de ruta.
-- Las ventas y los cobros no modifican automaticamente caja, inventario, rutas o bancos. Este bloque tampoco genera recibos ni aplica un pago a varias ventas.
+- La pantalla `/dashboard/route-activity` consulta `GET /api/v1/route-loads/{id}/commercial-activity`, muestra ventas de contado, ventas a credito, cobros, productos agrupados y los totales oficiales del backend.
+- Las ventas y los cobros pueden asociarse opcionalmente a una carga activa, pero no modifican automaticamente caja, inventario, rutas o bancos. La actividad de ruta no liquida dinero ni cierra la ruta.
 - Token JWT guardado en `localStorage` para el MVP inicial.
 - Logout elimina el token y vuelve a `/login`.
 

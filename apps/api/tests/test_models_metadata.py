@@ -96,6 +96,7 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("correction_logs", "created_by") == {"users.id"}
     assert _foreign_key_targets("sales", "customer_id") == {"customers.id"}
     assert _foreign_key_targets("sales", "created_by") == {"users.id"}
+    assert _foreign_key_targets("sales", "route_load_id") == {"route_loads.id"}
     assert _foreign_key_targets("sale_items", "sale_id") == {"sales.id"}
     assert _foreign_key_targets("sale_items", "product_id") == {"products.id"}
     assert _foreign_key_targets("credit_payments", "sale_id") == {"sales.id"}
@@ -103,6 +104,9 @@ def test_required_foreign_keys_are_defined() -> None:
         "customers.id",
     }
     assert _foreign_key_targets("credit_payments", "created_by") == {"users.id"}
+    assert _foreign_key_targets("credit_payments", "route_load_id") == {
+        "route_loads.id",
+    }
     assert _foreign_key_targets("inventory_locations", "vehicle_id") == {
         "vehicles.id",
     }

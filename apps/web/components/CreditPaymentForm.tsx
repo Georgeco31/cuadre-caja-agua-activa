@@ -8,9 +8,11 @@ import {
   type CreditPaymentPayload,
 } from "@/types/creditPayment";
 import type { Sale } from "@/types/sale";
+import type { RouteLoad } from "@/types/routeLoad";
 
 type CreditPaymentFormProps = {
   sales: Sale[];
+  routeLoads: RouteLoad[];
   selectedSaleId: number | null;
   isSubmitting: boolean;
   onSaleChange: (saleId: number | null) => void;
@@ -26,6 +28,7 @@ const paymentMethods = Object.keys(
 
 export function CreditPaymentForm({
   sales,
+  routeLoads,
   selectedSaleId,
   isSubmitting,
   onSaleChange,
@@ -34,6 +37,7 @@ export function CreditPaymentForm({
   const [paymentDate, setPaymentDate] = useState(currentDate());
   const [paymentMethod, setPaymentMethod] =
     useState<CreditPaymentMethod>("cash");
+  const [routeLoadId, setRouteLoadId] = useState("");
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [formError, setFormError] = useState("");
@@ -63,6 +67,7 @@ export function CreditPaymentForm({
 
     const saved = await onSubmit(selectedSale.id, {
       payment_date: paymentDate,
+      ...(routeLoadId ? { route_load_id: Number(routeLoadId) } : {}),
       amount,
       payment_method: paymentMethod,
       notes: optionalText(notes),
@@ -70,6 +75,7 @@ export function CreditPaymentForm({
     if (saved) {
       setAmount("");
       setNotes("");
+      setRouteLoadId("");
     }
   }
 
@@ -148,6 +154,25 @@ export function CreditPaymentForm({
               : "Selecciona una venta para registrar el abono."}
           </p>
         )}
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">
+            Carga de ruta opcional
+          </span>
+          <select
+            className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+            value={routeLoadId}
+            disabled={isSubmitting}
+            onChange={(event) => setRouteLoadId(event.target.value)}
+          >
+            <option value="">Cobro sin carga de ruta</option>
+            {routeLoads.map((load) => (
+              <option key={load.id} value={load.id}>
+                {load.load_number} · {load.route_name} · {load.vehicle_name}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <div className="grid gap-4 md:grid-cols-3">
           <label className="block">

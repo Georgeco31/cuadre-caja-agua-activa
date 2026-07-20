@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/route-activity",
+    title: "Actividad de ruta",
+    description: "Consultar ventas y cobros asociados a una carga de ruta.",
+    primary: false,
+  },
+  {
     href: "/dashboard/route-returns",
     title: "Retorno de ruta",
     description: "Registrar productos que regresan del vehículo a bodega.",

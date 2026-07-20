@@ -60,7 +60,12 @@ export function CreditPaymentList({
                       {formatDate(payment.payment_date)}
                     </td>
                     <td className="px-4 py-3 align-top font-medium text-slate-950">
-                      {payment.sale_number}
+                      <p>{payment.sale_number}</p>
+                      <p className="mt-1 text-xs font-normal text-slate-500">
+                        {payment.route_load_number
+                          ? `${payment.route_load_number} · ${payment.route_name} · ${payment.route_vehicle_name}`
+                          : "Sin carga de ruta"}
+                      </p>
                     </td>
                     <td className="px-4 py-3 align-top text-slate-700">
                       {payment.customer_name}

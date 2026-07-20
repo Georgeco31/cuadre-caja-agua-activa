@@ -15,6 +15,7 @@ import {
   listCashSales,
   listCreditPayments,
   listCustomers,
+  listRouteLoads,
   voidCreditPayment,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
@@ -24,6 +25,7 @@ import type {
 } from "@/types/creditPayment";
 import type { Customer } from "@/types/customer";
 import type { Sale } from "@/types/sale";
+import type { RouteLoad } from "@/types/routeLoad";
 
 export default function ReceivablesPage() {
   const router = useRouter();
@@ -31,6 +33,7 @@ export default function ReceivablesPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [sales, setSales] = useState<Sale[]>([]);
   const [payments, setPayments] = useState<CreditPayment[]>([]);
+  const [routeLoads, setRouteLoads] = useState<RouteLoad[]>([]);
   const [customerFilter, setCustomerFilter] = useState("");
   const [selectedSaleId, setSelectedSaleId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,17 +71,20 @@ export default function ReceivablesPage() {
     setIsLoading(true);
     setError("");
     try {
-      const [loadedCustomers, loadedSales, loadedPayments] = await Promise.all([
-        listCustomers(activeToken),
-        listCashSales(activeToken, {
-          sale_type: "credit",
-          status: "active",
-        }),
-        listCreditPayments(activeToken),
-      ]);
+      const [loadedCustomers, loadedSales, loadedPayments, loadedRouteLoads] =
+        await Promise.all([
+          listCustomers(activeToken),
+          listCashSales(activeToken, {
+            sale_type: "credit",
+            status: "active",
+          }),
+          listCreditPayments(activeToken),
+          listRouteLoads(activeToken, { status: "active" }),
+        ]);
       setCustomers(loadedCustomers);
       setSales(loadedSales);
       setPayments(loadedPayments);
+      setRouteLoads(loadedRouteLoads);
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -333,6 +339,7 @@ export default function ReceivablesPage() {
 
             <CreditPaymentForm
               sales={pendingSales}
+              routeLoads={routeLoads}
               selectedSaleId={selectedSaleId}
               isSubmitting={isSaving}
               onSaleChange={setSelectedSaleId}

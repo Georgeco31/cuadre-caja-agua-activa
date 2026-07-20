@@ -11,6 +11,7 @@ CreditSaleStatus = Literal["pending", "paid", "voided"]
 
 class CreditPaymentCreate(BaseModel):
     payment_date: date
+    route_load_id: int | None = Field(default=None, gt=0)
     amount: Decimal = Field(
         gt=Decimal("0.00"),
         max_digits=14,
@@ -43,6 +44,11 @@ class CreditPaymentRead(BaseModel):
     sale_number: str
     customer_id: int
     customer_name: str
+    route_load_id: int | None
+    route_load_number: str | None
+    route_name: str | None
+    route_vehicle_name: str | None
+    route_load_status: CreditPaymentStatus | None
     payment_date: date
     amount: Decimal
     payment_method: CreditPaymentMethod

@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario y carga de camion. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, devolucion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno y actividad comercial por ruta. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -286,11 +286,11 @@ El modulo comercial base usa las tablas `sales` y `sale_items` y los endpoints a
 - `GET /api/v1/sales/{sale_id}`
 - `POST /api/v1/sales/{sale_id}/void`
 
-El listado acepta `date_from`, `date_to`, `status`, `customer_id`, `payment_method`, `sale_type` y `search`. La busqueda consulta el numero interno de venta y el nombre de cliente guardado como snapshot.
+El listado acepta `date_from`, `date_to`, `status`, `customer_id`, `payment_method`, `sale_type`, `route_load_id` y `search`. La busqueda consulta el numero interno de venta y el nombre de cliente guardado como snapshot.
 
 Cada venta contiene al menos un producto activo. Si no se envia `unit_price`, se usa el `default_price` del producto. El servicio calcula subtotales y total con `Decimal`, guarda snapshots del cliente y los productos y genera un numero interno unico. Sin cliente se registra `Consumidor final`.
 
-Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. Una venta de contado guarda `paid_amount = total_amount`, `balance_amount = 0` y `credit_status = none`. Las ventas no modifican el cuadre de caja, inventario o rutas, y los seeds no crean ventas falsas.
+Las ventas no se eliminan fisicamente. La anulacion exige un motivo, cambia el estado a `voided` y conserva los items. Una venta de contado guarda `paid_amount = total_amount`, `balance_amount = 0` y `credit_status = none`. `route_load_id` es opcional y solo permite cargas activas. Esta asociacion no modifica la carga, el cuadre de caja ni inventario, y los seeds no crean ventas falsas.
 
 ## Ventas a credito
 
@@ -317,11 +317,11 @@ La tabla `credit_payments` registra pagos sobre una sola venta a credito. Endpoi
 - `GET /api/v1/credit-payments`
 - `POST /api/v1/credit-payments/{payment_id}/void`
 
-El listado general acepta `date_from`, `date_to`, `customer_id`, `sale_id`, `status` y `payment_method`. Los importes usan `Numeric(14, 2)` y los metodos permitidos son `cash`, `transfer`, `card` y `other`.
+El listado general acepta `date_from`, `date_to`, `customer_id`, `sale_id`, `route_load_id`, `status` y `payment_method`. Los importes usan `Numeric(14, 2)` y los metodos permitidos son `cash`, `transfer`, `card` y `other`.
 
 Un abono solo se registra sobre una venta a credito activa con saldo pendiente. El servicio bloquea la fila de la venta, deriva el cliente desde esa venta, impide sobrepagos, incrementa `paid_amount`, reduce `balance_amount` y cambia `credit_status` a `paid` cuando el saldo llega a cero.
 
-La anulacion exige motivo, conserva el registro con `status = voided` y restaura los importes de la venta. Una venta con abonos activos no puede anularse hasta anular primero esos abonos. Los cobros no crean ventas ni modifican automaticamente caja, inventario, rutas o bancos; los seeds no crean cobros falsos.
+La anulacion exige motivo, conserva el registro con `status = voided` y restaura los importes de la venta. Una venta con abonos activos no puede anularse hasta anular primero esos abonos. `route_load_id` es opcional y solo permite cargas activas. La asociacion no modifica automaticamente caja, inventario, rutas o bancos; los seeds no crean cobros falsos.
 
 ## Cuentas por cobrar
 
@@ -385,11 +385,12 @@ La migracion `0014_route_loads` crea `route_loads` y `route_load_items`. Endpoin
 - `POST /api/v1/route-loads`
 - `GET /api/v1/route-loads`
 - `GET /api/v1/route-loads/{load_id}`
+- `GET /api/v1/route-loads/{load_id}/commercial-activity`
 - `POST /api/v1/route-loads/{load_id}/void`
 
 Una carga exige fecha, ruta activa, vehiculo activo, origen activo, destino activo de tipo `vehicle` y al menos un producto activo. Si el destino esta vinculado a un vehiculo, debe coincidir con el seleccionado. Cada item crea una salida en el origen y una entrada en el destino usando `Numeric(14, 3)` y la logica transaccional de inventario. El listado acepta `date_from`, `date_to`, `status`, `route_id`, `vehicle_id`, `product_id` y `search`.
 
-La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Una carga con retorno activo exige anular primero ese retorno. Este modulo no registra ventas, cobros, dinero de ruta, liquidaciones ni cierres, y los seeds no crean cargas falsas.
+La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Una carga con retorno activo exige anular primero ese retorno y una carga con ventas o cobros activos asociados no puede anularse. La consulta `commercial-activity` separa ventas de contado, ventas a credito y cobros, agrupa productos y calcula el efectivo esperado como ventas de contado mas cobros. No liquida dinero, modifica caja, descuenta inventario por ventas ni cierra la ruta.
 
 ## Retorno de ruta
 

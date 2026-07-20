@@ -2,18 +2,19 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import func, or_, select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from app.models.credit_payment import CreditPayment
 from app.models.customer import Customer
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
+from app.models.route_load import RouteLoad
 
 
 def get_sale(db: Session, sale_id: int) -> Sale | None:
     statement = (
         select(Sale)
-        .options(selectinload(Sale.items))
+        .options(*_sale_options())
         .where(Sale.id == sale_id)
     )
     return db.scalar(statement)
@@ -22,7 +23,7 @@ def get_sale(db: Session, sale_id: int) -> Sale | None:
 def get_sale_for_update(db: Session, sale_id: int) -> Sale | None:
     statement = (
         select(Sale)
-        .options(selectinload(Sale.items))
+        .options(*_sale_options())
         .where(Sale.id == sale_id)
         .with_for_update()
     )
@@ -37,9 +38,10 @@ def list_sales(
     customer_id: int | None = None,
     payment_method: str | None = None,
     sale_type: str | None = None,
+    route_load_id: int | None = None,
     search: str | None = None,
 ) -> list[Sale]:
-    statement = select(Sale).options(selectinload(Sale.items))
+    statement = select(Sale).options(*_sale_options())
 
     if date_from is not None:
         statement = statement.where(Sale.sale_date >= date_from)
@@ -53,6 +55,8 @@ def list_sales(
         statement = statement.where(Sale.payment_method == payment_method)
     if sale_type is not None:
         statement = statement.where(Sale.sale_type == sale_type)
+    if route_load_id is not None:
+        statement = statement.where(Sale.route_load_id == route_load_id)
     if search is not None:
         search_pattern = f"%{search}%"
         statement = statement.where(
@@ -64,6 +68,18 @@ def list_sales(
 
     statement = statement.order_by(Sale.sale_date.desc(), Sale.id.desc())
     return list(db.scalars(statement))
+
+
+def has_active_sales_for_route_load(db: Session, route_load_id: int) -> bool:
+    statement = (
+        select(Sale.id)
+        .where(
+            Sale.route_load_id == route_load_id,
+            Sale.status == "active",
+        )
+        .limit(1)
+    )
+    return db.scalar(statement) is not None
 
 
 def create_sale(db: Session, values: dict[str, object]) -> Sale:
@@ -142,3 +158,11 @@ def mark_sale_voided(
         sale.credit_status = "voided"
     db.add(sale)
     return sale
+
+
+def _sale_options():
+    return (
+        selectinload(Sale.items),
+        joinedload(Sale.route_load).joinedload(RouteLoad.delivery_route),
+        joinedload(Sale.route_load).joinedload(RouteLoad.vehicle),
+    )

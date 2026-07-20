@@ -11,6 +11,8 @@ from app.schemas.route_load import (
     RouteLoadStatus,
     RouteLoadVoid,
 )
+from app.schemas.route_activity import RouteCommercialActivityRead
+from app.services import route_activity as route_activity_service
 from app.services import route_loads as route_loads_service
 
 router = APIRouter(
@@ -62,6 +64,20 @@ def list_route_loads(
 def get_route_load(load_id: int, db: Session = Depends(get_db)):
     try:
         return route_loads_service.get_route_load(db, load_id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/{load_id}/commercial-activity",
+    response_model=RouteCommercialActivityRead,
+)
+def get_route_load_commercial_activity(
+    load_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return route_activity_service.get_commercial_activity(db, load_id)
     except ValueError as error:
         raise _http_error(error) from error
 

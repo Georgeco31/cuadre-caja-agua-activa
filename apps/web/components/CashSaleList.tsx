@@ -274,6 +274,11 @@ function SaleRows({
             {formatSaleDate(sale.sale_date)} · {sale.items.length} producto
             {sale.items.length === 1 ? "" : "s"}
           </p>
+          <p className="mt-1 text-xs text-slate-600">
+            {sale.route_load_number
+              ? `${sale.route_load_number} · ${sale.route_name} · ${sale.route_vehicle_name}`
+              : "Sin carga de ruta"}
+          </p>
         </td>
         <td className="px-4 py-3 align-top text-slate-700">
           {sale.customer_name_snapshot}
@@ -392,6 +397,14 @@ function SaleRows({
                     <DetailAmount label="Saldo" value={sale.balance_amount} />
                   </div>
                 ) : null}
+                <p className="mb-3">
+                  <span className="font-medium text-slate-950">
+                    Carga de ruta:
+                  </span>{" "}
+                  {sale.route_load_number
+                    ? `${sale.route_load_number} · ${sale.route_name} · ${sale.route_vehicle_name}`
+                    : "No asociada"}
+                </p>
                 <p>
                   <span className="font-medium text-slate-950">Notas:</span>{" "}
                   {sale.notes ?? "Sin observaciones"}

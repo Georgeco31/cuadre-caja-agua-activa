@@ -8,6 +8,7 @@ from app.models.credit_payment import CreditPayment
 from app.repositories import credit_payments as payment_repository
 from app.repositories import sales as sale_repository
 from app.schemas.credit_payment import CreditPaymentCreate
+from app.services import route_loads as route_load_service
 
 MONEY_QUANTUM = Decimal("0.01")
 
@@ -30,6 +31,13 @@ def create_credit_payment(
     if sale.balance_amount <= 0 or sale.credit_status == "paid":
         raise ValueError("La venta a credito ya esta pagada.")
 
+    route_load_id = None
+    if payload.route_load_id is not None:
+        route_load_id = route_load_service.get_active_route_load_for_link(
+            db,
+            payload.route_load_id,
+        ).id
+
     amount = payload.amount.quantize(MONEY_QUANTUM)
     if amount > sale.balance_amount:
         raise ValueError(
@@ -41,6 +49,7 @@ def create_credit_payment(
         {
             "sale_id": sale.id,
             "customer_id": sale.customer_id,
+            "route_load_id": route_load_id,
             "payment_date": payload.payment_date,
             "amount": amount,
             "payment_method": payload.payment_method,
@@ -74,6 +83,7 @@ def list_credit_payments(
     sale_id: int | None = None,
     status: str | None = None,
     payment_method: str | None = None,
+    route_load_id: int | None = None,
 ) -> list[CreditPayment]:
     if date_from is not None and date_to is not None and date_from > date_to:
         raise ValueError("La fecha desde no puede ser posterior a la fecha hasta.")
@@ -85,6 +95,7 @@ def list_credit_payments(
         sale_id=sale_id,
         status=status,
         payment_method=payment_method,
+        route_load_id=route_load_id,
     )
 
 

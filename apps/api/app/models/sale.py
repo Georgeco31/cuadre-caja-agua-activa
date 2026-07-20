@@ -77,6 +77,10 @@ class Sale(Base):
     )
     sale_date: Mapped[date] = mapped_column(Date, nullable=False)
     customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"))
+    route_load_id: Mapped[int | None] = mapped_column(
+        ForeignKey("route_loads.id"),
+        index=True,
+    )
     customer_name_snapshot: Mapped[str] = mapped_column(String(255), nullable=False)
     sale_type: Mapped[str] = mapped_column(
         String(20),
@@ -127,6 +131,7 @@ class Sale(Base):
     )
 
     customer: Mapped["Customer | None"] = relationship("Customer")
+    route_load: Mapped["RouteLoad | None"] = relationship("RouteLoad")
     creator: Mapped["User"] = relationship("User")
     items: Mapped[list["SaleItem"]] = relationship(
         "SaleItem",
@@ -139,3 +144,19 @@ class Sale(Base):
         back_populates="sale",
         order_by="CreditPayment.id",
     )
+
+    @property
+    def route_load_number(self) -> str | None:
+        return self.route_load.load_number if self.route_load is not None else None
+
+    @property
+    def route_name(self) -> str | None:
+        return self.route_load.route_name if self.route_load is not None else None
+
+    @property
+    def route_vehicle_name(self) -> str | None:
+        return self.route_load.vehicle_name if self.route_load is not None else None
+
+    @property
+    def route_load_status(self) -> str | None:
+        return self.route_load.status if self.route_load is not None else None
