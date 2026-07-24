@@ -2,6 +2,19 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/purchases",
+    title: "Compras",
+    description:
+      "Registrar compras sin afectar caja ni inventario automáticamente.",
+    primary: false,
+  },
+  {
+    href: "/dashboard/suppliers",
+    title: "Proveedores",
+    description: "Gestionar proveedores de Agua Activa.",
+    primary: false,
+  },
+  {
     href: "/dashboard/monthly-summary",
     title: "Reporte mensual",
     description:

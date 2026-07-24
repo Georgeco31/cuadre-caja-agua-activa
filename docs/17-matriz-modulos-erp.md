@@ -10,7 +10,7 @@
 | Pendiente | Está planificado y tiene dependencias identificadas |
 | No implementado | No existe modelo, endpoint ni pantalla funcional del módulo |
 
-La valoración corresponde al corte del Bloque 44. “Implementado” no significa
+La valoración corresponde al corte del Bloque 45. “Implementado” no significa
 que el módulo pueda operar sin conciliación, backup o control manual.
 
 ## Matriz
@@ -24,7 +24,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 | 5. Créditos, cobros y abonos | Implementado avanzado | Límite, saldo, abonos parciales/totales, anulación reversible, cartera, vencidos y estado de cuenta | Recibos formales, cobros masivos, anticipos, refinanciación y conciliación bancaria | Alta | Alto: requiere comparación externa de comprobantes y efectivo |
 | 6. Inventario | Implementado base | Ubicaciones, stock, entradas, salidas, ajustes, costos opcionales, anulación, producción, carga y retorno vinculados | Kardex/valoración avanzada, conteos físicos, transferencias generales y descarga por ventas | Alta | Alto: omitir un movimiento explícito deja módulos desalineados |
 | 7. Rutas de entrega | Implementado avanzado | Rutas, cargas, inventario vehicular, retorno, actividad comercial, cierre financiero, dinero recibido y comparación con caja | Planificación, asignación formal de personal, liquidación física completa, mapas y geolocalización | Alta | Alto: cierre y recibo no cambian caja ni inventario automáticamente |
-| 8. Compras y proveedores | No implementado | No existe módulo funcional | Proveedores, compras, recepción, cuentas por pagar, devoluciones y efecto en inventario | Alta | Alto: abastecimiento y costos quedan fuera del ERP |
+| 8. Compras y proveedores | Implementado base | Proveedores, items, snapshots, totales backend, filtros, detalle y anulación de compras | Recepción en inventario, cuentas por pagar, pagos, devoluciones, retenciones y costeo avanzado | Alta | Medio: las compras quedan registradas, pero el ingreso a stock y el pago requieren control separado |
 | 9. Gastos operativos | Parcial | Gastos vinculados a un cuadre, separados antes/después del conteo | Gastos fuera de caja, categorías, proveedores, recurrencias, vencimientos, pagos y centros de costo | Alta | Alto: el reporte de caja no representa todos los gastos del negocio |
 | 10. Empleados, anticipos y roles | Parcial | Ficha base, cargo, tipo, sueldo referencial, frecuencia, alta/baja | Asistencia, anticipos, préstamos, novedades, pagos, descuentos, roles y cierres de período | Alta | Alto: obligaciones laborales se controlan fuera del sistema |
 | 11. Camiones y mantenimiento | Parcial | Vehículos, placa, tipo, capacidad, combustible referencial, estado y uso en cargas | Mantenimiento, combustible consumido, kilometraje, asignaciones, documentos, costos y rentabilidad | Media | Medio: no hay alerta de mantenimiento ni costo real por vehículo |
@@ -35,7 +35,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 
 ### Prioridad alta
 
-- Compras y proveedores.
+- Recepcion de compras en inventario y cuentas por pagar.
 - Listas de precios.
 - Gastos operativos.
 - Empleados avanzado.

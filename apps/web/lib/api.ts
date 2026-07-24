@@ -59,6 +59,11 @@ import type {
   ProductUpdatePayload,
 } from "@/types/product";
 import type {
+  Purchase,
+  PurchaseFilters,
+  PurchasePayload,
+} from "@/types/purchase";
+import type {
   ProductionBatch,
   ProductionBatchFilters,
   ProductionBatchPayload,
@@ -114,6 +119,12 @@ import type {
   CustomerCreditBalance,
 } from "@/types/sale";
 import type { CashSessionSummary } from "@/types/summary";
+import type {
+  Supplier,
+  SupplierFilters,
+  SupplierPayload,
+  SupplierUpdatePayload,
+} from "@/types/supplier";
 import type {
   Vehicle,
   VehicleFilters,
@@ -781,6 +792,144 @@ export async function activateProduct(
   return request<Product>(`/products/${productId}/activate`, {
     method: "PATCH",
     headers: authHeaders(token),
+  });
+}
+
+export async function listSuppliers(
+  token: string,
+  filters: SupplierFilters = {},
+): Promise<Supplier[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.supplier_type) {
+    searchParams.set("supplier_type", filters.supplier_type);
+  }
+
+  const query = searchParams.toString();
+  return request<Supplier[]>(`/suppliers${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getSupplier(
+  token: string,
+  supplierId: number,
+): Promise<Supplier> {
+  return request<Supplier>(`/suppliers/${supplierId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createSupplier(
+  token: string,
+  payload: SupplierPayload,
+): Promise<Supplier> {
+  return request<Supplier>("/suppliers", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateSupplier(
+  token: string,
+  supplierId: number,
+  payload: SupplierUpdatePayload,
+): Promise<Supplier> {
+  return request<Supplier>(`/suppliers/${supplierId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deactivateSupplier(
+  token: string,
+  supplierId: number,
+): Promise<Supplier> {
+  return request<Supplier>(`/suppliers/${supplierId}/deactivate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function activateSupplier(
+  token: string,
+  supplierId: number,
+): Promise<Supplier> {
+  return request<Supplier>(`/suppliers/${supplierId}/activate`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function listPurchases(
+  token: string,
+  filters: PurchaseFilters = {},
+): Promise<Purchase[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.payment_status) {
+    searchParams.set("payment_status", filters.payment_status);
+  }
+  if (filters.supplier_id !== undefined) {
+    searchParams.set("supplier_id", String(filters.supplier_id));
+  }
+  if (filters.product_id !== undefined) {
+    searchParams.set("product_id", String(filters.product_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+
+  const query = searchParams.toString();
+  return request<Purchase[]>(`/purchases${query ? `?${query}` : ""}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getPurchase(
+  token: string,
+  purchaseId: number,
+): Promise<Purchase> {
+  return request<Purchase>(`/purchases/${purchaseId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createPurchase(
+  token: string,
+  payload: PurchasePayload,
+): Promise<Purchase> {
+  return request<Purchase>("/purchases", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function voidPurchase(
+  token: string,
+  purchaseId: number,
+  reason: string,
+): Promise<Purchase> {
+  return request<Purchase>(`/purchases/${purchaseId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
   });
 }
 
@@ -1591,9 +1740,19 @@ function authHeaders(token: string): HeadersInit {
 
 async function getErrorMessage(response: Response): Promise<string> {
   try {
-    const body = (await response.json()) as { detail?: string | unknown[] };
+    const body = (await response.json()) as {
+      detail?: string | Array<{ msg?: string }>;
+    };
     if (typeof body.detail === "string") {
       return body.detail;
+    }
+    if (Array.isArray(body.detail)) {
+      const messages = body.detail
+        .map((item) => item.msg)
+        .filter((message): message is string => Boolean(message));
+      if (messages.length > 0) {
+        return messages.join(" ");
+      }
     }
   } catch {
     return "No se pudo completar la solicitud.";

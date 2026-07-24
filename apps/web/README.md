@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos a proveedores, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -57,6 +57,8 @@ Rutas principales:
 - `/dashboard/route-cash-receipts`
 - `/dashboard/customers`
 - `/dashboard/products`
+- `/dashboard/suppliers`
+- `/dashboard/purchases`
 - `/dashboard/employees`
 - `/dashboard/delivery-routes`
 - `/dashboard/vehicles`
@@ -145,6 +147,15 @@ http://localhost:3000/login
 - El alta usa `POST /api/v1/products` y la edicion usa `PATCH /api/v1/products/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/products/{id}/deactivate` y `PATCH /api/v1/products/{id}/activate`; no se eliminan productos fisicamente.
 - El catalogo muestra presentacion, precio base, costo estimado, retornabilidad y estado, sin crear ventas ni movimientos de inventario.
+- La pantalla `/dashboard/suppliers` lista, busca y filtra proveedores, permite
+  registrarlos, editarlos, desactivarlos y reactivarlos sin borrado fisico.
+- La pantalla `/dashboard/purchases` carga proveedores y productos activos,
+  registra compras con uno o varios items y muestra un total estimado solo como
+  ayuda visual. Los importes oficiales provienen de `POST /api/v1/purchases`.
+- El historial de compras permite filtrar, consultar el detalle con snapshots y
+  anular con motivo mediante `POST /api/v1/purchases/{id}/void`.
+- Registrar o anular una compra no modifica inventario, caja, gastos, ventas,
+  cobros ni pagos a proveedores.
 - La pantalla `/dashboard/employees` lista empleados desde `GET /api/v1/employees` y permite buscar por nombre, identificacion, telefono, cargo o tipo.
 - El alta usa `POST /api/v1/employees` y la edicion usa `PATCH /api/v1/employees/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/employees/{id}/deactivate` y `PATCH /api/v1/employees/{id}/activate`; no se eliminan empleados fisicamente.

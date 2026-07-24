@@ -4,12 +4,13 @@ API FastAPI de Agua Activa ERP.
 
 Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy
 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo
-operativo de caja, los modulos base de clientes, productos, empleados, rutas y
-vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario
+operativo de caja, los modulos base de clientes, productos, empleados, rutas,
+vehiculos y proveedores, ventas de contado y a credito, cobros sobre cartera, inventario
 manual, produccion aplicada a inventario, carga de camion, retorno, actividad
 comercial, cierre financiero por ruta, el reporte comparativo de rutas contra
 caja, el registro trazable del dinero de ruta recibido en un cuadre abierto, el
-resumen operativo diario y el reporte mensual operativo de solo lectura. El
+resumen operativo diario, el reporte mensual operativo de solo lectura y el
+registro administrativo de compras. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
 por ventas, liquidacion fisica de ruta, consumo de insumos, nomina,
@@ -263,7 +264,7 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes, clientes, productos, empleados, rutas, vehiculos, ventas y cobros requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes, productos, proveedores, compras, empleados, rutas, vehiculos, ventas y cobros requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -294,6 +295,43 @@ El catalogo base usa la tabla `products` y los endpoints:
 El listado acepta `search`, `is_active`, `category` y `unit`. La busqueda general consulta nombre, SKU, categoria y presentacion.
 
 `sku` es unico cuando se registra. `default_price` y `cost_estimate` usan `Numeric(12, 2)` y no admiten valores negativos. Los productos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Este modulo no crea ventas, inventario, produccion, historial de precios, precios especiales ni productos falsos en seeds.
+
+## Proveedores y compras base
+
+La migracion `0019_purchases` crea `suppliers`, `purchases` y
+`purchase_items`. Los endpoints autenticados de proveedores son:
+
+- `POST /api/v1/suppliers`
+- `GET /api/v1/suppliers`
+- `GET /api/v1/suppliers/{supplier_id}`
+- `PATCH /api/v1/suppliers/{supplier_id}`
+- `PATCH /api/v1/suppliers/{supplier_id}/deactivate`
+- `PATCH /api/v1/suppliers/{supplier_id}/activate`
+
+El nombre es obligatorio y la identificacion es unica cuando se informa. El
+listado acepta `search`, `is_active` y `supplier_type`. Los proveedores no se
+eliminan fisicamente.
+
+Los endpoints autenticados de compras son:
+
+- `POST /api/v1/purchases`
+- `GET /api/v1/purchases`
+- `GET /api/v1/purchases/{purchase_id}`
+- `POST /api/v1/purchases/{purchase_id}/void`
+
+Una compra exige proveedor activo, fecha y al menos un item. El producto del
+item es opcional; si se informa debe existir y estar activo, y se guardan sus
+snapshots. Sin producto, la descripcion es obligatoria. Cantidad, costo,
+descuento e impuesto se procesan con `Decimal` y columnas `Numeric`. El backend
+calcula el subtotal del item como `cantidad * costo - descuento`, suma el
+impuesto para su total y consolida los importes oficiales de la compra sin
+confiar en totales del cliente.
+
+El listado acepta `date_from`, `date_to`, `status`, `payment_status`,
+`supplier_id`, `product_id` y `search`. La anulacion exige motivo y conserva la
+compra y sus items. Crear o anular una compra no crea movimientos de inventario,
+cuadres, gastos, ventas, cobros ni pagos a proveedores. Los seeds no crean
+proveedores o compras.
 
 ## Empleados
 

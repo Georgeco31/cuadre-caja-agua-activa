@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta y resumen operativo diario de solo lectura.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas y resumen operativo diario de solo lectura.
 
 ## Problema que resuelve
 
@@ -36,6 +36,10 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Registro, consulta, busqueda y edicion de productos.
 - Precio base, costo estimado y presentacion por producto.
 - Activacion e inactivacion de productos sin borrado fisico.
+- Registro, consulta, busqueda, edicion y activacion de proveedores.
+- Registro de compras con items de producto opcional, snapshots y calculos
+  oficiales en backend.
+- Consulta, filtros, detalle y anulacion logica de compras con motivo.
 - Registro, consulta, busqueda y edicion de empleados.
 - Datos base de cargo, tipo, sueldo referencial y frecuencia de pago.
 - Activacion e inactivacion de empleados sin borrado fisico.
@@ -84,8 +88,10 @@ Quedan fuera del MVP:
 - Reportes avanzados.
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
+- Aplicacion de compras a inventario, pagos a proveedores y cuentas por pagar
+  avanzadas.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 39 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, carga, retorno, actividad comercial y cierre financiero de ruta. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Asociar ventas y abonos a una carga, o registrar su cierre financiero, no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 45 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores y compras administrativas. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Asociar ventas y abonos a una carga, registrar su cierre financiero o registrar una compra no modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 
@@ -217,8 +223,11 @@ cuadre-caja-agua-activa/
   checklist de uso real, guia de piloto, matriz de modulos y roadmap de
   funciones obligatorias. Este bloque no crea migraciones, seeds ni cambios
   de logica critica.
+- Bloque 45: proveedores y compras base con items, snapshots, totales
+  calculados en backend, filtros, detalle y anulacion, sin efecto automatico
+  en caja, gastos o inventario.
 
-Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos a proveedores, cuentas por pagar avanzadas, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 
@@ -254,9 +263,9 @@ todos los controles actuales. Leer en este orden:
 3. `docs/14-checklist-uso-real-agua-activa.md`.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
-una produccion no aumenta stock hasta aplicarse y un cierre o recibo de ruta no
-modifica el conteo oficial de caja. Mantener conciliacion manual y backups
-diarios durante el piloto.
+una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni
+crea gastos, y un cierre o recibo de ruta no modifica el conteo oficial de
+caja. Mantener conciliacion manual y backups diarios durante el piloto.
 
 ## Ejecucion local con Docker
 

@@ -19,6 +19,8 @@ from app.models.production_inventory_application import (
 from app.models.production_inventory_application_item import (
     ProductionInventoryApplicationItem,
 )
+from app.models.purchase import Purchase
+from app.models.purchase_item import PurchaseItem
 from app.models.route_load import RouteLoad
 from app.models.route_load_item import RouteLoadItem
 from app.models.route_cash_receipt import RouteCashReceipt
@@ -27,6 +29,7 @@ from app.models.route_return import RouteReturn
 from app.models.route_return_item import RouteReturnItem
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
+from app.models.supplier import Supplier
 from app.models.user import User
 from app.models.vehicle import Vehicle
 
@@ -48,6 +51,8 @@ __all__ = [
     "ProductionItem",
     "ProductionInventoryApplication",
     "ProductionInventoryApplicationItem",
+    "Purchase",
+    "PurchaseItem",
     "RouteLoad",
     "RouteLoadItem",
     "RouteCashReceipt",
@@ -56,6 +61,7 @@ __all__ = [
     "RouteReturnItem",
     "Sale",
     "SaleItem",
+    "Supplier",
     "User",
     "Vehicle",
 ]

@@ -25,6 +25,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "production_inventory_application_items",
         "production_inventory_applications",
         "production_items",
+        "purchase_items",
+        "purchases",
         "route_load_items",
         "route_loads",
         "route_cash_receipts",
@@ -33,6 +35,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "route_returns",
         "sale_items",
         "sales",
+        "suppliers",
     }
 
     assert expected_tables == set(Base.metadata.tables.keys())
@@ -84,6 +87,16 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["route_cash_receipts"].c.difference_amount,
         Base.metadata.tables["sale_items"].c.unit_price,
         Base.metadata.tables["sale_items"].c.subtotal,
+        Base.metadata.tables["purchases"].c.subtotal_amount,
+        Base.metadata.tables["purchases"].c.discount_amount,
+        Base.metadata.tables["purchases"].c.tax_amount,
+        Base.metadata.tables["purchases"].c.total_amount,
+        Base.metadata.tables["purchase_items"].c.quantity,
+        Base.metadata.tables["purchase_items"].c.unit_cost,
+        Base.metadata.tables["purchase_items"].c.discount_amount,
+        Base.metadata.tables["purchase_items"].c.tax_amount,
+        Base.metadata.tables["purchase_items"].c.subtotal_amount,
+        Base.metadata.tables["purchase_items"].c.total_amount,
     ]
 
     for column in monetary_columns:
@@ -254,6 +267,14 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("route_return_items", "product_id") == {
         "products.id",
     }
+    assert _foreign_key_targets("purchases", "supplier_id") == {"suppliers.id"}
+    assert _foreign_key_targets("purchases", "created_by") == {"users.id"}
+    assert _foreign_key_targets("purchase_items", "purchase_id") == {
+        "purchases.id",
+    }
+    assert _foreign_key_targets("purchase_items", "product_id") == {
+        "products.id",
+    }
     assert _foreign_key_targets(
         "route_return_items",
         "source_exit_movement_id",
@@ -396,6 +417,26 @@ def test_model_check_constraints_are_registered() -> None:
     assert _check_constraint_names("route_return_items") == {
         "ck_route_return_items_product_snapshot_not_blank",
         "ck_route_return_items_quantity_positive",
+    }
+    assert _check_constraint_names("suppliers") == {
+        "ck_suppliers_identification_not_blank",
+        "ck_suppliers_name_not_blank",
+    }
+    assert _check_constraint_names("purchases") == {
+        "ck_purchases_amounts_nonnegative",
+        "ck_purchases_number_not_blank",
+        "ck_purchases_payment_status",
+        "ck_purchases_status",
+        "ck_purchases_total",
+        "ck_purchases_void_state",
+    }
+    assert _check_constraint_names("purchase_items") == {
+        "ck_purchase_items_amounts_nonnegative",
+        "ck_purchase_items_product_or_description",
+        "ck_purchase_items_product_snapshot",
+        "ck_purchase_items_quantity_positive",
+        "ck_purchase_items_subtotal",
+        "ck_purchase_items_total",
     }
 
 
