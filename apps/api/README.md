@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, el reporte comparativo de rutas contra caja y el registro trazable del dinero de ruta recibido en un cuadre abierto. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, el reporte comparativo de rutas contra caja, el registro trazable del dinero de ruta recibido en un cuadre abierto y el resumen operativo diario de solo lectura. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -167,6 +167,21 @@ resumen oficial de caja, cierres de ruta, inventario, ventas, cobros ni cuentas
 por cobrar. Un cierre de ruta con recibo activo no puede anularse hasta que se
 anule primero el recibo. El cierre de un cuadre no se bloquea por rutas
 pendientes en este bloque.
+
+## Resumen operativo diario
+
+El endpoint autenticado de solo lectura
+`GET /api/v1/reports/daily-operational-summary?date=YYYY-MM-DD` consolida para
+una fecha el cuadre oficial de caja, produccion y merma, cargas y retornos,
+cierres financieros, dinero de rutas registrado en caja, ventas, cobros,
+productos agrupados y alertas operativas. Si no se envia `date`, usa la fecha
+actual del servidor.
+
+Los importes y cantidades usan `Decimal`/`Numeric`, los registros anulados se
+cuentan pero no participan en los totales principales y el total general de
+ingresos es solo una referencia operativa. La consulta reutiliza el resumen
+oficial de caja y no crea ni modifica cuadres, conteos, gastos, inventario,
+produccion, rutas, ventas o cobros. Este bloque no necesita migracion.
 
 ## Seeds iniciales
 

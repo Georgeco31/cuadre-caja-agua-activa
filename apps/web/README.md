@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -47,6 +47,7 @@ Rutas principales:
 
 - `/login`
 - `/dashboard`
+- `/dashboard/daily-summary`
 - `/dashboard/cash-session`
 - `/dashboard/history`
 - `/dashboard/history/[cashSessionId]`
@@ -96,6 +97,7 @@ http://localhost:3000/login
 - Dashboard protegido en `/dashboard`.
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
+- El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
 - El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, inventario, produccion, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
@@ -126,6 +128,8 @@ http://localhost:3000/login
 - El reporte Rutas vs caja es de solo lectura; no crea ni modifica cuadres, cierres, gastos, ventas, cobros o inventario.
 - La pantalla `/dashboard/route-cash-receipts` registra que el efectivo de un cierre activo fue recibido dentro de un cuadre abierto, sugiere el monto entregado, muestra la diferencia oficial, permite filtrar el historial y anular con motivo.
 - El registro de dinero de ruta es solo trazabilidad: no crea cuadres, no cambia monedas, billetes, gastos ni el total contado, y tampoco modifica cierres, inventario, ventas o cobros.
+- La pantalla `/dashboard/daily-summary` consulta `GET /api/v1/reports/daily-operational-summary`, permite seleccionar una fecha y presenta tarjetas, alertas, productos agrupados y listas resumidas de cargas, retornos, cierres y registros de dinero de ruta.
+- El resumen operativo diario es de solo lectura: no ofrece formularios de alta, edicion, anulacion o cierre y no calcula totales oficiales en el navegador.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.

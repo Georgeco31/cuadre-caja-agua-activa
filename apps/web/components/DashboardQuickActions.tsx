@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/daily-summary",
+    title: "Resumen diario",
+    description: "Ver caja, producción, rutas, ventas y alertas del día.",
+    primary: false,
+  },
+  {
     href: "/dashboard/route-cash-receipts",
     title: "Dinero de ruta en caja",
     description: "Registrar efectivo de rutas cerradas dentro de un cuadre abierto.",

@@ -7,6 +7,7 @@ import type {
   CashSessionPayload,
 } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
+import type { DailyOperationalSummary } from "@/types/dailyOperationalSummary";
 import type {
   CreditPayment,
   CreditPaymentFilters,
@@ -355,6 +356,23 @@ export async function getRouteCashComparisonReport(
   const query = searchParams.toString();
   return request<RouteCashComparisonReport>(
     `/reports/route-cash-comparison${query ? `?${query}` : ""}`,
+    {
+      headers: authHeaders(token),
+    },
+  );
+}
+
+export async function getDailyOperationalSummary(
+  token: string,
+  date?: string,
+): Promise<DailyOperationalSummary> {
+  const searchParams = new URLSearchParams();
+  if (date) {
+    searchParams.set("date", date);
+  }
+  const query = searchParams.toString();
+  return request<DailyOperationalSummary>(
+    `/reports/daily-operational-summary${query ? `?${query}` : ""}`,
     {
       headers: authHeaders(token),
     },

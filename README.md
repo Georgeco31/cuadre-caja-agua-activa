@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial y cierre financiero asociado a una ruta.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas y vehiculos, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta y resumen operativo diario de solo lectura.
 
 ## Problema que resuelve
 
@@ -69,6 +69,7 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Historial y anulacion trazable del cierre, con bloqueo de operaciones vinculadas mientras permanezca activo.
 - Comparacion informativa, por fecha o rango, entre cierres activos de ruta y el cuadre general de caja.
 - Registro trazable del efectivo de un cierre de ruta recibido en un cuadre abierto, sin alterar el conteo fisico ni los totales oficiales de caja.
+- Resumen operativo diario por fecha con caja, produccion, merma, rutas, ventas, cobros y alertas, sin modificar informacion.
 
 Quedan fuera del MVP:
 
@@ -209,6 +210,7 @@ cuadre-caja-agua-activa/
 - Bloque 39: cierre financiero de ruta con snapshots comerciales, efectivo entregado, diferencia, historial, anulacion y bloqueos operativos.
 - Bloque 40: reporte de solo lectura que compara cierres activos de ruta con el cuadre general de caja por fecha o rango.
 - Bloque 41: registro controlado y anulable del dinero de un cierre de ruta recibido en un cuadre abierto, con snapshots y sin modificar caja, inventario, ventas o cobros.
+- Bloque 42: resumen operativo diario de solo lectura con caja, produccion, rutas, ventas, cobros, detalles agrupados y alertas.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
