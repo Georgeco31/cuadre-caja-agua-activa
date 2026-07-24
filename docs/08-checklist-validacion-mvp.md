@@ -1,5 +1,10 @@
 # 08 - Checklist de validacion MVP
 
+> **Documento histórico del MVP inicial.** Las exclusiones al final ya no
+> describen el ERP actual. Para el corte vigente usar
+> `docs/13-auditoria-general-erp.md` y
+> `docs/14-checklist-uso-real-agua-activa.md`.
+
 Checklist tecnico funcional para validar el MVP antes y durante la prueba piloto.
 
 ## Autenticacion

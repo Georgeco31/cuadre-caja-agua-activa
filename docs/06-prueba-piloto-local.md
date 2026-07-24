@@ -1,5 +1,11 @@
 # 06 - Prueba piloto local
 
+> **Documento histórico del MVP de caja.** Para un piloto del ERP actual usar
+> `docs/15-guia-piloto-datos-reales.md` y
+> `docs/14-checklist-uso-real-agua-activa.md`. No ejecutar la limpieza SQL de
+> este documento sobre la base ERP actual ni sobre datos reales: fue escrita
+> antes de los módulos vinculados incorporados en migraciones posteriores.
+
 Esta guia prepara una prueba piloto local del MVP de Cuadre de Caja Agua Activa.
 La prueba debe servir para comparar el sistema contra el cuadre manual actual sin
 reemplazarlo todavia.

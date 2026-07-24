@@ -559,3 +559,22 @@ Los estados posibles son `no_cash_session`, `no_route_closures`, `matched`,
 interpreta automaticamente como faltante o sobrante, porque la caja general
 puede contener otros ingresos. Esta consulta no crea ni modifica cuadres,
 cierres, gastos, ventas, cobros o inventario y no requiere migracion.
+
+## Auditoria general del Bloque 44
+
+El inventario completo de endpoints, la cadena de migraciones, las reglas
+criticas y los riesgos operativos estan documentados en
+`../../docs/13-auditoria-general-erp.md`.
+
+En el corte auditado:
+
+- OpenAPI contiene 81 plantillas de ruta y 103 operaciones HTTP.
+- Solo `POST /api/v1/auth/login` y `GET /api/v1/health` son publicos.
+- La revision Alembic activa es `0018_route_receipts`.
+- Las pruebas usan SQLite en memoria; deben complementarse con pruebas de
+  integracion PostgreSQL antes de operacion multiusuario.
+- Este bloque no crea migraciones, tablas, seeds ni cambios de logica.
+
+Para operar con datos reales, seguir
+`../../docs/14-checklist-uso-real-agua-activa.md` y
+`../../docs/15-guia-piloto-datos-reales.md`.

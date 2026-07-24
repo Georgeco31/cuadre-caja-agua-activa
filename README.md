@@ -213,6 +213,10 @@ cuadre-caja-agua-activa/
 - Bloque 41: registro controlado y anulable del dinero de un cierre de ruta recibido en un cuadre abierto, con snapshots y sin modificar caja, inventario, ventas o cobros.
 - Bloque 42: resumen operativo diario de solo lectura con caja, produccion, rutas, ventas, cobros, detalles agrupados y alertas.
 - Bloque 43: reporte mensual operativo de solo lectura con caja, produccion, ventas, cobros, rutas, filas diarias y alertas consolidadas.
+- Bloque 44: auditoria general del ERP, inventario de rutas y endpoints,
+  checklist de uso real, guia de piloto, matriz de modulos y roadmap de
+  funciones obligatorias. Este bloque no crea migraciones, seeds ni cambios
+  de logica critica.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
@@ -224,13 +228,35 @@ Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos
 - `docs/03-reglas-negocio.md`: reglas de negocio del MVP.
 - `docs/04-ejecucion-local.md`: ejecucion local con Docker Compose.
 - `docs/05-backup-restauracion.md`: backup y restauracion de PostgreSQL.
-- `docs/06-prueba-piloto-local.md`: guia para ejecutar una prueba piloto local.
-- `docs/07-checklist-uso-diario.md`: checklist operativo para el cierre diario.
-- `docs/08-checklist-validacion-mvp.md`: checklist tecnico funcional del MVP.
+- `docs/06-prueba-piloto-local.md`: guia historica del piloto del MVP de caja.
+- `docs/07-checklist-uso-diario.md`: checklist historico del MVP de caja.
+- `docs/08-checklist-validacion-mvp.md`: validacion historica del MVP inicial.
 - `docs/09-vision-erp-agua-activa.md`: vision estrategica de Agua Activa ERP.
 - `docs/10-modulos-erp.md`: modulos proyectados del ERP.
 - `docs/11-roadmap-erp.md`: roadmap por fases hacia Agua Activa ERP.
 - `docs/12-reglas-negocio-erp.md`: reglas generales para crecer hacia ERP.
+- `docs/13-auditoria-general-erp.md`: estado auditado, arquitectura, rutas,
+  endpoints, migraciones, reglas y riesgos.
+- `docs/14-checklist-uso-real-agua-activa.md`: checklist diario, semanal,
+  mensual y de incidentes.
+- `docs/15-guia-piloto-datos-reales.md`: piloto controlado de 1 a 2 semanas.
+- `docs/16-roadmap-funciones-obligatorias.md`: Bloques 45 al 50.
+- `docs/17-matriz-modulos-erp.md`: estado, faltantes, prioridad y riesgo por
+  modulo.
+
+## Antes de usar datos reales
+
+El estado auditado permite un piloto supervisado, no el reemplazo inmediato de
+todos los controles actuales. Leer en este orden:
+
+1. `docs/13-auditoria-general-erp.md`.
+2. `docs/15-guia-piloto-datos-reales.md`.
+3. `docs/14-checklist-uso-real-agua-activa.md`.
+
+Las separaciones actuales son deliberadas: una venta no descarga inventario,
+una produccion no aumenta stock hasta aplicarse y un cierre o recibo de ruta no
+modifica el conteo oficial de caja. Mantener conciliacion manual y backups
+diarios durante el piloto.
 
 ## Ejecucion local con Docker
 

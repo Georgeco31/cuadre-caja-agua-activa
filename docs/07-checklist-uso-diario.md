@@ -1,5 +1,8 @@
 # 07 - Checklist de uso diario
 
+> **Documento histórico del MVP de caja.** El checklist vigente para el ERP
+> completo está en `docs/14-checklist-uso-real-agua-activa.md`.
+
 Checklist simple para operar el MVP local durante la prueba piloto.
 
 ## Inicio del dia o prueba

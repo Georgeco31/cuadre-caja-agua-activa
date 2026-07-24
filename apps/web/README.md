@@ -213,3 +213,19 @@ provienen del backend, los cierres anulados no se incluyen y los días sin caja
 o sin rutas se identifican sin tratarlos como un error contable definitivo.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.
+
+## Auditoria general del Bloque 44
+
+El inventario auditado de rutas web y endpoints relacionados esta en
+`../../docs/13-auditoria-general-erp.md`. Existen 26 paginas `page.tsx`,
+incluidas `/`, `/login` y las rutas del dashboard documentadas arriba.
+
+Para el piloto:
+
+- Usar `../../docs/15-guia-piloto-datos-reales.md`.
+- Seguir diariamente `../../docs/14-checklist-uso-real-agua-activa.md`.
+- Mantener el sistema en equipos controlados: el JWT se guarda en
+  `localStorage` y todavia no hay roles, cookies seguras ni refresh tokens.
+- No asumir automatizaciones entre ventas, inventario, rutas y caja.
+
+El Bloque 44 no cambia componentes, rutas ni logica del frontend.
