@@ -147,6 +147,13 @@ http://localhost:3000/login
 - El alta usa `POST /api/v1/products` y la edicion usa `PATCH /api/v1/products/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/products/{id}/deactivate` y `PATCH /api/v1/products/{id}/activate`; no se eliminan productos fisicamente.
 - El catalogo muestra presentacion, precio base, costo estimado, retornabilidad y estado, sin crear ventas ni movimientos de inventario.
+- La pantalla `/dashboard/pricing` administra listas generales, especiales, por
+  cliente, por ruta y por combinacion cliente+ruta. Permite definir vigencia,
+  prioridad, productos, cantidades minimas y activar o desactivar listas e
+  items sin borrado fisico.
+- La prueba rapida usa `GET /api/v1/pricing/resolve` y muestra el precio
+  resuelto, su origen y la lista aplicada. Si no hay una lista activa y vigente,
+  conserva el precio normal del producto.
 - La pantalla `/dashboard/suppliers` lista, busca y filtra proveedores, permite
   registrarlos, editarlos, desactivarlos y reactivarlos sin borrado fisico.
 - La pantalla `/dashboard/purchases` carga proveedores y productos activos,
@@ -172,13 +179,13 @@ http://localhost:3000/login
 - El formulario muestra tipos de vehiculo y combustible en español, conservando los valores internos en ingles.
 - La administracion de vehiculos no mueve inventario. El modulo separado de carga puede seleccionar un vehiculo activo y su ubicacion.
 - La pantalla `/dashboard/sales/cash` carga clientes y productos activos y lista solamente ventas con `sale_type=cash` desde `GET /api/v1/sales`.
-- El formulario permite consumidor final o cliente existente, varios productos, cantidad, precio unitario ajustable, método de pago, notas y una carga de ruta activa opcional.
+- El formulario permite consumidor final o cliente existente, varios productos, cantidad, precio unitario ajustable, método de pago, notas y una carga de ruta activa opcional. Al agregar un producto o cambiar cliente, carga, fecha o cantidad consulta el precio sugerido y muestra su origen.
 - El alta usa `POST /api/v1/sales/cash`; el frontend muestra un total estimado y conserva como oficial el total calculado por el backend.
 - El listado permite filtrar por fecha, estado, cliente, método de pago y buscar por número de venta o snapshot del cliente.
 - El detalle muestra los snapshots e importes de cada item. La anulación usa `POST /api/v1/sales/{id}/void`, exige motivo y conserva la venta visible como anulada.
 - La pantalla `/dashboard/sales/credit` carga clientes y productos activos y lista solamente ventas con `sale_type=credit`.
 - El formulario de credito exige un cliente existente. Los clientes sin credito habilitado se muestran deshabilitados y no se ofrece consumidor final.
-- El formulario permite varios productos, cantidad, precio unitario ajustable, fecha de vencimiento opcional, notas y una carga de ruta activa opcional.
+- El formulario permite varios productos, cantidad, precio unitario ajustable, fecha de vencimiento opcional, notas y una carga de ruta activa opcional. Los precios no ajustados manualmente se resuelven en el backend con la misma regla de listas usada por ventas de contado.
 - El alta usa `POST /api/v1/sales/credit`; el frontend muestra el total y saldo pendiente estimados y conserva como oficiales los importes calculados por el backend.
 - El listado de credito muestra total, pagado, saldo pendiente, vencimiento y estado de credito; permite filtrar, consultar el detalle y anular con motivo.
 - La pantalla `/dashboard/receivables` lista ventas a credito activas con saldo pendiente y permite filtrar por cliente.

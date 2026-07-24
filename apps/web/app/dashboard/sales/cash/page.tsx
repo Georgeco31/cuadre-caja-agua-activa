@@ -241,6 +241,7 @@ export default function CashSalesPage() {
         ) : (
           <>
             <CashSaleForm
+              token={token!}
               customers={customers}
               products={products}
               routeLoads={routeLoads}

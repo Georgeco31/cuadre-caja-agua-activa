@@ -59,6 +59,17 @@ import type {
   ProductUpdatePayload,
 } from "@/types/product";
 import type {
+  PriceList,
+  PriceListFilters,
+  PriceListItem,
+  PriceListItemPayload,
+  PriceListItemUpdatePayload,
+  PriceListPayload,
+  PriceListUpdatePayload,
+  PriceResolution,
+  PriceResolutionParams,
+} from "@/types/pricing";
+import type {
   Purchase,
   PurchaseFilters,
   PurchasePayload,
@@ -998,6 +1009,147 @@ export async function createCreditSale(
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   });
+}
+
+export async function listPriceLists(
+  token: string,
+  filters: PriceListFilters = {},
+): Promise<PriceList[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.list_type) {
+    searchParams.set("list_type", filters.list_type);
+  }
+  if (filters.customer_id !== undefined) {
+    searchParams.set("customer_id", String(filters.customer_id));
+  }
+  if (filters.route_id !== undefined) {
+    searchParams.set("route_id", String(filters.route_id));
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  const query = searchParams.toString();
+  return request<PriceList[]>(
+    `/pricing/price-lists${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getPriceList(
+  token: string,
+  priceListId: number,
+): Promise<PriceList> {
+  return request<PriceList>(`/pricing/price-lists/${priceListId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createPriceList(
+  token: string,
+  payload: PriceListPayload,
+): Promise<PriceList> {
+  return request<PriceList>("/pricing/price-lists", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updatePriceList(
+  token: string,
+  priceListId: number,
+  payload: PriceListUpdatePayload,
+): Promise<PriceList> {
+  return request<PriceList>(`/pricing/price-lists/${priceListId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function setPriceListActive(
+  token: string,
+  priceListId: number,
+  isActive: boolean,
+): Promise<PriceList> {
+  return request<PriceList>(
+    `/pricing/price-lists/${priceListId}/${isActive ? "activate" : "deactivate"}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+    },
+  );
+}
+
+export async function createPriceListItem(
+  token: string,
+  priceListId: number,
+  payload: PriceListItemPayload,
+): Promise<PriceListItem> {
+  return request<PriceListItem>(
+    `/pricing/price-lists/${priceListId}/items`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function updatePriceListItem(
+  token: string,
+  itemId: number,
+  payload: PriceListItemUpdatePayload,
+): Promise<PriceListItem> {
+  return request<PriceListItem>(`/pricing/price-list-items/${itemId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function setPriceListItemActive(
+  token: string,
+  itemId: number,
+  isActive: boolean,
+): Promise<PriceListItem> {
+  return request<PriceListItem>(
+    `/pricing/price-list-items/${itemId}/${isActive ? "activate" : "deactivate"}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+    },
+  );
+}
+
+export async function resolveProductPrice(
+  token: string,
+  params: PriceResolutionParams,
+): Promise<PriceResolution> {
+  const searchParams = new URLSearchParams();
+  searchParams.set("product_id", String(params.product_id));
+  if (params.customer_id !== undefined) {
+    searchParams.set("customer_id", String(params.customer_id));
+  }
+  if (params.route_id !== undefined) {
+    searchParams.set("route_id", String(params.route_id));
+  }
+  if (params.route_load_id !== undefined) {
+    searchParams.set("route_load_id", String(params.route_load_id));
+  }
+  if (params.quantity) {
+    searchParams.set("quantity", params.quantity);
+  }
+  if (params.price_date) {
+    searchParams.set("price_date", params.price_date);
+  }
+  return request<PriceResolution>(
+    `/pricing/resolve?${searchParams.toString()}`,
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function getCustomerCreditBalance(

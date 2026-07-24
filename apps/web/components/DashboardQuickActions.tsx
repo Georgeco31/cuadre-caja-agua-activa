@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/pricing",
+    title: "Listas de precios",
+    description: "Gestionar precios especiales por cliente o ruta.",
+    primary: false,
+  },
+  {
     href: "/dashboard/purchases",
     title: "Compras",
     description:

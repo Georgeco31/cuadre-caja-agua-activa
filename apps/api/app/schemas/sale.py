@@ -75,6 +75,10 @@ class SaleItemRead(BaseModel):
     quantity: Decimal
     unit_price: Decimal
     subtotal: Decimal
+    price_source: str | None
+    price_list_id: int | None
+    price_list_name_snapshot: str | None
+    pricing_note: str | None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

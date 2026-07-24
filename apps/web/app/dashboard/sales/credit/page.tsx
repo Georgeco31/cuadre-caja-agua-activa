@@ -235,6 +235,7 @@ export default function CreditSalesPage() {
         ) : (
           <>
             <CreditSaleForm
+              token={token!}
               customers={customers}
               products={products}
               routeLoads={routeLoads}

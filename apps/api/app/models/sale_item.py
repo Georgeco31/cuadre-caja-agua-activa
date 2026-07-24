@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, String, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -28,6 +28,12 @@ class SaleItem(Base):
             "subtotal >= 0",
             name="ck_sale_items_subtotal_nonnegative",
         ),
+        CheckConstraint(
+            "price_source IS NULL OR price_source IN "
+            "('default', 'general', 'special', 'customer', 'route', "
+            "'customer_route', 'manual')",
+            name="ck_sale_items_price_source",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -39,6 +45,13 @@ class SaleItem(Base):
     quantity: Mapped[Decimal] = mapped_column(Numeric(12, 3), nullable=False)
     unit_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     subtotal: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    price_source: Mapped[str | None] = mapped_column(String(30))
+    price_list_id: Mapped[int | None] = mapped_column(
+        ForeignKey("price_lists.id"),
+        index=True,
+    )
+    price_list_name_snapshot: Mapped[str | None] = mapped_column(String(255))
+    pricing_note: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -47,3 +60,4 @@ class SaleItem(Base):
 
     sale: Mapped["Sale"] = relationship("Sale", back_populates="items")
     product: Mapped["Product"] = relationship("Product")
+    price_list: Mapped["PriceList | None"] = relationship("PriceList")

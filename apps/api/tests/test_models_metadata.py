@@ -21,6 +21,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "inventory_movements",
         "inventory_stocks",
         "products",
+        "price_list_items",
+        "price_lists",
         "production_batches",
         "production_inventory_application_items",
         "production_inventory_applications",
@@ -61,6 +63,8 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["employees"].c.base_salary,
         Base.metadata.tables["products"].c.default_price,
         Base.metadata.tables["products"].c.cost_estimate,
+        Base.metadata.tables["price_list_items"].c.unit_price,
+        Base.metadata.tables["price_list_items"].c.min_quantity,
         Base.metadata.tables["sales"].c.total_amount,
         Base.metadata.tables["sales"].c.paid_amount,
         Base.metadata.tables["sales"].c.balance_amount,
@@ -123,6 +127,21 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("sales", "route_load_id") == {"route_loads.id"}
     assert _foreign_key_targets("sale_items", "sale_id") == {"sales.id"}
     assert _foreign_key_targets("sale_items", "product_id") == {"products.id"}
+    assert _foreign_key_targets("sale_items", "price_list_id") == {
+        "price_lists.id",
+    }
+    assert _foreign_key_targets("price_lists", "customer_id") == {
+        "customers.id",
+    }
+    assert _foreign_key_targets("price_lists", "route_id") == {
+        "delivery_routes.id",
+    }
+    assert _foreign_key_targets("price_list_items", "price_list_id") == {
+        "price_lists.id",
+    }
+    assert _foreign_key_targets("price_list_items", "product_id") == {
+        "products.id",
+    }
     assert _foreign_key_targets("credit_payments", "sale_id") == {"sales.id"}
     assert _foreign_key_targets("credit_payments", "customer_id") == {
         "customers.id",
@@ -342,10 +361,23 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_sales_total_amount_nonnegative",
     }
     assert _check_constraint_names("sale_items") == {
+        "ck_sale_items_price_source",
         "ck_sale_items_product_snapshot_not_blank",
         "ck_sale_items_quantity_positive",
         "ck_sale_items_subtotal_nonnegative",
         "ck_sale_items_unit_price_nonnegative",
+    }
+    assert _check_constraint_names("price_lists") == {
+        "ck_price_lists_customer_route_target",
+        "ck_price_lists_customer_target",
+        "ck_price_lists_name_not_blank",
+        "ck_price_lists_route_target",
+        "ck_price_lists_type",
+        "ck_price_lists_valid_dates",
+    }
+    assert _check_constraint_names("price_list_items") == {
+        "ck_price_list_items_min_quantity_positive",
+        "ck_price_list_items_price_nonnegative",
     }
     assert _check_constraint_names("credit_payments") == {
         "ck_credit_payments_amount_positive",

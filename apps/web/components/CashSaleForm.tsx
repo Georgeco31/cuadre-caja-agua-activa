@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 
+import { resolveProductPrice } from "@/lib/api";
 import type { Customer } from "@/types/customer";
+import {
+  PRICE_SOURCE_LABELS,
+  type PriceResolution,
+  type PriceSource,
+} from "@/types/pricing";
 import type { Product } from "@/types/product";
 import type { RouteLoad } from "@/types/routeLoad";
 import {
@@ -15,6 +21,7 @@ import {
 
 export type CashSaleFormProps = {
   mode?: "cash";
+  token: string;
   customers: Customer[];
   products: Product[];
   routeLoads: RouteLoad[];
@@ -24,6 +31,7 @@ export type CashSaleFormProps = {
 
 export type CreditSaleFormProps = {
   mode: "credit";
+  token: string;
   customers: Customer[];
   products: Product[];
   routeLoads: RouteLoad[];
@@ -37,6 +45,14 @@ type SaleLine = {
   productId: number;
   quantity: string;
   unitPrice: string;
+  suggestedPrice: string;
+  suggestedSource: PriceSource;
+  suggestedPricingNote: string;
+  priceSource: PriceSource;
+  priceListName: string | null;
+  pricingNote: string;
+  isManualPrice: boolean;
+  isResolving: boolean;
 };
 
 const paymentMethods = Object.keys(
@@ -44,7 +60,13 @@ const paymentMethods = Object.keys(
 ) as SalePaymentMethod[];
 
 export function CashSaleForm(props: SaleFormProps) {
-  const { customers, products, routeLoads, isSubmitting = false } = props;
+  const {
+    token,
+    customers,
+    products,
+    routeLoads,
+    isSubmitting = false,
+  } = props;
   const isCredit = props.mode === "credit";
   const [saleDate, setSaleDate] = useState(currentDate());
   const [customerId, setCustomerId] = useState("");
@@ -56,13 +78,14 @@ export function CashSaleForm(props: SaleFormProps) {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [lines, setLines] = useState<SaleLine[]>([]);
   const [validationError, setValidationError] = useState("");
+  const [isResolvingProduct, setIsResolvingProduct] = useState(false);
 
   const productsById = useMemo(
     () => new Map(products.map((product) => [product.id, product])),
     [products],
   );
 
-  function handleAddProduct() {
+  async function handleAddProduct() {
     setValidationError("");
     const productId = Number(selectedProductId);
     const product = productsById.get(productId);
@@ -75,27 +98,147 @@ export function CashSaleForm(props: SaleFormProps) {
       return;
     }
 
-    setLines([
-      ...lines,
-      {
-        productId,
-        quantity: "1",
-        unitPrice: product.default_price,
-      },
-    ]);
-    setSelectedProductId("");
+    setIsResolvingProduct(true);
+    try {
+      const resolution = await loadResolution(productId, "1");
+      setLines((current) => [
+        ...current,
+        createSaleLine(productId, "1", resolution),
+      ]);
+      setSelectedProductId("");
+    } catch {
+      setLines((current) => [
+        ...current,
+        createSaleLine(
+          productId,
+          "1",
+          defaultResolution(productId, product.default_price),
+        ),
+      ]);
+      setSelectedProductId("");
+      setValidationError(
+        "No se pudo consultar el precio especial. Se muestra el precio normal y el backend volverá a resolverlo al guardar.",
+      );
+    } finally {
+      setIsResolvingProduct(false);
+    }
   }
 
   function updateLine(productId: number, values: Partial<SaleLine>) {
-    setLines(
-      lines.map((line) =>
+    setLines((current) =>
+      current.map((line) =>
         line.productId === productId ? { ...line, ...values } : line,
       ),
     );
   }
 
   function removeLine(productId: number) {
-    setLines(lines.filter((line) => line.productId !== productId));
+    setLines((current) =>
+      current.filter((line) => line.productId !== productId),
+    );
+  }
+
+  async function loadResolution(
+    productId: number,
+    quantity: string,
+    context: {
+      customerId?: string;
+      routeLoadId?: string;
+      priceDate?: string;
+    } = {},
+  ): Promise<PriceResolution> {
+    const activeCustomerId = context.customerId ?? customerId;
+    const activeRouteLoadId = context.routeLoadId ?? routeLoadId;
+    const activePriceDate = context.priceDate ?? saleDate;
+    return resolveProductPrice(token, {
+      product_id: productId,
+      ...(activeCustomerId
+        ? { customer_id: Number(activeCustomerId) }
+        : {}),
+      ...(activeRouteLoadId
+        ? { route_load_id: Number(activeRouteLoadId) }
+        : {}),
+      quantity,
+      ...(activePriceDate ? { price_date: activePriceDate } : {}),
+    });
+  }
+
+  async function refreshLineSuggestion(
+    productId: number,
+    quantity: string,
+    context: {
+      customerId?: string;
+      routeLoadId?: string;
+      priceDate?: string;
+    } = {},
+  ) {
+    if (!isPositiveNumber(quantity)) {
+      return;
+    }
+    updateLine(productId, { isResolving: true });
+    try {
+      const resolution = await loadResolution(productId, quantity, context);
+      setLines((current) =>
+        current.map((line) =>
+          line.productId === productId
+            ? {
+                ...line,
+                unitPrice: line.isManualPrice
+                  ? line.unitPrice
+                  : resolution.resolved_price,
+                suggestedPrice: resolution.resolved_price,
+                suggestedSource: resolution.price_source,
+                suggestedPricingNote: resolution.pricing_note,
+                priceSource: line.isManualPrice
+                  ? "manual"
+                  : resolution.price_source,
+                priceListName: resolution.price_list_name,
+                pricingNote: line.isManualPrice
+                  ? "Precio ingresado manualmente"
+                  : resolution.pricing_note,
+                isResolving: false,
+              }
+            : line,
+        ),
+      );
+    } catch {
+      updateLine(productId, { isResolving: false });
+    }
+  }
+
+  function refreshAllSuggestions(
+    context: {
+      customerId?: string;
+      routeLoadId?: string;
+      priceDate?: string;
+    },
+  ) {
+    for (const line of lines) {
+      void refreshLineSuggestion(line.productId, line.quantity, context);
+    }
+  }
+
+  function handleQuantityChange(productId: number, quantity: string) {
+    updateLine(productId, { quantity });
+    void refreshLineSuggestion(productId, quantity);
+  }
+
+  function handleManualPrice(productId: number, unitPrice: string) {
+    updateLine(productId, {
+      unitPrice,
+      priceSource: "manual",
+      pricingNote: "Precio ingresado manualmente",
+      isManualPrice: true,
+    });
+  }
+
+  function restoreSuggestedPrice(line: SaleLine) {
+    updateLine(line.productId, {
+      unitPrice: line.suggestedPrice,
+      priceSource: line.suggestedSource,
+      pricingNote: line.suggestedPricingNote,
+      isManualPrice: false,
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -130,7 +273,7 @@ export function CashSaleForm(props: SaleFormProps) {
     const items = lines.map((line) => ({
       product_id: line.productId,
       quantity: line.quantity,
-      unit_price: line.unitPrice,
+      ...(line.isManualPrice ? { unit_price: line.unitPrice } : {}),
     }));
     const saved =
       props.mode === "credit"
@@ -197,7 +340,11 @@ export function CashSaleForm(props: SaleFormProps) {
               value={saleDate}
               required
               disabled={isSubmitting}
-              onChange={(event) => setSaleDate(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setSaleDate(value);
+                refreshAllSuggestions({ priceDate: value });
+              }}
             />
           </label>
 
@@ -210,7 +357,11 @@ export function CashSaleForm(props: SaleFormProps) {
               value={customerId}
               required={isCredit}
               disabled={isSubmitting}
-              onChange={(event) => setCustomerId(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setCustomerId(value);
+                refreshAllSuggestions({ customerId: value });
+              }}
             >
               <option value="">
                 {isCredit ? "Seleccionar cliente" : "Consumidor final"}
@@ -274,7 +425,11 @@ export function CashSaleForm(props: SaleFormProps) {
             className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
             value={routeLoadId}
             disabled={isSubmitting}
-            onChange={(event) => setRouteLoadId(event.target.value)}
+            onChange={(event) => {
+              const value = event.target.value;
+              setRouteLoadId(value);
+              refreshAllSuggestions({ routeLoadId: value });
+            }}
           >
             <option value="">Venta sin carga de ruta</option>
             {routeLoads.map((load) => (
@@ -319,10 +474,12 @@ export function CashSaleForm(props: SaleFormProps) {
             <button
               className="h-10 rounded-md border border-water-700 bg-white px-4 text-sm font-semibold text-water-700 transition hover:bg-water-50 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
               type="button"
-              disabled={isSubmitting || products.length === 0}
-              onClick={handleAddProduct}
+              disabled={
+                isSubmitting || isResolvingProduct || products.length === 0
+              }
+              onClick={() => void handleAddProduct()}
             >
-              Agregar producto
+              {isResolvingProduct ? "Consultando precio..." : "Agregar producto"}
             </button>
           </div>
 
@@ -341,7 +498,7 @@ export function CashSaleForm(props: SaleFormProps) {
 
           {lines.length > 0 ? (
             <div className="overflow-x-auto rounded-md border border-slate-200">
-              <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[880px] border-collapse text-left text-sm">
                 <thead className="bg-slate-50 text-slate-600">
                   <tr>
                     <th className="px-3 py-2 font-medium">Producto</th>
@@ -376,9 +533,10 @@ export function CashSaleForm(props: SaleFormProps) {
                             value={line.quantity}
                             disabled={isSubmitting}
                             onChange={(event) =>
-                              updateLine(line.productId, {
-                                quantity: event.target.value,
-                              })
+                              handleQuantityChange(
+                                line.productId,
+                                event.target.value,
+                              )
                             }
                           />
                         </td>
@@ -392,11 +550,32 @@ export function CashSaleForm(props: SaleFormProps) {
                             value={line.unitPrice}
                             disabled={isSubmitting}
                             onChange={(event) =>
-                              updateLine(line.productId, {
-                                unitPrice: event.target.value,
-                              })
+                              handleManualPrice(
+                                line.productId,
+                                event.target.value,
+                              )
                             }
                           />
+                          <p className="mt-1 text-xs text-slate-500">
+                            {line.isResolving
+                              ? "Consultando precio..."
+                              : PRICE_SOURCE_LABELS[line.priceSource]}
+                          </p>
+                          {line.priceListName ? (
+                            <p className="mt-1 text-xs text-slate-500">
+                              {line.priceListName}
+                            </p>
+                          ) : null}
+                          {line.isManualPrice ? (
+                            <button
+                              className="mt-1 text-xs font-semibold text-water-700 hover:text-water-500"
+                              type="button"
+                              disabled={isSubmitting || line.isResolving}
+                              onClick={() => restoreSuggestedPrice(line)}
+                            >
+                              Usar sugerido ({line.suggestedPrice})
+                            </button>
+                          ) : null}
                         </td>
                         <td className="px-3 py-3 text-right font-semibold text-slate-950">
                           {formatMoney(
@@ -461,6 +640,41 @@ function currentDate(): string {
   const now = new Date();
   const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return localDate.toISOString().slice(0, 10);
+}
+
+function createSaleLine(
+  productId: number,
+  quantity: string,
+  resolution: PriceResolution,
+): SaleLine {
+  return {
+    productId,
+    quantity,
+    unitPrice: resolution.resolved_price,
+    suggestedPrice: resolution.resolved_price,
+    suggestedSource: resolution.price_source,
+    suggestedPricingNote: resolution.pricing_note,
+    priceSource: resolution.price_source,
+    priceListName: resolution.price_list_name,
+    pricingNote: resolution.pricing_note,
+    isManualPrice: false,
+    isResolving: false,
+  };
+}
+
+function defaultResolution(
+  productId: number,
+  defaultPrice: string,
+): PriceResolution {
+  return {
+    product_id: productId,
+    default_price: defaultPrice,
+    resolved_price: defaultPrice,
+    price_source: "default",
+    price_list_id: null,
+    price_list_name: null,
+    pricing_note: "Precio normal del producto",
+  };
 }
 
 function optionalText(value: string): string | null {

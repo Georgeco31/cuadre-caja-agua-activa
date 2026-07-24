@@ -3,6 +3,8 @@ export type SaleStatus = "active" | "voided";
 export type SaleType = "cash" | "credit";
 export type CreditStatus = "none" | "pending" | "paid" | "voided";
 
+import type { PriceSource } from "@/types/pricing";
+
 export const SALE_PAYMENT_METHOD_LABELS: Record<SalePaymentMethod, string> = {
   cash: "Efectivo",
   transfer: "Transferencia",
@@ -32,6 +34,10 @@ export type SaleItem = {
   quantity: string;
   unit_price: string;
   subtotal: string;
+  price_source: PriceSource | null;
+  price_list_id: number | null;
+  price_list_name_snapshot: string | null;
+  pricing_note: string | null;
   created_at: string;
 };
 

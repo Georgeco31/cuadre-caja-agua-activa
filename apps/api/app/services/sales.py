@@ -15,6 +15,7 @@ from app.schemas.sale import (
     SaleItemCreate,
 )
 from app.services import route_loads as route_load_service
+from app.services import pricing as pricing_service
 
 MONEY_QUANTUM = Decimal("0.01")
 
@@ -33,7 +34,13 @@ def create_cash_sale(
             raise ValueError("El cliente no existe.")
         customer_name_snapshot = customer.name
 
-    item_values, total_amount = _build_sale_items(db, payload.items)
+    item_values, total_amount = _build_sale_items(
+        db,
+        payload.items,
+        customer_id=customer_id,
+        route_load_id=route_load_id,
+        price_date=payload.sale_date,
+    )
     return _persist_sale(
         db,
         {
@@ -71,7 +78,13 @@ def create_credit_sale(
     if not customer.credit_allowed:
         raise ValueError("El cliente no tiene credito permitido.")
 
-    item_values, total_amount = _build_sale_items(db, payload.items)
+    item_values, total_amount = _build_sale_items(
+        db,
+        payload.items,
+        customer_id=customer.id,
+        route_load_id=route_load_id,
+        price_date=payload.sale_date,
+    )
     active_balance = sale_repository.get_active_credit_balance(db, customer.id)
     if (
         customer.credit_limit > 0
@@ -196,6 +209,9 @@ def get_customer_credit_balance(
 def _build_sale_items(
     db: Session,
     items: list[SaleItemCreate],
+    customer_id: int | None,
+    route_load_id: int | None,
+    price_date: date,
 ) -> tuple[list[dict[str, object]], Decimal]:
     item_values: list[dict[str, object]] = []
     total_amount = Decimal("0.00")
@@ -206,9 +222,26 @@ def _build_sale_items(
         if not product.is_active:
             raise ValueError(f"El producto {product.name} esta inactivo.")
 
-        unit_price = item.unit_price
-        if unit_price is None:
-            unit_price = product.default_price
+        if item.unit_price is None:
+            resolution = pricing_service.resolve_price(
+                db=db,
+                product_id=product.id,
+                customer_id=customer_id,
+                route_load_id=route_load_id,
+                quantity=item.quantity,
+                price_date=price_date,
+            )
+            unit_price = resolution.resolved_price
+            price_source = resolution.price_source
+            price_list_id = resolution.price_list_id
+            price_list_name = resolution.price_list_name
+            pricing_note = resolution.pricing_note
+        else:
+            unit_price = item.unit_price
+            price_source = "manual"
+            price_list_id = None
+            price_list_name = None
+            pricing_note = "Precio ingresado manualmente"
         subtotal = (item.quantity * unit_price).quantize(
             MONEY_QUANTUM,
             rounding=ROUND_HALF_UP,
@@ -223,6 +256,10 @@ def _build_sale_items(
                 "quantity": item.quantity,
                 "unit_price": unit_price,
                 "subtotal": subtotal,
+                "price_source": price_source,
+                "price_list_id": price_list_id,
+                "price_list_name_snapshot": price_list_name,
+                "pricing_note": pricing_note,
             }
         )
     return item_values, total_amount.quantize(MONEY_QUANTUM)

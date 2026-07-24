@@ -10,6 +10,8 @@ from app.models.expense import Expense
 from app.models.inventory_location import InventoryLocation
 from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
+from app.models.price_list import PriceList
+from app.models.price_list_item import PriceListItem
 from app.models.product import Product
 from app.models.production_batch import ProductionBatch
 from app.models.production_item import ProductionItem
@@ -46,6 +48,8 @@ __all__ = [
     "InventoryLocation",
     "InventoryMovement",
     "InventoryStock",
+    "PriceList",
+    "PriceListItem",
     "Product",
     "ProductionBatch",
     "ProductionItem",
