@@ -70,6 +70,7 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Comparacion informativa, por fecha o rango, entre cierres activos de ruta y el cuadre general de caja.
 - Registro trazable del efectivo de un cierre de ruta recibido en un cuadre abierto, sin alterar el conteo fisico ni los totales oficiales de caja.
 - Resumen operativo diario por fecha con caja, produccion, merma, rutas, ventas, cobros y alertas, sin modificar informacion.
+- Reporte mensual operativo con una fila por dia, totales consolidados y alertas, sin modificar informacion.
 
 Quedan fuera del MVP:
 
@@ -211,6 +212,7 @@ cuadre-caja-agua-activa/
 - Bloque 40: reporte de solo lectura que compara cierres activos de ruta con el cuadre general de caja por fecha o rango.
 - Bloque 41: registro controlado y anulable del dinero de un cierre de ruta recibido en un cuadre abierto, con snapshots y sin modificar caja, inventario, ventas o cobros.
 - Bloque 42: resumen operativo diario de solo lectura con caja, produccion, rutas, ventas, cobros, detalles agrupados y alertas.
+- Bloque 43: reporte mensual operativo de solo lectura con caja, produccion, ventas, cobros, rutas, filas diarias y alertas consolidadas.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 

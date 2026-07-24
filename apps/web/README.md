@@ -47,6 +47,7 @@ Rutas principales:
 
 - `/login`
 - `/dashboard`
+- `/dashboard/monthly-summary`
 - `/dashboard/daily-summary`
 - `/dashboard/cash-session`
 - `/dashboard/history`
@@ -97,6 +98,7 @@ http://localhost:3000/login
 - Dashboard protegido en `/dashboard`.
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
+- El dashboard ofrece acceso a `/dashboard/monthly-summary` para consultar el comportamiento operativo de un mes completo.
 - El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
 - El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, rutas, vehiculos, inventario, produccion, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
@@ -130,6 +132,8 @@ http://localhost:3000/login
 - El registro de dinero de ruta es solo trazabilidad: no crea cuadres, no cambia monedas, billetes, gastos ni el total contado, y tampoco modifica cierres, inventario, ventas o cobros.
 - La pantalla `/dashboard/daily-summary` consulta `GET /api/v1/reports/daily-operational-summary`, permite seleccionar una fecha y presenta tarjetas, alertas, productos agrupados y listas resumidas de cargas, retornos, cierres y registros de dinero de ruta.
 - El resumen operativo diario es de solo lectura: no ofrece formularios de alta, edicion, anulacion o cierre y no calcula totales oficiales en el navegador.
+- La pantalla `/dashboard/monthly-summary` consulta `GET /api/v1/reports/monthly-operational-summary`, permite seleccionar un mes y presenta totales de caja, produccion, ventas, cobros, rutas, alertas y una fila por cada dia.
+- El reporte mensual usa tarjetas para el detalle diario en movil y una tabla con desplazamiento horizontal en pantallas medianas y grandes. Es de solo lectura.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.

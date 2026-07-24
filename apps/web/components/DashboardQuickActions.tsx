@@ -2,6 +2,13 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/monthly-summary",
+    title: "Reporte mensual",
+    description:
+      "Revisar caja, producción, ventas, rutas y alertas de todo el mes.",
+    primary: false,
+  },
+  {
     href: "/dashboard/daily-summary",
     title: "Resumen diario",
     description: "Ver caja, producción, rutas, ventas y alertas del día.",

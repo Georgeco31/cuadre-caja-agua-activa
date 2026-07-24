@@ -2,7 +2,18 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, el reporte comparativo de rutas contra caja, el registro trazable del dinero de ruta recibido en un cuadre abierto y el resumen operativo diario de solo lectura. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy
+2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo
+operativo de caja, los modulos base de clientes, productos, empleados, rutas y
+vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario
+manual, produccion aplicada a inventario, carga de camion, retorno, actividad
+comercial, cierre financiero por ruta, el reporte comparativo de rutas contra
+caja, el registro trazable del dinero de ruta recibido en un cuadre abierto, el
+resumen operativo diario y el reporte mensual operativo de solo lectura. El
+frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
+ingreso automatico por denominaciones, cobros masivos, inventario automatico
+por ventas, liquidacion fisica de ruta, consumo de insumos, nomina,
+mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -182,6 +193,21 @@ cuentan pero no participan en los totales principales y el total general de
 ingresos es solo una referencia operativa. La consulta reutiliza el resumen
 oficial de caja y no crea ni modifica cuadres, conteos, gastos, inventario,
 produccion, rutas, ventas o cobros. Este bloque no necesita migracion.
+
+## Reporte mensual operativo
+
+El endpoint autenticado de solo lectura
+`GET /api/v1/reports/monthly-operational-summary?year=YYYY&month=M` consolida
+todo el mes seleccionado. Incluye caja, produccion y merma, ventas, cobros,
+cargas, retornos, cierres financieros, dinero de ruta registrado en caja, una
+fila por cada dia y un resumen de alertas operativas. Si no se envian `year` y
+`month`, usa el año y mes actuales del servidor.
+
+Los registros anulados se cuentan por separado y no participan en los totales
+principales. El saldo pendiente corresponde al saldo actual de las ventas a
+credito activas creadas durante el mes. El promedio diario contado se calcula
+sobre los dias que tienen cuadre de caja. La consulta no crea ni modifica
+ningun dato y no necesita migracion.
 
 ## Seeds iniciales
 

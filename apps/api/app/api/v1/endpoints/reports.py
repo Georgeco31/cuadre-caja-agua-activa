@@ -1,14 +1,19 @@
 from datetime import date as Date
 
-from fastapi import APIRouter, Depends, HTTPException, status as http_status
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import status as http_status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
 from app.schemas.daily_operational_summary import DailyOperationalSummary
+from app.schemas.monthly_operational_summary import MonthlyOperationalSummary
 from app.schemas.report import CashSummaryReport
 from app.schemas.route_cash_comparison import RouteCashComparisonReport
 from app.services.daily_operational_summary import (
     get_daily_operational_summary as build_daily_operational_summary,
+)
+from app.services.monthly_operational_summary import (
+    get_monthly_operational_summary as build_monthly_operational_summary,
 )
 from app.services.report_service import (
     get_cash_summary_report,
@@ -74,3 +79,19 @@ def get_daily_operational_summary(
     db: Session = Depends(get_db),
 ):
     return build_daily_operational_summary(db=db, report_date=date)
+
+
+@router.get(
+    "/monthly-operational-summary",
+    response_model=MonthlyOperationalSummary,
+)
+def get_monthly_operational_summary(
+    year: int | None = Query(default=None, ge=1, le=9999),
+    month: int | None = Query(default=None, ge=1, le=12),
+    db: Session = Depends(get_db),
+):
+    return build_monthly_operational_summary(
+        db=db,
+        year=year,
+        month=month,
+    )

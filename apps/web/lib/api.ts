@@ -8,6 +8,7 @@ import type {
 } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
 import type { DailyOperationalSummary } from "@/types/dailyOperationalSummary";
+import type { MonthlyOperationalSummary } from "@/types/monthlyOperationalSummary";
 import type {
   CreditPayment,
   CreditPaymentFilters,
@@ -376,6 +377,25 @@ export async function getDailyOperationalSummary(
     {
       headers: authHeaders(token),
     },
+  );
+}
+
+export async function getMonthlyOperationalSummary(
+  token: string,
+  year?: number,
+  month?: number,
+): Promise<MonthlyOperationalSummary> {
+  const searchParams = new URLSearchParams();
+  if (year !== undefined) {
+    searchParams.set("year", String(year));
+  }
+  if (month !== undefined) {
+    searchParams.set("month", String(month));
+  }
+  const query = searchParams.toString();
+  return request<MonthlyOperationalSummary>(
+    `/reports/monthly-operational-summary${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
   );
 }
 
