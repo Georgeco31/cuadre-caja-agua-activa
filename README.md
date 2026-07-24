@@ -68,6 +68,7 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Cierre financiero de una carga con importes oficiales congelados, efectivo entregado y diferencia.
 - Historial y anulacion trazable del cierre, con bloqueo de operaciones vinculadas mientras permanezca activo.
 - Comparacion informativa, por fecha o rango, entre cierres activos de ruta y el cuadre general de caja.
+- Registro trazable del efectivo de un cierre de ruta recibido en un cuadre abierto, sin alterar el conteo fisico ni los totales oficiales de caja.
 
 Quedan fuera del MVP:
 
@@ -207,8 +208,9 @@ cuadre-caja-agua-activa/
 - Bloque 38: asociacion opcional de ventas y cobros a cargas activas con consulta comercial consolidada por ruta.
 - Bloque 39: cierre financiero de ruta con snapshots comerciales, efectivo entregado, diferencia, historial, anulacion y bloqueos operativos.
 - Bloque 40: reporte de solo lectura que compara cierres activos de ruta con el cuadre general de caja por fecha o rango.
+- Bloque 41: registro controlado y anulable del dinero de un cierre de ruta recibido en un cuadre abierto, con snapshots y sin modificar caja, inventario, ventas o cobros.
 
-Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

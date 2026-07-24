@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta y el reporte comparativo de rutas contra caja. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica o movimientos entre rutas y caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion fisica de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, el reporte comparativo de rutas contra caja y el registro trazable del dinero de ruta recibido en un cuadre abierto. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, liquidacion fisica de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -145,6 +145,28 @@ Funciones principales:
 - Registrar correcciones justificadas sobre cuadres cerrados con trazabilidad de total anterior y total nuevo.
 
 Los endpoints API usan estos servicios; la logica de negocio no debe duplicarse dentro de las rutas.
+
+## Dinero de ruta recibido en caja
+
+La tabla `route_cash_receipts` registra que el efectivo de un cierre financiero
+activo fue recibido en un cuadre abierto. El registro conserva snapshots del
+cierre, ruta y vehiculo, usa importes `Numeric(14, 2)` y admite anulacion
+logica con motivo. Solo puede existir un recibo activo por cierre.
+
+Endpoints autenticados:
+
+- `POST /api/v1/route-cash-receipts`
+- `GET /api/v1/route-cash-receipts`
+- `GET /api/v1/route-cash-receipts/{receipt_id}`
+- `POST /api/v1/route-cash-receipts/{receipt_id}/void`
+- `GET /api/v1/route-closures/{closure_id}/cash-receipt`
+- `GET /api/v1/cash-sessions/{cash_session_id}/route-cash-receipts`
+
+Crear o anular estos registros no modifica denominaciones, conteos, gastos,
+resumen oficial de caja, cierres de ruta, inventario, ventas, cobros ni cuentas
+por cobrar. Un cierre de ruta con recibo activo no puede anularse hasta que se
+anule primero el recibo. El cierre de un cuadre no se bloquea por rutas
+pendientes en este bloque.
 
 ## Seeds iniciales
 

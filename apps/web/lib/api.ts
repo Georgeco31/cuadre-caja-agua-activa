@@ -84,6 +84,13 @@ import type {
   RouteCashComparisonReport,
 } from "@/types/routeCashComparison";
 import type {
+  CashSessionRouteCashReceipts,
+  RouteCashReceipt,
+  RouteCashReceiptFilters,
+  RouteCashReceiptPayload,
+  RouteClosureCashReceipt,
+} from "@/types/routeCashReceipt";
+import type {
   RouteReturn,
   RouteReturnFilters,
   RouteReturnPayload,
@@ -1344,6 +1351,94 @@ export async function voidRouteClosure(
   reason: string,
 ): Promise<RouteClosure> {
   return request<RouteClosure>(`/route-closures/${closureId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function createRouteCashReceipt(
+  token: string,
+  payload: RouteCashReceiptPayload,
+): Promise<RouteCashReceipt> {
+  return request<RouteCashReceipt>("/route-cash-receipts", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listRouteCashReceipts(
+  token: string,
+  filters: RouteCashReceiptFilters = {},
+): Promise<RouteCashReceipt[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.route_id !== undefined) {
+    searchParams.set("route_id", String(filters.route_id));
+  }
+  if (filters.vehicle_id !== undefined) {
+    searchParams.set("vehicle_id", String(filters.vehicle_id));
+  }
+  if (filters.route_closure_id !== undefined) {
+    searchParams.set("route_closure_id", String(filters.route_closure_id));
+  }
+  if (filters.cash_session_id !== undefined) {
+    searchParams.set("cash_session_id", String(filters.cash_session_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<RouteCashReceipt[]>(
+    `/route-cash-receipts${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getRouteCashReceipt(
+  token: string,
+  receiptId: number,
+): Promise<RouteCashReceipt> {
+  return request<RouteCashReceipt>(`/route-cash-receipts/${receiptId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function getRouteClosureCashReceipt(
+  token: string,
+  closureId: number,
+): Promise<RouteClosureCashReceipt> {
+  return request<RouteClosureCashReceipt>(
+    `/route-closures/${closureId}/cash-receipt`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getCashSessionRouteCashReceipts(
+  token: string,
+  cashSessionId: number,
+): Promise<CashSessionRouteCashReceipts> {
+  return request<CashSessionRouteCashReceipts>(
+    `/cash-sessions/${cashSessionId}/route-cash-receipts`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function voidRouteCashReceipt(
+  token: string,
+  receiptId: number,
+  reason: string,
+): Promise<RouteCashReceipt> {
+  return request<RouteCashReceipt>(`/route-cash-receipts/${receiptId}/void`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),

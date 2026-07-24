@@ -11,6 +11,8 @@ from app.schemas.route_closure import (
     RouteClosureStatus,
     RouteClosureVoid,
 )
+from app.schemas.route_cash_receipt import RouteClosureCashReceiptRead
+from app.services import route_cash_receipts as receipts_service
 from app.services import route_closures as route_closures_service
 
 router = APIRouter(
@@ -70,6 +72,20 @@ def get_route_closure(closure_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
+@router.get(
+    "/{closure_id}/cash-receipt",
+    response_model=RouteClosureCashReceiptRead,
+)
+def get_route_closure_cash_receipt(
+    closure_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return receipts_service.get_cash_receipt_for_closure(db, closure_id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
 @router.post("/{closure_id}/void", response_model=RouteClosureRead)
 def void_route_closure(
     closure_id: int,
@@ -90,8 +106,11 @@ def _http_error(error: ValueError) -> HTTPException:
     detail = str(error)
     if "no existe" in detail:
         return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
-    if "ya esta anulado" in detail or "otro cierre activo" in detail or (
-        "ya tiene un cierre financiero activo" in detail
+    if (
+        "ya esta anulado" in detail
+        or "otro cierre activo" in detail
+        or "ya tiene un cierre financiero activo" in detail
+        or "Primero anule" in detail
     ):
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)

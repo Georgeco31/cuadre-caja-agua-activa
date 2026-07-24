@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.models.route_closure import RouteClosure
 from app.repositories import route_closures as route_closures_repository
+from app.repositories import route_cash_receipts as receipts_repository
 from app.repositories import route_loads as route_loads_repository
 from app.schemas.route_closure import (
     RouteClosureCreate,
@@ -138,6 +139,11 @@ def void_route_closure(
         raise ValueError("El cierre financiero de ruta no existe.")
     if closure.status == "voided":
         raise ValueError("El cierre financiero de ruta ya esta anulado.")
+    if receipts_repository.has_active_receipt_for_closure(db, closure.id):
+        raise ValueError(
+            "Primero anule el registro de dinero en caja antes de anular "
+            "el cierre de ruta.",
+        )
 
     route_closures_repository.mark_route_closure_voided(
         db,

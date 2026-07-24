@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/route-cash-receipts",
+    title: "Dinero de ruta en caja",
+    description: "Registrar efectivo de rutas cerradas dentro de un cuadre abierto.",
+    primary: false,
+  },
+  {
     href: "/dashboard/route-cash-comparison",
     title: "Rutas vs caja",
     description:

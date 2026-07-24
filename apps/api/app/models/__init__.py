@@ -21,6 +21,7 @@ from app.models.production_inventory_application_item import (
 )
 from app.models.route_load import RouteLoad
 from app.models.route_load_item import RouteLoadItem
+from app.models.route_cash_receipt import RouteCashReceipt
 from app.models.route_closure import RouteClosure
 from app.models.route_return import RouteReturn
 from app.models.route_return_item import RouteReturnItem
@@ -49,6 +50,7 @@ __all__ = [
     "ProductionInventoryApplicationItem",
     "RouteLoad",
     "RouteLoadItem",
+    "RouteCashReceipt",
     "RouteClosure",
     "RouteReturn",
     "RouteReturnItem",

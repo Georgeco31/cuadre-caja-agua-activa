@@ -21,11 +21,13 @@ from app.schemas.correction import (
 )
 from app.schemas.expense import ExpenseCreate, ExpenseRead
 from app.schemas.summary import CashSessionSummary
+from app.schemas.route_cash_receipt import CashSessionRouteCashReceiptsRead
 from app.services import (
     cash_count_service,
     cash_session_service,
     correction_service,
     expense_service,
+    route_cash_receipts,
 )
 from app.services.summary_service import get_cash_session_summary
 
@@ -255,6 +257,23 @@ def get_summary(
 ):
     try:
         return get_cash_session_summary(db, cash_session_id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/{cash_session_id}/route-cash-receipts",
+    response_model=CashSessionRouteCashReceiptsRead,
+)
+def get_route_cash_receipts(
+    cash_session_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return route_cash_receipts.get_receipts_for_cash_session(
+            db,
+            cash_session_id,
+        )
     except ValueError as error:
         raise _http_error(error) from error
 

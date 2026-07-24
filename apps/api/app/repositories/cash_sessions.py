@@ -6,8 +6,16 @@ from sqlalchemy.orm import Session
 from app.models.cash_session import CashSession
 
 
-def get_cash_session(db: Session, cash_session_id: int) -> CashSession | None:
-    return db.get(CashSession, cash_session_id)
+def get_cash_session(
+    db: Session,
+    cash_session_id: int,
+    *,
+    for_update: bool = False,
+) -> CashSession | None:
+    statement = select(CashSession).where(CashSession.id == cash_session_id)
+    if for_update:
+        statement = statement.with_for_update()
+    return db.scalar(statement)
 
 
 def get_cash_session_by_date(

@@ -249,10 +249,18 @@ export default function RouteClosuresPage() {
           <LogoutButton />
         </header>
 
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          El cierre congela los totales comerciales de la carga. No mueve caja,
-          inventario ni el estado físico de la ruta.
-        </p>
+        <div className="flex flex-col gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            El cierre congela los totales comerciales de la carga. No mueve
+            caja, inventario ni el estado físico de la ruta.
+          </p>
+          <Link
+            className="shrink-0 font-semibold text-water-700 hover:text-water-500"
+            href="/dashboard/route-cash-receipts"
+          >
+            Registrar dinero en caja
+          </Link>
+        </div>
 
         {error ? <ErrorMessage message={error} /> : null}
         {message ? (
