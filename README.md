@@ -67,13 +67,14 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Asociacion opcional de ventas y cobros a una carga activa y consulta de sus totales comerciales.
 - Cierre financiero de una carga con importes oficiales congelados, efectivo entregado y diferencia.
 - Historial y anulacion trazable del cierre, con bloqueo de operaciones vinculadas mientras permanezca activo.
+- Comparacion informativa, por fecha o rango, entre cierres activos de ruta y el cuadre general de caja.
 
 Quedan fuera del MVP:
 
 - Facturacion.
 - Descuento automatico de inventario por ventas.
 - Conciliacion automatica de cobros con caja o bancos.
-- Conciliacion automatica del cierre de ruta con caja o bancos.
+- Ingreso automatico o conciliacion contable del cierre de ruta con caja o bancos.
 - Liquidacion fisica del inventario restante de una ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
 - WhatsApp.
@@ -205,8 +206,9 @@ cuadre-caja-agua-activa/
 - Bloque 37: retorno de productos desde una carga activa hacia una ubicacion no vehicular, trazable y reversible.
 - Bloque 38: asociacion opcional de ventas y cobros a cargas activas con consulta comercial consolidada por ruta.
 - Bloque 39: cierre financiero de ruta con snapshots comerciales, efectivo entregado, diferencia, historial, anulacion y bloqueos operativos.
+- Bloque 40: reporte de solo lectura que compara cierres activos de ruta con el cuadre general de caja por fecha o rango.
 
-Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, conciliacion del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, compras, proveedores, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos, eliminacion de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

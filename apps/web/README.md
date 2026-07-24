@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial y cierre financiero por ruta. Todavia no incluye conciliacion automatica del cierre con caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, correcciones controladas, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta y comparacion informativa de rutas contra caja. Todavia no incluye conciliacion automatica o movimientos entre rutas y caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -51,6 +51,7 @@ Rutas principales:
 - `/dashboard/history`
 - `/dashboard/history/[cashSessionId]`
 - `/dashboard/reports`
+- `/dashboard/route-cash-comparison`
 - `/dashboard/customers`
 - `/dashboard/products`
 - `/dashboard/employees`
@@ -119,6 +120,9 @@ http://localhost:3000/login
 - Cierre de cuadre con `POST /api/v1/cash-sessions/{id}/close`.
 - Antes de cerrar, el frontend muestra una confirmación con el resumen oficial actual.
 - Resumen acumulado cargado desde `GET /api/v1/reports/cash-summary`.
+- La pantalla `/dashboard/route-cash-comparison` consulta `GET /api/v1/reports/route-cash-comparison`, permite filtrar por fecha y muestra totales oficiales, comparación diaria y el detalle de cada cierre activo.
+- La diferencia entre total contado en caja y efectivo entregado por rutas es informativa: caja puede incluir ventas de oficina, dinero previo, otros ingresos o ajustes.
+- El reporte Rutas vs caja es de solo lectura; no crea ni modifica cuadres, cierres, gastos, ventas, cobros o inventario.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.
@@ -191,5 +195,10 @@ http://localhost:3000/login
 En el detalle de historial, los gastos se muestran separados entre antes del conteo y despues del conteo. Las correcciones solo se habilitan para cuadres con estado `closed`. Despues de cada correccion, el frontend vuelve a consultar el resumen oficial, los listados afectados y los logs de correccion desde la API.
 
 La pantalla `/dashboard/reports` muestra el resumen acumulado de caja basado en cuadres registrados, incluyendo total en monedas, total en billetes, total contado, gastos antes del conteo y gastos despues del conteo. Todavia no incorpora ventas, cobros, saldos de credito ni saldo inicial de caja.
+
+La pantalla `/dashboard/route-cash-comparison` compara por fecha los cierres
+financieros activos de ruta con el cuadre general. Los totales y estados
+provienen del backend, los cierres anulados no se incluyen y los días sin caja
+o sin rutas se identifican sin tratarlos como un error contable definitivo.
 
 El uso de `localStorage` es una solución simple para desarrollo. No reemplaza una estrategia completa de seguridad para producción.

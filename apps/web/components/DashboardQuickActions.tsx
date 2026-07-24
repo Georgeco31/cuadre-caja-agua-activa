@@ -2,6 +2,13 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/route-cash-comparison",
+    title: "Rutas vs caja",
+    description:
+      "Comparar efectivo entregado por rutas con el cuadre general de caja.",
+    primary: false,
+  },
+  {
     href: "/dashboard/route-closures",
     title: "Cierre de ruta",
     description: "Comparar efectivo esperado contra efectivo entregado por una ruta.",

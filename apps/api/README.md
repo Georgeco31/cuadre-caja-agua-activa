@@ -2,7 +2,7 @@
 
 API FastAPI de Agua Activa ERP.
 
-Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno y actividad comercial por ruta. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica con caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion o cierre de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
+Este backend incluye la base tecnica de FastAPI, PostgreSQL, modelos SQLAlchemy 2.0, migraciones Alembic, autenticacion de administrador con JWT, el modulo operativo de caja, los modulos base de clientes, productos, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta y el reporte comparativo de rutas contra caja. El frontend vive en `apps/web`. Todavia no incluye conciliacion automatica o movimientos entre rutas y caja, recibos, cobros masivos, inventario automatico por ventas, liquidacion fisica de ruta, consumo de insumos, nomina, mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -471,3 +471,28 @@ total_pre_count_expenses = suma(gastos before_count)
 total_post_count_expenses = suma(gastos after_count)
 final_total = total_counted - total_post_count_expenses
 ```
+
+Endpoint comparativo de cierres de ruta contra caja general:
+
+- `GET /api/v1/reports/route-cash-comparison`
+
+Acepta `date_from` y `date_to`. Sin fechas consulta el dia actual; con una sola
+fecha usa ese mismo dia como inicio y fin. Devuelve totales del rango y una fila
+por fecha que tenga al menos un cierre de ruta activo o un cuadre de caja. Los
+cierres anulados quedan excluidos.
+
+El reporte suma el efectivo esperado, entregado y la diferencia congelada en
+los cierres activos. Para caja reutiliza el resumen oficial del cuadre:
+monedas, billetes, total contado, gastos posteriores al conteo y total final.
+La diferencia informativa se calcula asi:
+
+```text
+cash_vs_route_delivered_difference =
+    cash_total_counted - route_delivered_cash_total
+```
+
+Los estados posibles son `no_cash_session`, `no_route_closures`, `matched`,
+`cash_higher_than_routes` y `routes_higher_than_cash`. Una diferencia no se
+interpreta automaticamente como faltante o sobrante, porque la caja general
+puede contener otros ingresos. Esta consulta no crea ni modifica cuadres,
+cierres, gastos, ventas, cobros o inventario y no requiere migracion.

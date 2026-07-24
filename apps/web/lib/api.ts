@@ -80,6 +80,10 @@ import type {
   RouteLoadFinancialClosure,
 } from "@/types/routeClosure";
 import type {
+  RouteCashComparisonFilters,
+  RouteCashComparisonReport,
+} from "@/types/routeCashComparison";
+import type {
   RouteReturn,
   RouteReturnFilters,
   RouteReturnPayload,
@@ -323,6 +327,27 @@ export async function getCashSummaryReport(
   const query = searchParams.toString();
   return request<CashSummaryReport>(
     `/reports/cash-summary${query ? `?${query}` : ""}`,
+    {
+      headers: authHeaders(token),
+    },
+  );
+}
+
+export async function getRouteCashComparisonReport(
+  token: string,
+  filters: RouteCashComparisonFilters = {},
+): Promise<RouteCashComparisonReport> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+
+  const query = searchParams.toString();
+  return request<RouteCashComparisonReport>(
+    `/reports/route-cash-comparison${query ? `?${query}` : ""}`,
     {
       headers: authHeaders(token),
     },
