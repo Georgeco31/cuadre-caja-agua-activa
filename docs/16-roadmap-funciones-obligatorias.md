@@ -355,11 +355,19 @@ Convertir datos operativos estabilizados en información gerencial.
 - Rango por defecto en el mes calendario actual.
 - Sin migraciones, seeds ni modificaciones de datos.
 
-### Bloque 52B - Exportación Excel (pendiente)
+### Bloque 52B - Exportación Excel (implementado base)
 
-- Exportación Excel con datos tabulares.
-- Mismos filtros y totales oficiales del endpoint gerencial.
-- Pruebas de igualdad entre pantalla y archivo.
+- Diez endpoints autenticados para panel gerencial, resumen mensual, ventas,
+  cartera, gastos operativos, compras, inventario, producción, rutas y nómina.
+- Archivos `.xlsx` generados en memoria con hojas tabulares, encabezados,
+  filtros, anchos básicos y formatos numéricos.
+- Reutilización de servicios y totales oficiales existentes, incluyendo el
+  panel gerencial y el resumen mensual.
+- Pantalla central `/dashboard/exports`, acceso desde el dashboard y botones
+  directos en panel gerencial y resumen mensual.
+- Pruebas de autenticación, apertura con `openpyxl`, rangos vacíos, períodos
+  inválidos y ausencia de escrituras.
+- Sin migraciones, tablas, seeds ni datos automáticos.
 
 ### Bloque 52C - Exportación PDF y madurez gerencial (pendiente)
 
@@ -375,8 +383,8 @@ no deben recalcular cifras financieras de forma distinta en el navegador.
 
 ### Criterio de cierre
 
-El mismo filtro debe devolver los mismos totales en API, pantalla y, cuando se
-implementen 52B/52C, Excel y PDF.
+El mismo filtro debe devolver los mismos totales en API, pantalla y Excel. PDF
+debe conservar esa regla cuando se implemente el Bloque 52C.
 
 ## Dependencias entre bloques
 

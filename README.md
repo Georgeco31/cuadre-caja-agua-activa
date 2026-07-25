@@ -98,6 +98,9 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Reporte mensual operativo con una fila por dia, totales consolidados y alertas, sin modificar informacion.
 - Panel gerencial por rango con indicadores, alertas y gráficos simples de caja,
   ventas, cartera, gastos, compras, producción, inventario, rutas y nómina.
+- Exportaciones Excel autenticadas y de solo lectura para panel gerencial,
+  resumen mensual, ventas, cartera, gastos operativos, compras, inventario,
+  producción, rutas y nómina base.
 
 Quedan fuera del MVP:
 
@@ -110,14 +113,14 @@ Quedan fuera del MVP:
 - WhatsApp.
 - BI, rentabilidad y comparativos gerenciales avanzados.
 - Multiples cajas o turnos.
-- Exportaciones PDF/Excel.
+- Exportaciones PDF.
 - Aplicacion de compras a inventario, pagos a proveedores y cuentas por pagar
   avanzadas.
 - Conciliacion o movimiento automatico de gastos operativos en caja o bancos.
 - Pago real de nómina, IESS, décimos, vacaciones avanzadas, horas extras,
   comisiones y cálculos laborales legales.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 52A implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas, costos estimados y consumo controlado de insumos, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados, roles de pago base e indicadores gerenciales visuales. Registrar una produccion o definir una formula no mueve stock por si solo; el consumo ocurre exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra, calcular un rol o consultar el panel gerencial no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 52B implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas, costos estimados y consumo controlado de insumos, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados, roles de pago base, indicadores gerenciales visuales y exportaciones Excel. Registrar una produccion o definir una formula no mueve stock por si solo; el consumo ocurre exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra, calcular un rol, consultar el panel gerencial o exportar un reporte no modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 
@@ -267,8 +270,11 @@ cuadre-caja-agua-activa/
 - Bloque 51: consumo controlado de insumos por produccion, con vista previa,
   formulas seleccionadas, salidas de inventario, snapshots y anulacion
   transaccional reversible.
+- Bloque 52A: panel gerencial visual de solo lectura por rango.
+- Bloque 52B: exportaciones Excel autenticadas para diez reportes del ERP,
+  generadas en memoria y sin modificar datos.
 
-Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, cálculos laborales legales, mantenimiento, combustible, kilometraje, asignaciones formales, consumo automatico de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, cálculos laborales legales, mantenimiento, combustible, kilometraje, asignaciones formales, consumo automatico de insumos, mapas, geolocalizacion, exportaciones PDF, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

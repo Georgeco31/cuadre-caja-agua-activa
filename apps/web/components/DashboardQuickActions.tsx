@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/exports",
+    title: "Exportaciones Excel",
+    description: "Descargar reportes del ERP en formato .xlsx.",
+    primary: false,
+  },
+  {
     href: "/dashboard/management",
     title: "Panel gerencial",
     description: "Ver indicadores, alertas y gráficos generales del negocio.",

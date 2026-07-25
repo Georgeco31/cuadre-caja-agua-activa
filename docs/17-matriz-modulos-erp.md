@@ -10,7 +10,7 @@
 | Pendiente | Está planificado y tiene dependencias identificadas |
 | No implementado | No existe modelo, endpoint ni pantalla funcional del módulo |
 
-La valoración corresponde al corte del Bloque 52A. “Implementado” no significa
+La valoración corresponde al corte del Bloque 52B. “Implementado” no significa
 que el módulo pueda operar sin conciliación, backup o control manual.
 
 ## Matriz
@@ -29,7 +29,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 | 10. Empleados, anticipos y roles | Implementado base | Ficha base, alta/baja, asistencia diaria, anticipos, préstamos, abonos, saldos, roles por período, snapshots, deducciones seleccionadas, preview, detalle, resumen por empleado y anulaciones lógicas | Pago real de nómina, cierre formal de períodos, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, retenciones, aprobación y permisos | Alta | Medio: el cálculo queda congelado, pero el pago y movimiento real de dinero siguen fuera del sistema |
 | 11. Camiones y mantenimiento | Parcial | Vehículos, placa, tipo, capacidad, combustible referencial, estado y uso en cargas | Mantenimiento, combustible consumido, kilometraje, asignaciones, documentos, costos y rentabilidad | Media | Medio: no hay alerta de mantenimiento ni costo real por vehículo |
 | 12. Producción o envasado | Implementado base | Lotes, cantidades, merma, snapshots, anulación, aplicación reversible a inventario, clasificación de insumos, fórmulas, costos estimados y consumo explícito reversible por lote | Lotes de materia prima, consumo parcial avanzado, mano de obra, costos indirectos y costeo contable real | Alta | Medio: el consumo ya descuenta stock de forma controlada, pero todavía no determina el costo contable real del producto terminado |
-| 13. Reportes gerenciales | Implementado base | Caja acumulada, cartera, estado de cuenta, rutas vs caja, resumen diario y mensual, panel gerencial por rango, indicadores, alertas y gráficos base | Excel/PDF, rentabilidad, comparativos avanzados, programación y BI | Media | Medio: los indicadores son informativos y todavía no sustituyen contabilidad ni conciliación |
+| 13. Reportes gerenciales | Implementado base | Caja acumulada, cartera, estado de cuenta, rutas vs caja, resumen diario y mensual, panel gerencial por rango, indicadores, alertas, gráficos base y exportaciones Excel autenticadas para diez reportes | PDF, rentabilidad, comparativos avanzados, programación y BI | Media | Medio: los indicadores y exportaciones son informativos y todavía no sustituyen contabilidad ni conciliación |
 
 ## Lectura por prioridad
 

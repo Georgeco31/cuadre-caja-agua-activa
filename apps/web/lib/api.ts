@@ -502,6 +502,34 @@ export async function getManagementDashboard(
   );
 }
 
+export async function downloadFile(
+  token: string,
+  endpoint: string,
+  filename: string,
+): Promise<void> {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    headers: authHeaders(token),
+  });
+  if (!response.ok) {
+    const message = await getErrorMessage(response);
+    throw new ApiError(message, response.status);
+  }
+
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = objectUrl;
+  link.download = filename;
+  link.hidden = true;
+  document.body.appendChild(link);
+  try {
+    link.click();
+  } finally {
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
 export async function listCustomers(
   token: string,
   filters: CustomerFilters = {},

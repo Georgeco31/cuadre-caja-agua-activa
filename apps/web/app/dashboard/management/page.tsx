@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
-import { ApiError, getManagementDashboard } from "@/lib/api";
+import { ApiError, downloadFile, getManagementDashboard } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type {
   ManagementAlert,
@@ -35,6 +35,7 @@ export default function ManagementDashboardPage() {
   const [report, setReport] = useState<ManagementDashboard | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -91,6 +92,48 @@ export default function ManagementDashboardPage() {
     loadReport(token, monthFilters);
   }
 
+  async function handleExport() {
+    if (!token) {
+      return;
+    }
+    if (
+      filters.date_from &&
+      filters.date_to &&
+      filters.date_to < filters.date_from
+    ) {
+      setError("La fecha hasta no puede ser menor que la fecha desde.");
+      return;
+    }
+
+    const searchParams = new URLSearchParams();
+    if (filters.date_from) {
+      searchParams.set("date_from", filters.date_from);
+    }
+    if (filters.date_to) {
+      searchParams.set("date_to", filters.date_to);
+    }
+
+    setIsExporting(true);
+    setError("");
+    try {
+      const query = searchParams.toString();
+      await downloadFile(
+        token,
+        `/reports/exports/management-dashboard.xlsx${
+          query ? `?${query}` : ""
+        }`,
+        "panel-gerencial.xlsx",
+      );
+    } catch (exportError) {
+      if (redirectIfUnauthorized(exportError)) {
+        return;
+      }
+      setError(getErrorMessage(exportError));
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
@@ -129,10 +172,12 @@ export default function ManagementDashboardPage() {
         </header>
 
         <ManagementFilters
-          disabled={isLoading}
+          disabled={isLoading || isExporting}
           filters={filters}
+          isExporting={isExporting}
           onChange={setFilters}
           onCurrentMonth={handleCurrentMonth}
+          onExport={handleExport}
           onSubmit={handleSubmit}
         />
 
@@ -156,21 +201,25 @@ export default function ManagementDashboardPage() {
 type ManagementFiltersProps = {
   filters: ManagementDashboardFilters;
   disabled: boolean;
+  isExporting: boolean;
   onChange: (filters: ManagementDashboardFilters) => void;
   onCurrentMonth: () => void;
+  onExport: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
 function ManagementFilters({
   filters,
   disabled,
+  isExporting,
   onChange,
   onCurrentMonth,
+  onExport,
   onSubmit,
 }: ManagementFiltersProps) {
   return (
     <form
-      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto_auto] lg:items-end"
+      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto_auto_auto] xl:items-end"
       onSubmit={onSubmit}
     >
       <DateInput
@@ -199,6 +248,14 @@ function ManagementFilters({
         type="button"
       >
         Mes actual
+      </button>
+      <button
+        className="h-10 rounded-md border border-emerald-600 bg-emerald-50 px-5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+        disabled={disabled}
+        onClick={onExport}
+        type="button"
+      >
+        {isExporting ? "Exportando..." : "Exportar Excel"}
       </button>
     </form>
   );

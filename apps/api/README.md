@@ -13,7 +13,8 @@ resumen operativo diario, el reporte mensual operativo de solo lectura y el
 registro administrativo de compras, listas de precios, gastos operativos
 generales con categorías y plantillas recurrentes, control de asistencia,
 anticipos, préstamos y abonos de empleados, roles de pago base, clasificacion
-productiva, formulas con costos estimados y consumo controlado de insumos. El
+productiva, formulas con costos estimados, consumo controlado de insumos y
+exportaciones Excel autenticadas de solo lectura. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
 por ventas, liquidacion fisica de ruta, consumo automatico de insumos, pago real de nomina,
@@ -236,6 +237,29 @@ el monto pagado parcial.
 
 El panel no crea ni modifica registros, no ejecuta conciliaciones y no requiere
 migracion. La revisión Alembic permanece en `0025_materials`.
+
+## Exportaciones Excel
+
+El prefijo autenticado `GET /api/v1/reports/exports` ofrece archivos `.xlsx`
+para:
+
+- `management-dashboard.xlsx`
+- `monthly-summary.xlsx`
+- `sales.xlsx`
+- `receivables.xlsx`
+- `operating-expenses.xlsx`
+- `purchases.xlsx`
+- `inventory.xlsx`
+- `production.xlsx`
+- `routes.xlsx`
+- `payroll.xlsx`
+
+Los archivos se generan en memoria con `BytesIO` y `openpyxl`, se responden
+mediante `StreamingResponse` y no crean ni modifican registros. Las
+exportaciones usan los servicios de lectura y los cálculos oficiales ya
+existentes. Un rango sin datos produce un libro válido con encabezados y el
+mensaje `Sin datos`. Este bloque no agrega migraciones ni seeds; Alembic
+permanece en `0025_materials`.
 
 ## Seeds iniciales
 

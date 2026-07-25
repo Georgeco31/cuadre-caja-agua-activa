@@ -10,7 +10,11 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { MonthlySummaryAlerts } from "@/components/MonthlySummaryAlerts";
 import { MonthlySummaryCards } from "@/components/MonthlySummaryCards";
 import { MonthlySummaryDetails } from "@/components/MonthlySummaryDetails";
-import { ApiError, getMonthlyOperationalSummary } from "@/lib/api";
+import {
+  ApiError,
+  downloadFile,
+  getMonthlyOperationalSummary,
+} from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type { MonthlyOperationalSummary } from "@/types/monthlyOperationalSummary";
 
@@ -23,6 +27,7 @@ export default function MonthlySummaryPage() {
   const [report, setReport] = useState<MonthlyOperationalSummary | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -81,6 +86,34 @@ export default function MonthlySummaryPage() {
     loadReport(token, currentMonth);
   }
 
+  async function handleExport() {
+    if (!token) {
+      return;
+    }
+    const period = parseMonthValue(selectedMonth);
+    if (!period) {
+      setError("Selecciona un mes válido.");
+      return;
+    }
+
+    setIsExporting(true);
+    setError("");
+    try {
+      await downloadFile(
+        token,
+        `/reports/exports/monthly-summary.xlsx?year=${period.year}&month=${period.month}`,
+        `resumen-mensual-${selectedMonth}.xlsx`,
+      );
+    } catch (exportError) {
+      if (redirectIfUnauthorized(exportError)) {
+        return;
+      }
+      setError(getErrorMessage(exportError));
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
@@ -116,7 +149,7 @@ export default function MonthlySummaryPage() {
         </header>
 
         <form
-          className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[minmax(190px,260px)_auto_auto] sm:items-end"
+          className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(190px,260px)_auto_auto_auto] xl:items-end"
           onSubmit={handleSubmit}
         >
           <label className="block">
@@ -146,6 +179,14 @@ export default function MonthlySummaryPage() {
             type="button"
           >
             Mes actual
+          </button>
+          <button
+            className="h-10 rounded-md border border-emerald-600 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+            disabled={isLoading || isExporting || !selectedMonth}
+            onClick={handleExport}
+            type="button"
+          >
+            {isExporting ? "Exportando..." : "Exportar Excel"}
           </button>
         </form>
 
