@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, roles de pago base, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, formulas con insumos y costos estimados, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, roles de pago base, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, formulas con insumos y costos estimados, consumo controlado y reversible de insumos, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
 
 ## Problema que resuelve
 
@@ -82,6 +82,10 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
   estimados calculados en backend.
 - Estimacion proporcional de cantidades y costos para una cantidad de salida,
   sin consumo automatico de inventario.
+- Vista previa y consumo explicito de insumos desde una ubicacion activa,
+  usando la cantidad producida y la merma configurada en cada formula.
+- Salidas de inventario trazables por formula e insumo, con anulacion que
+  conserva el historial y revierte el stock.
 - Carga explicita de productos desde una ubicacion origen hacia el inventario de un vehiculo.
 - Salida y entrada vinculadas a ruta, vehiculo y carga, con anulacion reversible.
 - Retorno trazable de productos desde el vehiculo hacia una ubicacion no vehicular.
@@ -111,7 +115,7 @@ Quedan fuera del MVP:
 - Pago real de nómina, IESS, décimos, vacaciones avanzadas, horas extras,
   comisiones y cálculos laborales legales.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 50 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas y costos estimados, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados y roles de pago base. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Definir una formula tampoco consume insumos ni crea movimientos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra o calcular un rol no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 51 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas, costos estimados y consumo controlado de insumos, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados y roles de pago base. Registrar una produccion o definir una formula no mueve stock por si solo; el consumo ocurre exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra o calcular un rol no modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 
@@ -256,8 +260,11 @@ cuadre-caja-agua-activa/
   referencia, deducciones de anticipos y préstamos, preview, detalle y
   anulación, sin pago real ni movimientos de caja, bancos o gastos.
 - Bloque 50: clasificacion productiva, formulas con items y snapshots, costos
-  estimados y escalamiento por cantidad, sin consumo de inventario ni
+  estimados y escalamiento por cantidad, sin consumo automatico ni
   integracion automatica con produccion existente.
+- Bloque 51: consumo controlado de insumos por produccion, con vista previa,
+  formulas seleccionadas, salidas de inventario, snapshots y anulacion
+  transaccional reversible.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, cálculos laborales legales, mantenimiento, combustible, kilometraje, asignaciones formales, consumo automatico de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
 

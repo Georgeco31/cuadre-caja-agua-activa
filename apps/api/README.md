@@ -13,7 +13,7 @@ resumen operativo diario, el reporte mensual operativo de solo lectura y el
 registro administrativo de compras, listas de precios, gastos operativos
 generales con categorías y plantillas recurrentes, control de asistencia,
 anticipos, préstamos y abonos de empleados, roles de pago base, clasificacion
-productiva y formulas con costos estimados. El
+productiva, formulas con costos estimados y consumo controlado de insumos. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
 por ventas, liquidacion fisica de ruta, consumo automatico de insumos, pago real de nomina,
@@ -634,6 +634,37 @@ Este modulo es exclusivamente informativo: no modifica stock, no crea
 `inventory_movements`, no cambia caja, compras, ventas o producciones
 existentes y no actualiza automaticamente el costo del producto terminado.
 Los seeds no crean formulas ni items.
+
+## Consumo controlado de insumos de produccion
+
+La migracion `0025_materials` crea
+`production_material_consumptions` y
+`production_material_consumption_items`. Crear una produccion o definir una
+formula no consume inventario. El operador debe seleccionar una ubicacion
+origen y una formula activa para cada producto del lote, revisar la vista
+previa y confirmar el consumo.
+
+Endpoints autenticados:
+
+- `POST /api/v1/production/batches/{batch_id}/material-consumption/preview`
+- `POST /api/v1/production/batches/{batch_id}/material-consumption`
+- `GET /api/v1/production/batches/{batch_id}/material-consumption`
+- `GET /api/v1/production/material-consumptions`
+- `GET /api/v1/production/material-consumptions/{consumption_id}`
+- `POST /api/v1/production/material-consumptions/{consumption_id}/void`
+
+La cantidad usa `quantity_produced`, incluida la produccion dañada o merma, y
+se escala contra `recipe.output_quantity`. Despues se suma
+`waste_percentage`. El backend usa `Decimal`, valida el stock agregado por
+insumo y crea un movimiento `exit` por cada item activo de formula dentro de
+una sola transaccion. Solo puede existir un consumo activo por produccion.
+
+El consumo conserva snapshots de producto y formula, costos y referencias a
+los movimientos. Su anulacion exige motivo, anula los movimientos y devuelve
+el stock sin borrar historial. Una produccion con consumo activo no puede
+anularse y sus movimientos no se pueden anular directamente desde inventario.
+Este flujo no modifica caja, compras, ventas, formulas, productos ni el lote
+de produccion. Los seeds no crean consumos falsos.
 
 ## Carga de camion
 

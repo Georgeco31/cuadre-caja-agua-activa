@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico de insumos, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, consumo controlado de insumos, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico al crear produccion, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -107,7 +107,7 @@ http://localhost:3000/login
 - El dashboard ofrece acceso a `/dashboard/monthly-summary` para consultar el comportamiento operativo de un mes completo.
 - El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, control de empleados, roles de pago, rutas, vehiculos, inventario, produccion, formulas, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, control de empleados, roles de pago, rutas, vehiculos, inventario, produccion, formulas, consumo de insumos, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -252,6 +252,15 @@ http://localhost:3000/login
 - La pantalla muestra de forma permanente que una formula no consume
   inventario. No crea movimientos ni modifica caja, compras, ventas,
   producciones existentes o el costo del producto terminado.
+- La pantalla `/dashboard/production/material-consumption` permite seleccionar
+  una produccion activa, una ubicacion origen y una formula activa compatible
+  por producto, generar el preview oficial y confirmar el consumo.
+- El preview muestra cantidades, stock, costos y suficiencia calculados por el
+  backend. El boton de consumo se bloquea si falta stock o si la produccion ya
+  tiene un consumo activo.
+- La misma pantalla lista consumos recientes y permite anular uno activo con
+  motivo. La anulacion conserva el historial y revierte los movimientos y el
+  stock desde el backend.
 - La pantalla `/dashboard/route-loads` carga rutas, vehiculos, ubicaciones y productos activos, muestra stock oficial disponible en el origen y registra una carga mediante `POST /api/v1/route-loads`.
 - Cada carga traslada inventario desde el origen hacia una ubicacion tipo `vehicle`. El listado permite filtrar, consultar movimientos vinculados y anular con motivo mediante `POST /api/v1/route-loads/{id}/void`.
 - Despues de crear o anular una carga, la pantalla vuelve a consultar cargas y stock oficial. No calcula stock, registra ventas, cobros, dinero entregado, devoluciones, liquidaciones ni cierres de ruta.

@@ -110,6 +110,14 @@ import type {
   ProductionRecipeUpdatePayload,
 } from "@/types/productionRecipe";
 import type {
+  ProductionBatchMaterialConsumption,
+  ProductionMaterialConsumption,
+  ProductionMaterialConsumptionFilters,
+  ProductionMaterialConsumptionPayload,
+  ProductionMaterialConsumptionPreview,
+  ProductionMaterialConsumptionPreviewPayload,
+} from "@/types/productionMaterialConsumption";
+import type {
   PriceList,
   PriceListFilters,
   PriceListItem,
@@ -2283,6 +2291,110 @@ export async function voidProductionInventoryApplication(
 ): Promise<ProductionInventoryApplication> {
   return request<ProductionInventoryApplication>(
     `/production/inventory-applications/${applicationId}/void`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    },
+  );
+}
+
+export async function previewProductionMaterialConsumption(
+  token: string,
+  batchId: number,
+  payload: ProductionMaterialConsumptionPreviewPayload,
+): Promise<ProductionMaterialConsumptionPreview> {
+  return request<ProductionMaterialConsumptionPreview>(
+    `/production/batches/${batchId}/material-consumption/preview`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function createProductionMaterialConsumption(
+  token: string,
+  batchId: number,
+  payload: ProductionMaterialConsumptionPayload,
+): Promise<ProductionMaterialConsumption> {
+  return request<ProductionMaterialConsumption>(
+    `/production/batches/${batchId}/material-consumption`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function getProductionMaterialConsumptionForBatch(
+  token: string,
+  batchId: number,
+): Promise<ProductionBatchMaterialConsumption> {
+  return request<ProductionBatchMaterialConsumption>(
+    `/production/batches/${batchId}/material-consumption`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function listProductionMaterialConsumptions(
+  token: string,
+  filters: ProductionMaterialConsumptionFilters = {},
+): Promise<ProductionMaterialConsumption[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.production_batch_id !== undefined) {
+    searchParams.set(
+      "production_batch_id",
+      String(filters.production_batch_id),
+    );
+  }
+  if (filters.source_location_id !== undefined) {
+    searchParams.set(
+      "source_location_id",
+      String(filters.source_location_id),
+    );
+  }
+  if (filters.input_product_id !== undefined) {
+    searchParams.set("input_product_id", String(filters.input_product_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<ProductionMaterialConsumption[]>(
+    `/production/material-consumptions${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getProductionMaterialConsumption(
+  token: string,
+  consumptionId: number,
+): Promise<ProductionMaterialConsumption> {
+  return request<ProductionMaterialConsumption>(
+    `/production/material-consumptions/${consumptionId}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function voidProductionMaterialConsumption(
+  token: string,
+  consumptionId: number,
+  reason: string,
+): Promise<ProductionMaterialConsumption> {
+  return request<ProductionMaterialConsumption>(
+    `/production/material-consumptions/${consumptionId}/void`,
     {
       method: "POST",
       headers: authHeaders(token),

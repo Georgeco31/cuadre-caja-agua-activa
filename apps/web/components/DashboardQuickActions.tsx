@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/production/material-consumption",
+    title: "Consumo de insumos",
+    description: "Consumir materia prima usando fórmulas de producción.",
+    primary: false,
+  },
+  {
     href: "/dashboard/production/recipes",
     title: "Fórmulas de producción",
     description: "Definir insumos, materia prima y costos estimados de producción.",

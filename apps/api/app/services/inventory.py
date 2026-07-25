@@ -9,6 +9,9 @@ from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
 from app.repositories import inventory
 from app.repositories import production_inventory as production_inventory_repository
+from app.repositories import (
+    production_material_consumptions as material_consumption_repository,
+)
 from app.repositories import route_loads as route_loads_repository
 from app.repositories import route_returns as route_returns_repository
 from app.schemas.inventory import (
@@ -242,6 +245,7 @@ def void_movement_in_transaction(
     *,
     voided_at: datetime | None = None,
     allow_production_application: bool = False,
+    allow_production_material_consumption: bool = False,
     allow_route_load: bool = False,
     allow_route_return: bool = False,
 ) -> InventoryMovement:
@@ -259,6 +263,16 @@ def void_movement_in_transaction(
     ):
         raise ValueError(
             "Anule la aplicacion a inventario desde produccion.",
+        )
+    if (
+        not allow_production_material_consumption
+        and material_consumption_repository.has_active_consumption_for_movement(
+            db,
+            movement.id,
+        )
+    ):
+        raise ValueError(
+            "Anule el consumo desde el modulo de consumo de insumos.",
         )
     if (
         not allow_route_load

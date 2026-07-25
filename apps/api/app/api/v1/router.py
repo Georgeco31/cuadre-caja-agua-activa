@@ -16,6 +16,7 @@ from app.api.v1.endpoints import (
     pricing,
     products,
     production,
+    production_material_consumptions,
     production_recipes,
     purchases,
     receivables,
@@ -47,6 +48,7 @@ api_router.include_router(payroll.employee_router)
 api_router.include_router(pricing.router)
 api_router.include_router(products.router)
 api_router.include_router(production.router)
+api_router.include_router(production_material_consumptions.router)
 api_router.include_router(production_recipes.router)
 api_router.include_router(purchases.router)
 api_router.include_router(receivables.router)

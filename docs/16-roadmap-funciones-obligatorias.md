@@ -43,7 +43,10 @@ cerrar la validación del anterior.
 - Insumos y materia prima. **Implementado base en el Bloque 50.**
 - Fórmulas o recetas con snapshots. **Implementado base en el Bloque 50.**
 - Costos estimados por fórmula y unidad. **Implementado base en el Bloque 50.**
-- Consumo automático de insumos. **Pendiente futuro.**
+- Consumo controlado y explícito de insumos. **Implementado base en el Bloque
+  51.**
+- Consumo automático al crear producción. **No planificado por seguridad
+  operativa; el flujo base exige confirmación explícita.**
 - Costos directos e indirectos.
 - Costo por lote y por unidad.
 - Mermas con causa y análisis.
@@ -66,7 +69,8 @@ cerrar la validación del anterior.
 | 48 | Empleados avanzado | Fichas de empleados |
 | 49 | Roles de pago base | Empleados avanzado |
 | 50 | Producción avanzada | Compras, inventario y productos |
-| 51 | Reportes avanzados | Datos estables de los bloques anteriores |
+| 51 | Consumo controlado de insumos | Producción, fórmulas e inventario |
+| 52 | Reportes avanzados | Datos estables de los bloques anteriores |
 
 ## Bloque 45 - Compras y proveedores
 
@@ -285,7 +289,7 @@ automatizar consumo ni movimientos de inventario.
 - Versionado formal de formulas por producto y snapshot de la formula aplicada
   a un lote real.
 - Lotes de insumo cuando aplique.
-- Reserva o consumo explícito.
+- Reserva de insumos y consumo parcial avanzado.
 - Costo promedio o método elegido.
 - Mano de obra y costos indirectos definidos.
 - Costo del lote y costo unitario.
@@ -301,7 +305,40 @@ versión, cantidades y costos usados.
 Un lote piloto debe disminuir insumos, aumentar producto terminado mediante
 la aplicación vigente y producir un costo reproducible.
 
-## Bloque 51 - Reportes avanzados, gráficos y exportación
+## Bloque 51 - Consumo controlado de insumos
+
+**Estado: implementado base.**
+
+### Objetivo
+
+Consumir materia prima e insumos desde inventario usando una formula
+seleccionada para cada producto de una produccion, sin crear movimientos
+automaticos al registrar el lote.
+
+### Base implementada
+
+- Vista previa sin persistencia ni cambios de stock.
+- Formula activa y compatible obligatoria por cada item producido.
+- Cantidad calculada con `quantity_produced`, salida base de la formula y
+  porcentaje de merma del insumo.
+- Validacion de stock agregado por insumo y ubicacion activa.
+- Salidas de inventario transaccionales, costos y snapshots trazables.
+- Un solo consumo activo por produccion, con historial de anulados.
+- Anulacion con motivo que conserva registros, anula movimientos y revierte
+  stock.
+- Bloqueo de anulacion de la produccion mientras exista consumo activo.
+- Aislamiento de caja, compras, ventas, formulas, productos y costo del
+  producto terminado.
+
+### Pendiente futuro
+
+- Consumo parcial avanzado.
+- Lotes y vencimientos de materia prima.
+- Reserva de insumos.
+- Costeo contable real, mano de obra y costos indirectos.
+- Actualizacion controlada del costo real del producto terminado.
+
+## Bloque 52 - Reportes avanzados, gráficos y exportación
 
 ### Objetivo
 
@@ -341,8 +378,8 @@ Bloque 48: empleados avanzado
   +--> Bloque 49: roles de pago base
   +--> aporta mano de obra al Bloque 50
 
-Bloques 45-50 estables
-  +--> Bloque 51: reportes confiables
+Bloques 45-51 estables
+  +--> Bloque 52: reportes confiables
 ```
 
 ## Reglas de ejecución del roadmap

@@ -8,6 +8,9 @@ from app.models.production_batch import ProductionBatch
 from app.repositories import products
 from app.repositories import production as production_repository
 from app.repositories import production_inventory as application_repository
+from app.repositories import (
+    production_material_consumptions as material_consumption_repository,
+)
 from app.schemas.production import ProductionBatchCreate, ProductionItemCreate
 
 
@@ -88,6 +91,13 @@ def void_production_batch(
     if application_repository.get_active_application_for_batch(db, batch.id):
         raise ValueError(
             "Primero anule la aplicacion a inventario antes de anular la produccion.",
+        )
+    if material_consumption_repository.get_active_consumption_for_batch(
+        db,
+        batch.id,
+    ):
+        raise ValueError(
+            "Primero anule el consumo de insumos antes de anular la produccion.",
         )
 
     production_repository.mark_production_batch_voided(

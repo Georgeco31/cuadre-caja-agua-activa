@@ -319,7 +319,15 @@ export default function ProductionPage() {
 
         <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           La producción no aumenta inventario automáticamente hasta que se
-          aplique a una ubicación.
+          aplique a una ubicación. Tampoco consume materia prima
+          automáticamente.{" "}
+          <Link
+            className="font-semibold underline hover:text-amber-700"
+            href="/dashboard/production/material-consumption"
+          >
+            Ir a consumo de insumos
+          </Link>
+          .
         </p>
 
         {error ? <ErrorMessage message={error} /> : null}

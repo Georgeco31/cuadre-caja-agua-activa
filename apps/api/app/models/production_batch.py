@@ -70,3 +70,10 @@ class ProductionBatch(Base):
         back_populates="production_batch",
         order_by="ProductionInventoryApplication.id",
     )
+    material_consumptions: Mapped[
+        list["ProductionMaterialConsumption"]
+    ] = relationship(
+        "ProductionMaterialConsumption",
+        back_populates="production_batch",
+        order_by="ProductionMaterialConsumption.id",
+    )
