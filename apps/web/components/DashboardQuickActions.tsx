@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/management",
+    title: "Panel gerencial",
+    description: "Ver indicadores, alertas y gráficos generales del negocio.",
+    primary: false,
+  },
+  {
     href: "/dashboard/production/material-consumption",
     title: "Consumo de insumos",
     description: "Consumir materia prima usando fórmulas de producción.",

@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, roles de pago base, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, formulas con insumos y costos estimados, consumo controlado y reversible de insumos, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, roles de pago base, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, formulas con insumos y costos estimados, consumo controlado y reversible de insumos, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales, reportes diarios y mensuales y un panel gerencial base de solo lectura.
 
 ## Problema que resuelve
 
@@ -96,6 +96,8 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Registro trazable del efectivo de un cierre de ruta recibido en un cuadre abierto, sin alterar el conteo fisico ni los totales oficiales de caja.
 - Resumen operativo diario por fecha con caja, produccion, merma, rutas, ventas, cobros y alertas, sin modificar informacion.
 - Reporte mensual operativo con una fila por dia, totales consolidados y alertas, sin modificar informacion.
+- Panel gerencial por rango con indicadores, alertas y gráficos simples de caja,
+  ventas, cartera, gastos, compras, producción, inventario, rutas y nómina.
 
 Quedan fuera del MVP:
 
@@ -106,7 +108,7 @@ Quedan fuera del MVP:
 - Liquidacion fisica del inventario restante de una ruta.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
 - WhatsApp.
-- Reportes avanzados.
+- BI, rentabilidad y comparativos gerenciales avanzados.
 - Multiples cajas o turnos.
 - Exportaciones PDF/Excel.
 - Aplicacion de compras a inventario, pagos a proveedores y cuentas por pagar
@@ -115,7 +117,7 @@ Quedan fuera del MVP:
 - Pago real de nómina, IESS, décimos, vacaciones avanzadas, horas extras,
   comisiones y cálculos laborales legales.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 51 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas, costos estimados y consumo controlado de insumos, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados y roles de pago base. Registrar una produccion o definir una formula no mueve stock por si solo; el consumo ocurre exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra o calcular un rol no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 52A implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas, costos estimados y consumo controlado de insumos, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados, roles de pago base e indicadores gerenciales visuales. Registrar una produccion o definir una formula no mueve stock por si solo; el consumo ocurre exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra, calcular un rol o consultar el panel gerencial no modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 

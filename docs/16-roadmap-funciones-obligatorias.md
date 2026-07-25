@@ -344,16 +344,29 @@ automaticos al registrar el lote.
 
 Convertir datos operativos estabilizados en información gerencial.
 
-### Alcance mínimo
+### Bloque 52A - Indicadores gerenciales y gráficos base (implementado)
 
-- Indicadores con definición y fórmula visibles.
-- Comparaciones por período.
-- Gráficos responsivos.
+- Endpoint gerencial autenticado y de solo lectura por rango.
+- Indicadores base de caja, ventas, cartera, gastos, compras, producción,
+  inventario, rutas y nómina.
+- Alertas informativas de cuadres abiertos, cartera vencida, stock bajo,
+  pendientes y diferencias negativas de ruta.
+- Gráficos responsivos simples sin dependencias externas.
+- Rango por defecto en el mes calendario actual.
+- Sin migraciones, seeds ni modificaciones de datos.
+
+### Bloque 52B - Exportación Excel (pendiente)
+
 - Exportación Excel con datos tabulares.
+- Mismos filtros y totales oficiales del endpoint gerencial.
+- Pruebas de igualdad entre pantalla y archivo.
+
+### Bloque 52C - Exportación PDF y madurez gerencial (pendiente)
+
 - Exportación PDF para reportes cerrados.
 - Rentabilidad por dimensiones disponibles.
-- Control de zona horaria y fechas de corte.
-- Pruebas de totales entre pantalla y exportación.
+- Comparativos avanzados y fechas de corte.
+- Definiciones y fórmulas visibles para indicadores de mayor madurez.
 
 ### Regla crítica
 
@@ -362,7 +375,8 @@ no deben recalcular cifras financieras de forma distinta en el navegador.
 
 ### Criterio de cierre
 
-El mismo filtro debe devolver los mismos totales en API, pantalla, Excel y PDF.
+El mismo filtro debe devolver los mismos totales en API, pantalla y, cuando se
+implementen 52B/52C, Excel y PDF.
 
 ## Dependencias entre bloques
 

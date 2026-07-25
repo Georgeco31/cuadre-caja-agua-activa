@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, consumo controlado de insumos, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico al crear produccion, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, panel gerencial visual de solo lectura, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, consumo controlado de insumos, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico al crear produccion, mantenimiento, combustible, exportaciones Excel/PDF, edicion de gastos del cuadre, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -47,6 +47,7 @@ Rutas principales:
 
 - `/login`
 - `/dashboard`
+- `/dashboard/management`
 - `/dashboard/monthly-summary`
 - `/dashboard/daily-summary`
 - `/dashboard/cash-session`
@@ -104,6 +105,8 @@ http://localhost:3000/login
 - Dashboard protegido en `/dashboard`.
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
+- El dashboard ofrece acceso a `/dashboard/management` para consultar
+  indicadores, alertas y gráficos gerenciales por rango.
 - El dashboard ofrece acceso a `/dashboard/monthly-summary` para consultar el comportamiento operativo de un mes completo.
 - El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
@@ -140,6 +143,12 @@ http://localhost:3000/login
 - El resumen operativo diario es de solo lectura: no ofrece formularios de alta, edicion, anulacion o cierre y no calcula totales oficiales en el navegador.
 - La pantalla `/dashboard/monthly-summary` consulta `GET /api/v1/reports/monthly-operational-summary`, permite seleccionar un mes y presenta totales de caja, produccion, ventas, cobros, rutas, alertas y una fila por cada dia.
 - El reporte mensual usa tarjetas para el detalle diario en movil y una tabla con desplazamiento horizontal en pantallas medianas y grandes. Es de solo lectura.
+- La pantalla `/dashboard/management` consulta
+  `GET /api/v1/reports/management-dashboard`, permite seleccionar un rango y
+  presenta tarjetas, alertas, gráficos con HTML/CSS y secciones de caja, ventas,
+  cartera, gastos, compras, producción, inventario, rutas y nómina.
+- El panel gerencial es responsive y de solo lectura: no incluye acciones de
+  alta, edición, anulación ni exportación.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.
@@ -291,7 +300,7 @@ El uso de `localStorage` es una solución simple para desarrollo. No reemplaza u
 ## Auditoria general del Bloque 44
 
 El inventario auditado de rutas web y endpoints relacionados esta en
-`../../docs/13-auditoria-general-erp.md`. Existen 34 paginas `page.tsx`,
+`../../docs/13-auditoria-general-erp.md`. Existen 36 paginas `page.tsx`,
 incluidas `/`, `/login` y las rutas del dashboard documentadas arriba.
 
 Para el piloto:

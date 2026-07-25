@@ -11,6 +11,7 @@ from app.api.v1.endpoints import (
     employees,
     health,
     inventory,
+    management_dashboard,
     operating_expenses,
     payroll,
     pricing,
@@ -42,6 +43,7 @@ api_router.include_router(employee_controls.router)
 api_router.include_router(employees.router)
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(inventory.router)
+api_router.include_router(management_dashboard.router)
 api_router.include_router(operating_expenses.router)
 api_router.include_router(payroll.router)
 api_router.include_router(payroll.employee_router)

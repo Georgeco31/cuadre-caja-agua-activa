@@ -213,6 +213,30 @@ credito activas creadas durante el mes. El promedio diario contado se calcula
 sobre los dias que tienen cuadre de caja. La consulta no crea ni modifica
 ningun dato y no necesita migracion.
 
+## Panel gerencial base
+
+El endpoint autenticado de solo lectura
+`GET /api/v1/reports/management-dashboard` acepta `date_from` y `date_to`.
+Cuando no se envia ningun filtro usa el mes calendario actual del servidor,
+en coherencia con el reporte mensual operativo. Si se envia solo una fecha,
+esa fecha se usa como inicio y fin.
+
+La respuesta consolida caja, ventas, cartera, gastos operativos, compras,
+produccion, inventario actual, rutas, nómina, series simples para gráficos y
+alertas gerenciales. Los registros anulados no participan en los totales
+principales. Los importes y cantidades se calculan con `Decimal` y se
+serializan con el formato decimal habitual de la API.
+
+El saldo vencido usa ventas a crédito activas del rango, con saldo actual y
+fecha de vencimiento anterior a la fecha actual. El inventario es una foto
+actual y la alerta de stock bajo aplica la regla informativa `stock total <= 5`
+porque todavía no existe un mínimo oficial por producto. Para gastos y compras,
+un estado `partial` se incluye como pendiente porque esos modelos no almacenan
+el monto pagado parcial.
+
+El panel no crea ni modifica registros, no ejecuta conciliaciones y no requiere
+migracion. La revisión Alembic permanece en `0025_materials`.
+
 ## Seeds iniciales
 
 Los seeds cargan:
@@ -795,7 +819,8 @@ En el corte auditado:
 
 - OpenAPI contiene 81 plantillas de ruta y 103 operaciones HTTP.
 - Solo `POST /api/v1/auth/login` y `GET /api/v1/health` son publicos.
-- La revision Alembic activa es `0018_route_receipts`.
+- La revision registrada en ese corte era `0018_route_receipts`; la revision
+  actual del proyecto es `0025_materials`.
 - Las pruebas usan SQLite en memoria; deben complementarse con pruebas de
   integracion PostgreSQL antes de operacion multiusuario.
 - Este bloque no crea migraciones, tablas, seeds ni cambios de logica.

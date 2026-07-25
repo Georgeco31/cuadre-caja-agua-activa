@@ -10,6 +10,10 @@ import type { CountItemDetail } from "@/types/countItem";
 import type { DailyOperationalSummary } from "@/types/dailyOperationalSummary";
 import type { MonthlyOperationalSummary } from "@/types/monthlyOperationalSummary";
 import type {
+  ManagementDashboard,
+  ManagementDashboardFilters,
+} from "@/types/managementDashboard";
+import type {
   CreditPayment,
   CreditPaymentFilters,
   CreditPaymentPayload,
@@ -476,6 +480,24 @@ export async function getMonthlyOperationalSummary(
   const query = searchParams.toString();
   return request<MonthlyOperationalSummary>(
     `/reports/monthly-operational-summary${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getManagementDashboard(
+  token: string,
+  filters: ManagementDashboardFilters = {},
+): Promise<ManagementDashboard> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  const query = searchParams.toString();
+  return request<ManagementDashboard>(
+    `/reports/management-dashboard${query ? `?${query}` : ""}`,
     { headers: authHeaders(token) },
   );
 }
