@@ -1,6 +1,7 @@
 export type ReportExportType =
   | "management-dashboard"
   | "monthly-summary"
+  | "daily-operational-summary"
   | "sales"
   | "receivables"
   | "operating-expenses"
@@ -16,5 +17,7 @@ export type ReportExportDefinition = {
   description: string;
   endpoint: string;
   filename: string;
-  filterMode: "dates" | "month" | "none";
+  filterMode: "dates" | "month" | "date" | "none";
 };
+
+export type ReportExportFormat = "excel" | "pdf";

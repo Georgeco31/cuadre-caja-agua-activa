@@ -369,9 +369,23 @@ Convertir datos operativos estabilizados en información gerencial.
   inválidos y ausencia de escrituras.
 - Sin migraciones, tablas, seeds ni datos automáticos.
 
-### Bloque 52C - Exportación PDF y madurez gerencial (pendiente)
+### Bloque 52C - Exportación PDF (implementado base)
 
-- Exportación PDF para reportes cerrados.
+- Cinco endpoints PDF autenticados y de solo lectura para panel gerencial,
+  resumen mensual, resumen diario operativo, cartera y nómina base.
+- Documentos ejecutivos A4 horizontal generados en memoria con ReportLab,
+  tablas ajustadas y numeración de páginas.
+- Reutilización de los servicios oficiales del panel gerencial y los resúmenes
+  mensual y diario.
+- Pantalla central `/dashboard/exports` con secciones separadas para Excel
+  detallado y PDF ejecutivo, además de botones PDF en panel gerencial y resumen
+  mensual.
+- Pruebas de autenticación, períodos inválidos, archivos PDF válidos y ausencia
+  de escrituras.
+- Sin migraciones, tablas, seeds ni datos automáticos.
+
+Pendiente para madurez gerencial futura:
+
 - Rentabilidad por dimensiones disponibles.
 - Comparativos avanzados y fechas de corte.
 - Definiciones y fórmulas visibles para indicadores de mayor madurez.
@@ -383,8 +397,7 @@ no deben recalcular cifras financieras de forma distinta en el navegador.
 
 ### Criterio de cierre
 
-El mismo filtro debe devolver los mismos totales en API, pantalla y Excel. PDF
-debe conservar esa regla cuando se implemente el Bloque 52C.
+El mismo filtro debe devolver los mismos totales en API, pantalla, Excel y PDF.
 
 ## Dependencias entre bloques
 

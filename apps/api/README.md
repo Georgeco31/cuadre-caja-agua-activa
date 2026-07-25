@@ -14,7 +14,7 @@ registro administrativo de compras, listas de precios, gastos operativos
 generales con categorías y plantillas recurrentes, control de asistencia,
 anticipos, préstamos y abonos de empleados, roles de pago base, clasificacion
 productiva, formulas con costos estimados, consumo controlado de insumos y
-exportaciones Excel autenticadas de solo lectura. El
+exportaciones Excel y PDF autenticadas de solo lectura. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
 por ventas, liquidacion fisica de ruta, consumo automatico de insumos, pago real de nomina,
@@ -260,6 +260,26 @@ exportaciones usan los servicios de lectura y los cálculos oficiales ya
 existentes. Un rango sin datos produce un libro válido con encabezados y el
 mensaje `Sin datos`. Este bloque no agrega migraciones ni seeds; Alembic
 permanece en `0025_materials`.
+
+## Exportaciones PDF
+
+El mismo prefijo autenticado ofrece cinco resúmenes ejecutivos:
+
+- `management-dashboard.pdf`
+- `monthly-summary.pdf`
+- `daily-operational-summary.pdf`
+- `receivables.pdf`
+- `payroll.pdf`
+
+Los documentos se generan en memoria con `BytesIO` y ReportLab, se responden
+mediante `StreamingResponse` con `application/pdf` y nunca se guardan en disco.
+El formato elegido es A4 horizontal, con tablas ajustadas, fecha de generación
+y numeración de páginas. Panel gerencial, resumen mensual y resumen diario
+reutilizan sus servicios oficiales; cartera y nómina reutilizan sus consultas
+de lectura y excluyen anulados de los totales principales. Un período sin
+actividad genera un PDF válido con el mensaje `Sin datos`. Excel conserva el
+detalle operativo y PDF funciona como resumen ejecutivo o impresión. No se
+agregan migraciones ni seeds y Alembic permanece en `0025_materials`.
 
 ## Seeds iniciales
 

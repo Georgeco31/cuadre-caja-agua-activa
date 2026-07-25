@@ -35,7 +35,9 @@ export default function ManagementDashboardPage() {
   const [report, setReport] = useState<ManagementDashboard | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isExporting, setIsExporting] = useState(false);
+  const [exportingFormat, setExportingFormat] = useState<
+    "xlsx" | "pdf" | null
+  >(null);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -92,7 +94,7 @@ export default function ManagementDashboardPage() {
     loadReport(token, monthFilters);
   }
 
-  async function handleExport() {
+  async function handleExport(format: "xlsx" | "pdf") {
     if (!token) {
       return;
     }
@@ -113,16 +115,16 @@ export default function ManagementDashboardPage() {
       searchParams.set("date_to", filters.date_to);
     }
 
-    setIsExporting(true);
+    setExportingFormat(format);
     setError("");
     try {
       const query = searchParams.toString();
       await downloadFile(
         token,
-        `/reports/exports/management-dashboard.xlsx${
+        `/reports/exports/management-dashboard.${format}${
           query ? `?${query}` : ""
         }`,
-        "panel-gerencial.xlsx",
+        `panel-gerencial.${format}`,
       );
     } catch (exportError) {
       if (redirectIfUnauthorized(exportError)) {
@@ -130,7 +132,7 @@ export default function ManagementDashboardPage() {
       }
       setError(getErrorMessage(exportError));
     } finally {
-      setIsExporting(false);
+      setExportingFormat(null);
     }
   }
 
@@ -172,9 +174,9 @@ export default function ManagementDashboardPage() {
         </header>
 
         <ManagementFilters
-          disabled={isLoading || isExporting}
+          disabled={isLoading || exportingFormat !== null}
+          exportingFormat={exportingFormat}
           filters={filters}
-          isExporting={isExporting}
           onChange={setFilters}
           onCurrentMonth={handleCurrentMonth}
           onExport={handleExport}
@@ -201,17 +203,17 @@ export default function ManagementDashboardPage() {
 type ManagementFiltersProps = {
   filters: ManagementDashboardFilters;
   disabled: boolean;
-  isExporting: boolean;
+  exportingFormat: "xlsx" | "pdf" | null;
   onChange: (filters: ManagementDashboardFilters) => void;
   onCurrentMonth: () => void;
-  onExport: () => void;
+  onExport: (format: "xlsx" | "pdf") => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };
 
 function ManagementFilters({
   filters,
   disabled,
-  isExporting,
+  exportingFormat,
   onChange,
   onCurrentMonth,
   onExport,
@@ -219,7 +221,7 @@ function ManagementFilters({
 }: ManagementFiltersProps) {
   return (
     <form
-      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto_auto_auto] xl:items-end"
+      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto_auto_auto_auto] xl:items-end"
       onSubmit={onSubmit}
     >
       <DateInput
@@ -252,10 +254,18 @@ function ManagementFilters({
       <button
         className="h-10 rounded-md border border-emerald-600 bg-emerald-50 px-5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
         disabled={disabled}
-        onClick={onExport}
+        onClick={() => onExport("xlsx")}
         type="button"
       >
-        {isExporting ? "Exportando..." : "Exportar Excel"}
+        {exportingFormat === "xlsx" ? "Exportando..." : "Exportar Excel"}
+      </button>
+      <button
+        className="h-10 rounded-md border border-slate-700 bg-slate-50 px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+        disabled={disabled}
+        onClick={() => onExport("pdf")}
+        type="button"
+      >
+        {exportingFormat === "pdf" ? "Exportando..." : "Exportar PDF"}
       </button>
     </form>
   );

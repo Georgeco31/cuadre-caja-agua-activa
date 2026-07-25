@@ -27,7 +27,9 @@ export default function MonthlySummaryPage() {
   const [report, setReport] = useState<MonthlyOperationalSummary | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isExporting, setIsExporting] = useState(false);
+  const [exportingFormat, setExportingFormat] = useState<
+    "xlsx" | "pdf" | null
+  >(null);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -86,7 +88,7 @@ export default function MonthlySummaryPage() {
     loadReport(token, currentMonth);
   }
 
-  async function handleExport() {
+  async function handleExport(format: "xlsx" | "pdf") {
     if (!token) {
       return;
     }
@@ -96,13 +98,13 @@ export default function MonthlySummaryPage() {
       return;
     }
 
-    setIsExporting(true);
+    setExportingFormat(format);
     setError("");
     try {
       await downloadFile(
         token,
-        `/reports/exports/monthly-summary.xlsx?year=${period.year}&month=${period.month}`,
-        `resumen-mensual-${selectedMonth}.xlsx`,
+        `/reports/exports/monthly-summary.${format}?year=${period.year}&month=${period.month}`,
+        `resumen-mensual-${selectedMonth}.${format}`,
       );
     } catch (exportError) {
       if (redirectIfUnauthorized(exportError)) {
@@ -110,7 +112,7 @@ export default function MonthlySummaryPage() {
       }
       setError(getErrorMessage(exportError));
     } finally {
-      setIsExporting(false);
+      setExportingFormat(null);
     }
   }
 
@@ -149,7 +151,7 @@ export default function MonthlySummaryPage() {
         </header>
 
         <form
-          className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(190px,260px)_auto_auto_auto] xl:items-end"
+          className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(190px,260px)_auto_auto_auto_auto] xl:items-end"
           onSubmit={handleSubmit}
         >
           <label className="block">
@@ -182,11 +184,19 @@ export default function MonthlySummaryPage() {
           </button>
           <button
             className="h-10 rounded-md border border-emerald-600 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
-            disabled={isLoading || isExporting || !selectedMonth}
-            onClick={handleExport}
+            disabled={isLoading || exportingFormat !== null || !selectedMonth}
+            onClick={() => handleExport("xlsx")}
             type="button"
           >
-            {isExporting ? "Exportando..." : "Exportar Excel"}
+            {exportingFormat === "xlsx" ? "Exportando..." : "Exportar Excel"}
+          </button>
+          <button
+            className="h-10 rounded-md border border-slate-700 bg-slate-50 px-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+            disabled={isLoading || exportingFormat !== null || !selectedMonth}
+            onClick={() => handleExport("pdf")}
+            type="button"
+          >
+            {exportingFormat === "pdf" ? "Exportando..." : "Exportar PDF"}
           </button>
         </form>
 

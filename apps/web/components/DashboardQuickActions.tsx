@@ -3,8 +3,8 @@ import Link from "next/link";
 const actions = [
   {
     href: "/dashboard/exports",
-    title: "Exportaciones Excel",
-    description: "Descargar reportes del ERP en formato .xlsx.",
+    title: "Exportaciones",
+    description: "Descargar reportes del ERP en Excel y PDF.",
     primary: false,
   },
   {

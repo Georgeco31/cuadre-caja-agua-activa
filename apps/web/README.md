@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, panel gerencial visual de solo lectura, exportaciones Excel autenticadas, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, consumo controlado de insumos, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico al crear produccion, mantenimiento, combustible, exportaciones PDF, edicion de gastos del cuadre, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, panel gerencial visual de solo lectura, exportaciones autenticadas en Excel y PDF, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, consumo controlado de insumos, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico al crear produccion, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -108,7 +108,8 @@ http://localhost:3000/login
 - El dashboard ofrece acceso a `/dashboard/management` para consultar
   indicadores, alertas y gráficos gerenciales por rango.
 - El dashboard ofrece acceso a `/dashboard/exports` para descargar diez
-  reportes Excel con filtros básicos y autenticación Bearer.
+  reportes Excel detallados y cinco reportes PDF ejecutivos con filtros básicos
+  y autenticación Bearer.
 - El dashboard ofrece acceso a `/dashboard/monthly-summary` para consultar el comportamiento operativo de un mes completo.
 - El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
@@ -150,11 +151,15 @@ http://localhost:3000/login
   presenta tarjetas, alertas, gráficos con HTML/CSS y secciones de caja, ventas,
   cartera, gastos, compras, producción, inventario, rutas y nómina.
 - El panel gerencial es responsive y de solo lectura: no incluye acciones de
-  alta, edición ni anulación; su botón `Exportar Excel` descarga el rango
-  visible sin modificar información.
-- El resumen mensual también permite descargar el mes seleccionado en Excel.
+  alta, edición ni anulación; sus botones `Exportar Excel` y `Exportar PDF`
+  descargan el rango visible sin modificar información.
+- El resumen mensual también permite descargar el mes seleccionado en Excel o
+  PDF.
 - La pantalla `/dashboard/exports` centraliza panel gerencial, resumen mensual,
-  ventas, cartera, gastos, compras, inventario, producción, rutas y nómina.
+  ventas, cartera, gastos, compras, inventario, producción, rutas y nómina en
+  Excel, junto con panel gerencial, resumen mensual, resumen diario, cartera y
+  nómina base en PDF. Excel conserva el detalle y PDF ofrece un resumen
+  ejecutivo listo para impresión.
 - Correcciones listadas desde `GET /api/v1/cash-sessions/{id}/corrections`.
 - Conteos corregidos desde `POST /api/v1/cash-sessions/{id}/corrections/count-items`.
 - Gastos correctivos registrados desde `POST /api/v1/cash-sessions/{id}/corrections/expenses`.

@@ -10,10 +10,11 @@ import { ApiError, downloadFile } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type {
   ReportExportDefinition,
+  ReportExportFormat,
   ReportExportType,
 } from "@/types/reportExports";
 
-const REPORTS: ReportExportDefinition[] = [
+const EXCEL_REPORTS: ReportExportDefinition[] = [
   {
     type: "management-dashboard",
     label: "Panel gerencial",
@@ -96,16 +97,66 @@ const REPORTS: ReportExportDefinition[] = [
   },
 ];
 
+const PDF_REPORTS: ReportExportDefinition[] = [
+  {
+    type: "management-dashboard",
+    label: "Panel gerencial",
+    description: "Indicadores y alertas ejecutivas de todo el negocio.",
+    endpoint: "management-dashboard.pdf",
+    filename: "panel-gerencial.pdf",
+    filterMode: "dates",
+  },
+  {
+    type: "monthly-summary",
+    label: "Resumen mensual",
+    description: "Resumen ejecutivo de caja, ventas, producción y rutas.",
+    endpoint: "monthly-summary.pdf",
+    filename: "resumen-mensual.pdf",
+    filterMode: "month",
+  },
+  {
+    type: "daily-operational-summary",
+    label: "Resumen diario operativo",
+    description: "Caja, producción, ventas, cobros, rutas y alertas del día.",
+    endpoint: "daily-operational-summary.pdf",
+    filename: "resumen-operativo.pdf",
+    filterMode: "date",
+  },
+  {
+    type: "receivables",
+    label: "Cartera",
+    description: "Totales y clientes con cuentas por cobrar pendientes.",
+    endpoint: "receivables.pdf",
+    filename: "cartera.pdf",
+    filterMode: "dates",
+  },
+  {
+    type: "payroll",
+    label: "Nómina base",
+    description: "Totales y roles de pago resumidos por empleado.",
+    endpoint: "payroll.pdf",
+    filename: "nomina-base.pdf",
+    filterMode: "dates",
+  },
+];
+
 export default function ReportExportsPage() {
   const router = useRouter();
+  const currentMonthDates = useMemo(getCurrentMonthDates, []);
   const [token, setToken] = useState<string | null>(null);
-  const [reportType, setReportType] =
-    useState<ReportExportType>("management-dashboard");
-  const [dateFrom, setDateFrom] = useState(() => getCurrentMonthDates().from);
-  const [dateTo, setDateTo] = useState(() => getCurrentMonthDates().to);
+  const [selectedTypes, setSelectedTypes] = useState<
+    Record<ReportExportFormat, ReportExportType>
+  >({
+    excel: "management-dashboard",
+    pdf: "management-dashboard",
+  });
+  const [dateFrom, setDateFrom] = useState(currentMonthDates.from);
+  const [dateTo, setDateTo] = useState(currentMonthDates.to);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthValue);
+  const [selectedDate, setSelectedDate] = useState(getCurrentDateValue);
   const [error, setError] = useState("");
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] =
+    useState<ReportExportFormat | null>(null);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -116,18 +167,25 @@ export default function ReportExportsPage() {
     setToken(storedToken);
   }, [router]);
 
-  const selectedReport = useMemo(
-    () => REPORTS.find((report) => report.type === reportType) ?? REPORTS[0],
-    [reportType],
+  const selectedReports = useMemo(
+    () => ({
+      excel: findReport(EXCEL_REPORTS, selectedTypes.excel),
+      pdf: findReport(PDF_REPORTS, selectedTypes.pdf),
+    }),
+    [selectedTypes],
   );
 
-  async function handleDownload(event: FormEvent<HTMLFormElement>) {
+  async function handleDownload(
+    event: FormEvent<HTMLFormElement>,
+    format: ReportExportFormat,
+  ) {
     event.preventDefault();
     if (!token) {
       return;
     }
+    const report = selectedReports[format];
     if (
-      selectedReport.filterMode === "dates" &&
+      report.filterMode === "dates" &&
       dateFrom &&
       dateTo &&
       dateTo < dateFrom
@@ -137,8 +195,8 @@ export default function ReportExportsPage() {
     }
 
     const searchParams = new URLSearchParams();
-    let filename = selectedReport.filename;
-    if (selectedReport.filterMode === "dates") {
+    let filename = report.filename;
+    if (report.filterMode === "dates") {
       if (dateFrom) {
         searchParams.set("date_from", dateFrom);
       }
@@ -146,7 +204,7 @@ export default function ReportExportsPage() {
         searchParams.set("date_to", dateTo);
       }
     }
-    if (selectedReport.filterMode === "month") {
+    if (report.filterMode === "month") {
       const period = parseMonthValue(selectedMonth);
       if (!period) {
         setError("Selecciona un mes válido.");
@@ -154,18 +212,24 @@ export default function ReportExportsPage() {
       }
       searchParams.set("year", String(period.year));
       searchParams.set("month", String(period.month));
-      filename = `resumen-mensual-${selectedMonth}.xlsx`;
+      filename = `resumen-mensual-${selectedMonth}.${format === "excel" ? "xlsx" : "pdf"}`;
+    }
+    if (report.filterMode === "date") {
+      if (!selectedDate) {
+        setError("Selecciona una fecha válida.");
+        return;
+      }
+      searchParams.set("date", selectedDate);
+      filename = `resumen-operativo-${selectedDate}.pdf`;
     }
 
-    setIsDownloading(true);
+    setDownloadingFormat(format);
     setError("");
     try {
       const query = searchParams.toString();
       await downloadFile(
         token,
-        `/reports/exports/${selectedReport.endpoint}${
-          query ? `?${query}` : ""
-        }`,
+        `/reports/exports/${report.endpoint}${query ? `?${query}` : ""}`,
         filename,
       );
     } catch (downloadError) {
@@ -177,17 +241,28 @@ export default function ReportExportsPage() {
         router.replace("/login");
         return;
       }
-      setError(getErrorMessage(downloadError));
+      setError(getErrorMessage(downloadError, format));
     } finally {
-      setIsDownloading(false);
+      setDownloadingFormat(null);
     }
   }
 
   function useCurrentMonth() {
-    const currentDates = getCurrentMonthDates();
-    setDateFrom(currentDates.from);
-    setDateTo(currentDates.to);
+    const dates = getCurrentMonthDates();
+    setDateFrom(dates.from);
+    setDateTo(dates.to);
     setSelectedMonth(getCurrentMonthValue());
+    setSelectedDate(getCurrentDateValue());
+  }
+
+  function selectReport(
+    format: ReportExportFormat,
+    reportType: ReportExportType,
+  ) {
+    setSelectedTypes((current) => ({
+      ...current,
+      [format]: reportType,
+    }));
   }
 
   return (
@@ -202,110 +277,218 @@ export default function ReportExportsPage() {
               Volver al dashboard
             </Link>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-              Exportaciones Excel
+              Exportaciones del ERP
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Descarga reportes del ERP en formato Excel. Estas exportaciones
-              son solo lectura y no modifican información del sistema.
+              Descarga reportes detallados en Excel o resúmenes ejecutivos en
+              PDF. Todas las exportaciones son solo lectura.
             </p>
           </div>
           <LogoutButton />
         </header>
 
-        <form
-          className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
-          onSubmit={handleDownload}
-        >
-          <label className="block">
-            <span className="text-sm font-semibold text-slate-800">
-              Tipo de reporte
-            </span>
-            <select
-              className="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
-              disabled={isDownloading}
-              onChange={(event) =>
-                setReportType(event.target.value as ReportExportType)
-              }
-              value={reportType}
-            >
-              {REPORTS.map((report) => (
-                <option key={report.type} value={report.type}>
-                  {report.label}
-                </option>
-              ))}
-            </select>
-            <span className="mt-2 block text-sm text-slate-600">
-              {selectedReport.description}
-            </span>
-          </label>
+        <ExportSection
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          disabled={downloadingFormat !== null || !token}
+          format="excel"
+          isDownloading={downloadingFormat === "excel"}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+          onReportChange={(value) => selectReport("excel", value)}
+          onSelectedDateChange={setSelectedDate}
+          onSelectedMonthChange={setSelectedMonth}
+          onSubmit={(event) => handleDownload(event, "excel")}
+          reports={EXCEL_REPORTS}
+          selectedDate={selectedDate}
+          selectedMonth={selectedMonth}
+          selectedReport={selectedReports.excel}
+        />
 
-          {selectedReport.filterMode === "dates" ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <DateField
-                disabled={isDownloading}
-                label="Fecha desde"
-                onChange={setDateFrom}
-                value={dateFrom}
-              />
-              <DateField
-                disabled={isDownloading}
-                label="Fecha hasta"
-                onChange={setDateTo}
-                value={dateTo}
-              />
-            </div>
-          ) : null}
-
-          {selectedReport.filterMode === "month" ? (
-            <label className="block max-w-sm">
-              <span className="text-sm font-semibold text-slate-800">
-                Mes del reporte
-              </span>
-              <input
-                className="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
-                disabled={isDownloading}
-                onChange={(event) => setSelectedMonth(event.target.value)}
-                required
-                type="month"
-                value={selectedMonth}
-              />
-            </label>
-          ) : null}
-
-          {selectedReport.filterMode === "none" ? (
-            <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-              Este reporte muestra el estado actual del inventario y no requiere
-              un período.
-            </p>
-          ) : null}
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-11 rounded-md bg-water-700 px-5 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-              disabled={isDownloading || !token}
-              type="submit"
-            >
-              {isDownloading ? "Preparando Excel..." : "Descargar Excel"}
-            </button>
-            <button
-              className="h-11 rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
-              disabled={isDownloading}
-              onClick={useCurrentMonth}
-              type="button"
-            >
-              Usar mes actual
-            </button>
-          </div>
-        </form>
+        <ExportSection
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          disabled={downloadingFormat !== null || !token}
+          format="pdf"
+          isDownloading={downloadingFormat === "pdf"}
+          onDateFromChange={setDateFrom}
+          onDateToChange={setDateTo}
+          onReportChange={(value) => selectReport("pdf", value)}
+          onSelectedDateChange={setSelectedDate}
+          onSelectedMonthChange={setSelectedMonth}
+          onSubmit={(event) => handleDownload(event, "pdf")}
+          reports={PDF_REPORTS}
+          selectedDate={selectedDate}
+          selectedMonth={selectedMonth}
+          selectedReport={selectedReports.pdf}
+        />
 
         {error ? <ErrorMessage message={error} /> : null}
 
+        <button
+          className="h-11 self-start rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
+          disabled={downloadingFormat !== null}
+          onClick={useCurrentMonth}
+          type="button"
+        >
+          Restablecer período actual
+        </button>
+
         <p className="rounded-lg border border-water-100 bg-water-50 px-4 py-3 text-sm leading-6 text-water-900">
           Los archivos reflejan los datos registrados en el sistema para el
-          período seleccionado.
+          período seleccionado y no modifican información.
         </p>
       </div>
     </main>
+  );
+}
+
+type ExportSectionProps = {
+  format: ReportExportFormat;
+  reports: ReportExportDefinition[];
+  selectedReport: ReportExportDefinition;
+  dateFrom: string;
+  dateTo: string;
+  selectedMonth: string;
+  selectedDate: string;
+  disabled: boolean;
+  isDownloading: boolean;
+  onReportChange: (value: ReportExportType) => void;
+  onDateFromChange: (value: string) => void;
+  onDateToChange: (value: string) => void;
+  onSelectedMonthChange: (value: string) => void;
+  onSelectedDateChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+};
+
+function ExportSection({
+  format,
+  reports,
+  selectedReport,
+  dateFrom,
+  dateTo,
+  selectedMonth,
+  selectedDate,
+  disabled,
+  isDownloading,
+  onReportChange,
+  onDateFromChange,
+  onDateToChange,
+  onSelectedMonthChange,
+  onSelectedDateChange,
+  onSubmit,
+}: ExportSectionProps) {
+  const isPdf = format === "pdf";
+  return (
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-xl font-semibold text-slate-950">
+          {isPdf ? "Exportaciones PDF" : "Exportaciones Excel"}
+        </h2>
+        <p className="mt-1 text-sm leading-6 text-slate-600">
+          {isPdf
+            ? "Descarga reportes ejecutivos del ERP en formato PDF. Estas exportaciones son solo lectura y no modifican información del sistema."
+            : "Descarga reportes detallados del ERP en formato Excel con filtros básicos."}
+        </p>
+        {isPdf ? (
+          <p className="mt-2 text-sm font-medium text-water-800">
+            Para reportes detallados use Excel. El PDF está pensado como
+            resumen ejecutivo o impresión.
+          </p>
+        ) : null}
+      </div>
+
+      <form
+        className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+        onSubmit={onSubmit}
+      >
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-800">
+            Tipo de reporte
+          </span>
+          <select
+            className="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+            disabled={disabled}
+            onChange={(event) =>
+              onReportChange(event.target.value as ReportExportType)
+            }
+            value={selectedReport.type}
+          >
+            {reports.map((report) => (
+              <option key={report.type} value={report.type}>
+                {report.label}
+              </option>
+            ))}
+          </select>
+          <span className="mt-2 block text-sm text-slate-600">
+            {selectedReport.description}
+          </span>
+        </label>
+
+        {selectedReport.filterMode === "dates" ? (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <DateField
+              disabled={disabled}
+              label="Fecha desde"
+              onChange={onDateFromChange}
+              value={dateFrom}
+            />
+            <DateField
+              disabled={disabled}
+              label="Fecha hasta"
+              onChange={onDateToChange}
+              value={dateTo}
+            />
+          </div>
+        ) : null}
+
+        {selectedReport.filterMode === "month" ? (
+          <label className="block max-w-sm">
+            <span className="text-sm font-semibold text-slate-800">
+              Mes del reporte
+            </span>
+            <input
+              className="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              disabled={disabled}
+              onChange={(event) => onSelectedMonthChange(event.target.value)}
+              required
+              type="month"
+              value={selectedMonth}
+            />
+          </label>
+        ) : null}
+
+        {selectedReport.filterMode === "date" ? (
+          <DateField
+            disabled={disabled}
+            label="Fecha del reporte"
+            onChange={onSelectedDateChange}
+            value={selectedDate}
+          />
+        ) : null}
+
+        {selectedReport.filterMode === "none" ? (
+          <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+            Este reporte muestra el estado actual del inventario y no requiere
+            un período.
+          </p>
+        ) : null}
+
+        <button
+          className={
+            isPdf
+              ? "h-11 rounded-md bg-slate-800 px-5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              : "h-11 rounded-md bg-water-700 px-5 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+          }
+          disabled={disabled}
+          type="submit"
+        >
+          {isDownloading
+            ? `Preparando ${isPdf ? "PDF" : "Excel"}...`
+            : `Descargar ${isPdf ? "PDF" : "Excel"}`}
+        </button>
+      </form>
+    </section>
   );
 }
 
@@ -321,12 +504,13 @@ function DateField({
   value: string;
 }) {
   return (
-    <label className="block">
+    <label className="block max-w-sm">
       <span className="text-sm font-semibold text-slate-800">{label}</span>
       <input
         className="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
+        required={label === "Fecha del reporte"}
         type="date"
         value={value}
       />
@@ -334,10 +518,19 @@ function DateField({
   );
 }
 
+function findReport(
+  reports: ReportExportDefinition[],
+  type: ReportExportType,
+): ReportExportDefinition {
+  return reports.find((report) => report.type === type) ?? reports[0];
+}
+
 function getCurrentMonthValue(): string {
-  const now = new Date();
-  const localDate = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
-  return localDate.toISOString().slice(0, 7);
+  return getCurrentDateValue().slice(0, 7);
+}
+
+function getCurrentDateValue(): string {
+  return toLocalISODate(new Date());
 }
 
 function getCurrentMonthDates(): { from: string; to: string } {
@@ -372,9 +565,12 @@ function parseMonthValue(
   return { year, month };
 }
 
-function getErrorMessage(possibleError: unknown): string {
+function getErrorMessage(
+  possibleError: unknown,
+  format: ReportExportFormat,
+): string {
   if (possibleError instanceof Error) {
     return possibleError.message;
   }
-  return "No se pudo descargar el archivo Excel.";
+  return `No se pudo descargar el archivo ${format === "pdf" ? "PDF" : "Excel"}.`;
 }
