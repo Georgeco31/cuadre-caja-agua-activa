@@ -399,6 +399,59 @@ no deben recalcular cifras financieras de forma distinta en el navegador.
 
 El mismo filtro debe devolver los mismos totales en API, pantalla, Excel y PDF.
 
+## Bloque 53 - Auditoría técnica preproducción (implementado)
+
+- Auditoría de Git, estructura, backend, frontend, PostgreSQL, Alembic,
+  Docker, variables, autenticación, reglas, reportes y backups.
+- 917 pruebas backend aprobadas.
+- Typecheck y build frontend aprobados.
+- Compose, health y revisión `0025_materials` comprobados.
+- Navegación crítica, responsividad y exportaciones verificadas.
+- Riesgos, checklist de servidor y plan de correcciones documentados.
+- Sin migraciones, seeds, datos ni cambios de lógica.
+
+Decisión: continuar con reservas al Bloque 54; no mover al servidor ni iniciar
+piloto hasta cerrar los hallazgos críticos.
+
+## Bloque 54 - Roles y permisos (siguiente)
+
+- Roles mínimos `operator` y `admin-auditor`.
+- Cuentas personales y trazabilidad por usuario.
+- Autorización backend por módulo y acción.
+- Navegación frontend consistente con permisos.
+- Pruebas de matriz positiva y negativa.
+- Migración revisada manualmente para no incorporar divergencias históricas de
+  índices o constraints.
+
+## Bloque 54B - Reconciliación Alembic
+
+- Comparar modelos, migraciones y PostgreSQL.
+- Preservar constraints únicos, índices de ventas y el índice parcial de
+  retornos.
+- Probar el cambio en una restauración aislada.
+- Lograr `alembic check` limpio o un baseline explícito aprobado.
+
+## Bloque 55A - Producción local
+
+- Compose productivo endurecido.
+- PostgreSQL sin acceso remoto.
+- IP/DNS, URL API, CORS, firewall y zona `America/Guayaquil`.
+- Acceso LAN y Tailscale privado sin puertos públicos.
+- Healthchecks, reinicio y logs.
+
+## Bloque 55B - Backup y recuperación
+
+- Backup automático, retención, checksum, cifrado y copia externa.
+- Restauración real probada en un entorno aislado.
+- Manual de recuperación, responsables, RPO y RTO.
+
+## Bloque 56 - Piloto interno
+
+- Operador y admin-auditor separados.
+- Alcance y datos iniciales controlados.
+- Conciliación paralela diaria.
+- Registro de incidentes y criterios de pausa/cierre.
+
 ## Dependencias entre bloques
 
 ```text
@@ -415,6 +468,13 @@ Bloque 48: empleados avanzado
 
 Bloques 45-51 estables
   +--> Bloque 52: reportes confiables
+
+Bloque 53: auditoría
+  +--> Bloque 54: roles y permisos
+  +--> Bloque 54B: Alembic controlado
+  +--> Bloque 55A: servidor y red
+  +--> Bloque 55B: recuperación
+  +--> Bloque 56: piloto
 ```
 
 ## Reglas de ejecución del roadmap
@@ -430,12 +490,10 @@ Bloques 45-51 estables
 - Pilotear cada módulo con alcance limitado.
 - Actualizar la matriz de módulos al cerrar cada bloque.
 
-## Fuera de estos bloques, pero necesario antes de despliegue público
+## Requisitos transversales de seguridad
 
-- Roles y permisos.
 - Sesión con cookies seguras y protección CSRF cuando corresponda.
 - HTTPS, dominio y estrategia de despliegue.
-- Backups automáticos cifrados y copia externa.
 - Monitoreo, alertas y logs.
 - Pruebas E2E y de integración PostgreSQL.
-- Procedimiento de recuperación ante desastre.
+- Revisión y actualización controlada de dependencias.

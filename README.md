@@ -113,14 +113,25 @@ Quedan fuera del MVP:
 - WhatsApp.
 - BI, rentabilidad y comparativos gerenciales avanzados.
 - Multiples cajas o turnos.
-- Exportaciones PDF.
 - Aplicacion de compras a inventario, pagos a proveedores y cuentas por pagar
   avanzadas.
 - Conciliacion o movimiento automatico de gastos operativos en caja o bancos.
 - Pago real de nómina, IESS, décimos, vacaciones avanzadas, horas extras,
   comisiones y cálculos laborales legales.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 52B implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, formulas, costos estimados y consumo controlado de insumos, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados, roles de pago base, indicadores gerenciales visuales y exportaciones Excel. Registrar una produccion o definir una formula no mueve stock por si solo; el consumo ocurre exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra, calcular un rol, consultar el panel gerencial o exportar un reporte no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 52C
+implementan las bases de clientes, productos, empleados, rutas, vehiculos,
+ventas de contado y a credito, cobros, reportes de cartera, inventario manual,
+produccion aplicada a inventario, formulas, costos estimados y consumo
+controlado de insumos, carga, retorno, actividad comercial, cierre financiero
+de ruta, proveedores, compras administrativas, listas de precios, gastos
+operativos, control administrativo de empleados, roles de pago base,
+indicadores gerenciales visuales y exportaciones Excel/PDF. Registrar una
+produccion o definir una formula no mueve stock por si solo; el consumo ocurre
+exclusivamente al confirmar la accion explicita de consumo de insumos. Asociar
+ventas y abonos a una carga, registrar su cierre financiero, registrar una
+compra, calcular un rol, consultar el panel gerencial o exportar un reporte no
+modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 
@@ -273,8 +284,23 @@ cuadre-caja-agua-activa/
 - Bloque 52A: panel gerencial visual de solo lectura por rango.
 - Bloque 52B: exportaciones Excel autenticadas para diez reportes del ERP,
   generadas en memoria y sin modificar datos.
+- Bloque 52C: exportaciones PDF ejecutivas autenticadas para cinco reportes,
+  generadas en memoria y sin modificar datos.
+- Bloque 53: auditoria tecnica completa preproduccion, riesgos priorizados,
+  checklist de servidor local y plan de correcciones. Sin migraciones, seeds
+  ni cambios de logica.
 
-Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, cálculos laborales legales, mantenimiento, combustible, kilometraje, asignaciones formales, consumo automatico de insumos, mapas, geolocalizacion, exportaciones PDF, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro de clientes, cobros masivos,
+anticipos de clientes, facturacion electronica, ingreso automatico por
+denominaciones o conciliacion contable del cierre de ruta con caja o bancos,
+descuento de inventario por ventas, liquidacion fisica del inventario de ruta,
+recepcion de compras en inventario, pagos reales a proveedores, cuentas por
+pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real
+de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones,
+cálculos laborales legales, mantenimiento, combustible, kilometraje,
+asignaciones formales, consumo automatico de insumos, mapas, geolocalizacion,
+edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica
+de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 
@@ -296,23 +322,36 @@ Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos
 - `docs/14-checklist-uso-real-agua-activa.md`: checklist diario, semanal,
   mensual y de incidentes.
 - `docs/15-guia-piloto-datos-reales.md`: piloto controlado de 1 a 2 semanas.
-- `docs/16-roadmap-funciones-obligatorias.md`: Bloques 45 al 50.
+- `docs/16-roadmap-funciones-obligatorias.md`: Bloques funcionales y
+  preproduccion posteriores a la auditoria general.
 - `docs/17-matriz-modulos-erp.md`: estado, faltantes, prioridad y riesgo por
   modulo.
+- `docs/18-auditoria-tecnica-completa.md`: corte tecnico del Bloque 53,
+  evidencias, pruebas y decision de avance.
+- `docs/19-hallazgos-riesgos-produccion.md`: riesgos criticos, importantes,
+  menores y deuda tecnica.
+- `docs/20-checklist-preparacion-servidor-local.md`: controles previos al PC,
+  red, firewall, Tailscale, backups, restore y piloto.
+- `docs/21-plan-correcciones-pre-produccion.md`: prioridades, responsables y
+  criterios de cierre.
 
 ## Antes de usar datos reales
 
-El estado auditado permite un piloto supervisado, no el reemplazo inmediato de
-todos los controles actuales. Leer en este orden:
+El corte del Bloque 53 permite avanzar a roles y permisos, pero **todavia no
+autoriza mover el ERP al servidor ni iniciar el piloto**. Leer en este orden:
 
-1. `docs/13-auditoria-general-erp.md`.
-2. `docs/15-guia-piloto-datos-reales.md`.
-3. `docs/14-checklist-uso-real-agua-activa.md`.
+1. `docs/18-auditoria-tecnica-completa.md`.
+2. `docs/19-hallazgos-riesgos-produccion.md`.
+3. `docs/21-plan-correcciones-pre-produccion.md`.
+4. `docs/20-checklist-preparacion-servidor-local.md`.
+5. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
+   esten cerrados.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni
 crea gastos, y un cierre o recibo de ruta no modifica el conteo oficial de
-caja. Mantener conciliacion manual y backups diarios durante el piloto.
+caja. El piloto debera mantener conciliacion manual y backups diarios, despues
+de probar la restauracion.
 
 ## Ejecucion local con Docker
 

@@ -10,7 +10,7 @@
 | Pendiente | Está planificado y tiene dependencias identificadas |
 | No implementado | No existe modelo, endpoint ni pantalla funcional del módulo |
 
-La valoración corresponde al corte del Bloque 52C. “Implementado” no significa
+La valoración corresponde al corte del Bloque 53. “Implementado” no significa
 que el módulo pueda operar sin conciliación, backup o control manual.
 
 ## Matriz
@@ -58,6 +58,17 @@ local:
 - Automatizar backups con copia externa.
 - Añadir pruebas E2E y pruebas de integración PostgreSQL.
 - Definir despliegue seguro, HTTPS, monitoreo y recuperación.
+- Corregir contraseña/exposición de PostgreSQL.
+- Resolver URL API, CORS y zona horaria para la red local.
+- Probar restauración en un entorno aislado.
+- Revisar manualmente migraciones mientras exista divergencia Alembic.
+
+El detalle técnico, los riesgos y criterios están en:
+
+- [`18-auditoria-tecnica-completa.md`](18-auditoria-tecnica-completa.md)
+- [`19-hallazgos-riesgos-produccion.md`](19-hallazgos-riesgos-produccion.md)
+- [`20-checklist-preparacion-servidor-local.md`](20-checklist-preparacion-servidor-local.md)
+- [`21-plan-correcciones-pre-produccion.md`](21-plan-correcciones-pre-produccion.md)
 
 ## Próxima actualización
 
