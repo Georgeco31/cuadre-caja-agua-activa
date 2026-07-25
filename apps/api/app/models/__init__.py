@@ -10,6 +10,8 @@ from app.models.expense import Expense
 from app.models.inventory_location import InventoryLocation
 from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
+from app.models.operating_expense import OperatingExpense
+from app.models.operating_expense_category import OperatingExpenseCategory
 from app.models.price_list import PriceList
 from app.models.price_list_item import PriceListItem
 from app.models.product import Product
@@ -23,6 +25,7 @@ from app.models.production_inventory_application_item import (
 )
 from app.models.purchase import Purchase
 from app.models.purchase_item import PurchaseItem
+from app.models.recurring_operating_expense import RecurringOperatingExpense
 from app.models.route_load import RouteLoad
 from app.models.route_load_item import RouteLoadItem
 from app.models.route_cash_receipt import RouteCashReceipt
@@ -48,6 +51,8 @@ __all__ = [
     "InventoryLocation",
     "InventoryMovement",
     "InventoryStock",
+    "OperatingExpense",
+    "OperatingExpenseCategory",
     "PriceList",
     "PriceListItem",
     "Product",
@@ -57,6 +62,7 @@ __all__ = [
     "ProductionInventoryApplicationItem",
     "Purchase",
     "PurchaseItem",
+    "RecurringOperatingExpense",
     "RouteLoad",
     "RouteLoadItem",
     "RouteCashReceipt",

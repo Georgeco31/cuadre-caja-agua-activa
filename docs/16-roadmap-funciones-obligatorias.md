@@ -128,6 +128,8 @@ qué regla lo produjo.
 
 ## Bloque 47 - Gastos operativos generales
 
+**Estado: implementado base en el Bloque 47.**
+
 ### Objetivo
 
 Registrar costos que no pertenecen exclusivamente al conteo de una caja.
@@ -152,6 +154,23 @@ registro contable y el movimiento de dinero no deben duplicarse.
 
 El reporte del período debe distinguir gastos devengados, pagados y anulados,
 sin alterar el cuadre físico de manera implícita.
+
+### Alcance base completado
+
+- Categorías activables, proveedor opcional, documento, vencimiento y fecha de
+  pago informativa.
+- Gastos con estados `unpaid`, `paid` y `partial`, edición mientras están
+  activos y anulación lógica con motivo.
+- Plantillas semanales, mensuales, trimestrales y anuales con generación
+  exclusivamente manual.
+- Resumen oficial por período, categoría, proveedor y estado de pago, con
+  anulados separados.
+- Aislamiento explícito respecto de caja, bancos, gastos del cuadre, compras,
+  pagos a proveedores, inventario, ventas, cobros, producción y rutas.
+
+Quedan para una fase de madurez las subcategorías, centros de costo, relación
+con áreas/rutas/vehículos, adjuntos, pagos parciales reales, cuentas por pagar
+y conciliación explícita con caja o bancos.
 
 ## Bloque 48 - Empleados avanzado
 
@@ -276,4 +295,3 @@ Bloques 45-49 estables
 - Monitoreo, alertas y logs.
 - Pruebas E2E y de integración PostgreSQL.
 - Procedimiento de recuperación ante desastre.
-

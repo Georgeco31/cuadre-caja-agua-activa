@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/operating-expenses",
+    title: "Gastos operativos",
+    description: "Registrar gastos generales fuera del cuadre diario de caja.",
+    primary: false,
+  },
+  {
     href: "/dashboard/pricing",
     title: "Listas de precios",
     description: "Gestionar precios especiales por cliente o ruta.",

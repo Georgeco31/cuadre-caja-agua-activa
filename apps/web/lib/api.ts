@@ -53,6 +53,23 @@ import type {
   InventoryStockFilters,
 } from "@/types/inventory";
 import type {
+  OperatingExpense,
+  OperatingExpenseCategory,
+  OperatingExpenseCategoryFilters,
+  OperatingExpenseCategoryPayload,
+  OperatingExpenseCategoryUpdatePayload,
+  OperatingExpenseFilters,
+  OperatingExpensePayload,
+  OperatingExpenseSummary,
+  OperatingExpenseSummaryFilters,
+  OperatingExpenseUpdatePayload,
+  RecurringOperatingExpense,
+  RecurringOperatingExpenseCreateExpensePayload,
+  RecurringOperatingExpenseFilters,
+  RecurringOperatingExpensePayload,
+  RecurringOperatingExpenseUpdatePayload,
+} from "@/types/operatingExpense";
+import type {
   Product,
   ProductFilters,
   ProductPayload,
@@ -942,6 +959,274 @@ export async function voidPurchase(
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),
   });
+}
+
+export async function listOperatingExpenseCategories(
+  token: string,
+  filters: OperatingExpenseCategoryFilters = {},
+): Promise<OperatingExpenseCategory[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  const query = searchParams.toString();
+  return request<OperatingExpenseCategory[]>(
+    `/operating-expenses/categories${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getOperatingExpenseCategory(
+  token: string,
+  categoryId: number,
+): Promise<OperatingExpenseCategory> {
+  return request<OperatingExpenseCategory>(
+    `/operating-expenses/categories/${categoryId}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createOperatingExpenseCategory(
+  token: string,
+  payload: OperatingExpenseCategoryPayload,
+): Promise<OperatingExpenseCategory> {
+  return request<OperatingExpenseCategory>("/operating-expenses/categories", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateOperatingExpenseCategory(
+  token: string,
+  categoryId: number,
+  payload: OperatingExpenseCategoryUpdatePayload,
+): Promise<OperatingExpenseCategory> {
+  return request<OperatingExpenseCategory>(
+    `/operating-expenses/categories/${categoryId}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function setOperatingExpenseCategoryActive(
+  token: string,
+  categoryId: number,
+  isActive: boolean,
+): Promise<OperatingExpenseCategory> {
+  return request<OperatingExpenseCategory>(
+    `/operating-expenses/categories/${categoryId}/${
+      isActive ? "activate" : "deactivate"
+    }`,
+    { method: "PATCH", headers: authHeaders(token) },
+  );
+}
+
+export async function listOperatingExpenses(
+  token: string,
+  filters: OperatingExpenseFilters = {},
+): Promise<OperatingExpense[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.payment_status) {
+    searchParams.set("payment_status", filters.payment_status);
+  }
+  if (filters.category_id !== undefined) {
+    searchParams.set("category_id", String(filters.category_id));
+  }
+  if (filters.supplier_id !== undefined) {
+    searchParams.set("supplier_id", String(filters.supplier_id));
+  }
+  if (filters.payment_method) {
+    searchParams.set("payment_method", filters.payment_method);
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<OperatingExpense[]>(
+    `/operating-expenses${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getOperatingExpense(
+  token: string,
+  expenseId: number,
+): Promise<OperatingExpense> {
+  return request<OperatingExpense>(`/operating-expenses/${expenseId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createOperatingExpense(
+  token: string,
+  payload: OperatingExpensePayload,
+): Promise<OperatingExpense> {
+  return request<OperatingExpense>("/operating-expenses", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateOperatingExpense(
+  token: string,
+  expenseId: number,
+  payload: OperatingExpenseUpdatePayload,
+): Promise<OperatingExpense> {
+  return request<OperatingExpense>(`/operating-expenses/${expenseId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function voidOperatingExpense(
+  token: string,
+  expenseId: number,
+  reason: string,
+): Promise<OperatingExpense> {
+  return request<OperatingExpense>(
+    `/operating-expenses/${expenseId}/void`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    },
+  );
+}
+
+export async function listRecurringOperatingExpenses(
+  token: string,
+  filters: RecurringOperatingExpenseFilters = {},
+): Promise<RecurringOperatingExpense[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.is_active !== undefined && filters.is_active !== "") {
+    searchParams.set("is_active", String(filters.is_active));
+  }
+  if (filters.category_id !== undefined) {
+    searchParams.set("category_id", String(filters.category_id));
+  }
+  if (filters.supplier_id !== undefined) {
+    searchParams.set("supplier_id", String(filters.supplier_id));
+  }
+  if (filters.frequency) {
+    searchParams.set("frequency", filters.frequency);
+  }
+  const query = searchParams.toString();
+  return request<RecurringOperatingExpense[]>(
+    `/operating-expenses/recurring${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getRecurringOperatingExpense(
+  token: string,
+  templateId: number,
+): Promise<RecurringOperatingExpense> {
+  return request<RecurringOperatingExpense>(
+    `/operating-expenses/recurring/${templateId}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createRecurringOperatingExpense(
+  token: string,
+  payload: RecurringOperatingExpensePayload,
+): Promise<RecurringOperatingExpense> {
+  return request<RecurringOperatingExpense>(
+    "/operating-expenses/recurring",
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function updateRecurringOperatingExpense(
+  token: string,
+  templateId: number,
+  payload: RecurringOperatingExpenseUpdatePayload,
+): Promise<RecurringOperatingExpense> {
+  return request<RecurringOperatingExpense>(
+    `/operating-expenses/recurring/${templateId}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function setRecurringOperatingExpenseActive(
+  token: string,
+  templateId: number,
+  isActive: boolean,
+): Promise<RecurringOperatingExpense> {
+  return request<RecurringOperatingExpense>(
+    `/operating-expenses/recurring/${templateId}/${
+      isActive ? "activate" : "deactivate"
+    }`,
+    { method: "PATCH", headers: authHeaders(token) },
+  );
+}
+
+export async function createExpenseFromRecurringOperatingExpense(
+  token: string,
+  templateId: number,
+  payload: RecurringOperatingExpenseCreateExpensePayload,
+): Promise<OperatingExpense> {
+  return request<OperatingExpense>(
+    `/operating-expenses/recurring/${templateId}/create-expense`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function getOperatingExpenseSummary(
+  token: string,
+  filters: OperatingExpenseSummaryFilters = {},
+): Promise<OperatingExpenseSummary> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.category_id !== undefined) {
+    searchParams.set("category_id", String(filters.category_id));
+  }
+  if (filters.supplier_id !== undefined) {
+    searchParams.set("supplier_id", String(filters.supplier_id));
+  }
+  const query = searchParams.toString();
+  return request<OperatingExpenseSummary>(
+    `/operating-expenses/summary${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function listCashSales(

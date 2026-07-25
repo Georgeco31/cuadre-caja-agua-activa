@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos a proveedores, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, liquidacion fisica de inventario de ruta, consumo de insumos, nomina, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -59,6 +59,7 @@ Rutas principales:
 - `/dashboard/products`
 - `/dashboard/suppliers`
 - `/dashboard/purchases`
+- `/dashboard/operating-expenses`
 - `/dashboard/employees`
 - `/dashboard/delivery-routes`
 - `/dashboard/vehicles`
@@ -163,6 +164,20 @@ http://localhost:3000/login
   anular con motivo mediante `POST /api/v1/purchases/{id}/void`.
 - Registrar o anular una compra no modifica inventario, caja, gastos, ventas,
   cobros ni pagos a proveedores.
+- La pantalla `/dashboard/operating-expenses` administra categorías, gastos
+  generales y plantillas recurrentes. Permite crear gastos manuales, consultar
+  detalle, filtrar, anular con motivo y activar o desactivar categorías y
+  plantillas sin borrado físico.
+- El resumen de gastos proviene de
+  `GET /api/v1/operating-expenses/summary`; el navegador no recalcula sus
+  importes oficiales. Los anulados se cuentan por separado y no forman parte
+  del total activo.
+- Las plantillas no ejecutan procesos automáticos. El botón de generación usa
+  `POST /api/v1/operating-expenses/recurring/{template_id}/create-expense`
+  para crear exactamente un gasto a petición del usuario.
+- Los métodos de pago del módulo son informativos. Crear o anular gastos
+  operativos no modifica caja, bancos, gastos del cuadre, compras, inventario,
+  ventas, cobros, producción o rutas.
 - La pantalla `/dashboard/employees` lista empleados desde `GET /api/v1/employees` y permite buscar por nombre, identificacion, telefono, cargo o tipo.
 - El alta usa `POST /api/v1/employees` y la edicion usa `PATCH /api/v1/employees/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/employees/{id}/deactivate` y `PATCH /api/v1/employees/{id}/activate`; no se eliminan empleados fisicamente.

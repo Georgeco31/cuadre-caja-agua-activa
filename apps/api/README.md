@@ -10,7 +10,8 @@ manual, produccion aplicada a inventario, carga de camion, retorno, actividad
 comercial, cierre financiero por ruta, el reporte comparativo de rutas contra
 caja, el registro trazable del dinero de ruta recibido en un cuadre abierto, el
 resumen operativo diario, el reporte mensual operativo de solo lectura y el
-registro administrativo de compras. El
+registro administrativo de compras, listas de precios y gastos operativos
+generales con categorías y plantillas recurrentes. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
 por ventas, liquidacion fisica de ruta, consumo de insumos, nomina,
@@ -332,6 +333,56 @@ El listado acepta `date_from`, `date_to`, `status`, `payment_status`,
 compra y sus items. Crear o anular una compra no crea movimientos de inventario,
 cuadres, gastos, ventas, cobros ni pagos a proveedores. Los seeds no crean
 proveedores o compras.
+
+## Gastos operativos generales
+
+La migracion `0021_op_expenses` crea
+`operating_expense_categories`, `operating_expenses` y
+`recurring_operating_expenses` sin insertar datos. El modulo usa
+`Numeric(14, 2)`/`Decimal`, exige importes mayores a cero y protege todos sus
+endpoints con Bearer token.
+
+Categorías:
+
+- `POST /api/v1/operating-expenses/categories`
+- `GET /api/v1/operating-expenses/categories`
+- `GET /api/v1/operating-expenses/categories/{category_id}`
+- `PATCH /api/v1/operating-expenses/categories/{category_id}`
+- `PATCH /api/v1/operating-expenses/categories/{category_id}/deactivate`
+- `PATCH /api/v1/operating-expenses/categories/{category_id}/activate`
+
+Gastos y resumen:
+
+- `POST /api/v1/operating-expenses`
+- `GET /api/v1/operating-expenses`
+- `GET /api/v1/operating-expenses/{expense_id}`
+- `PATCH /api/v1/operating-expenses/{expense_id}`
+- `POST /api/v1/operating-expenses/{expense_id}/void`
+- `GET /api/v1/operating-expenses/summary`
+
+Plantillas recurrentes:
+
+- `POST /api/v1/operating-expenses/recurring`
+- `GET /api/v1/operating-expenses/recurring`
+- `GET /api/v1/operating-expenses/recurring/{template_id}`
+- `PATCH /api/v1/operating-expenses/recurring/{template_id}`
+- `PATCH /api/v1/operating-expenses/recurring/{template_id}/deactivate`
+- `PATCH /api/v1/operating-expenses/recurring/{template_id}/activate`
+- `POST /api/v1/operating-expenses/recurring/{template_id}/create-expense`
+
+El proveedor es opcional, pero cuando se informa debe existir y estar activo.
+La categoría también debe existir y estar activa al crear un gasto o generar
+uno desde una plantilla. Los estados de pago son `unpaid`, `paid` y `partial`;
+el método `cash`, `transfer`, `card`, `check`, `other` o `unknown` es solo
+informativo. Las plantillas nunca generan gastos por cron: cada gasto requiere
+la acción manual `create-expense`.
+
+El resumen excluye anulados de los importes principales, los cuenta en
+`voided_count` y agrupa los gastos activos por categoría, proveedor y estado
+de pago. Como este bloque no registra abonos reales, cada grupo de pago suma el
+monto completo de los gastos que tienen ese estado. Crear, editar, generar o
+anular un gasto operativo no modifica caja, gastos del cuadre, bancos,
+inventario, compras, pagos a proveedores, ventas, cobros, producción ni rutas.
 
 ## Empleados
 

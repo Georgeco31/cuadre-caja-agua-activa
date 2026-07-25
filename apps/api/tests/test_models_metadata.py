@@ -20,6 +20,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "inventory_locations",
         "inventory_movements",
         "inventory_stocks",
+        "operating_expense_categories",
+        "operating_expenses",
         "products",
         "price_list_items",
         "price_lists",
@@ -29,6 +31,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "production_items",
         "purchase_items",
         "purchases",
+        "recurring_operating_expenses",
         "route_load_items",
         "route_loads",
         "route_cash_receipts",
@@ -101,6 +104,8 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["purchase_items"].c.tax_amount,
         Base.metadata.tables["purchase_items"].c.subtotal_amount,
         Base.metadata.tables["purchase_items"].c.total_amount,
+        Base.metadata.tables["operating_expenses"].c.amount,
+        Base.metadata.tables["recurring_operating_expenses"].c.amount,
     ]
 
     for column in monetary_columns:
@@ -294,6 +299,31 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("purchase_items", "product_id") == {
         "products.id",
     }
+    assert _foreign_key_targets("operating_expenses", "category_id") == {
+        "operating_expense_categories.id",
+    }
+    assert _foreign_key_targets("operating_expenses", "supplier_id") == {
+        "suppliers.id",
+    }
+    assert _foreign_key_targets(
+        "operating_expenses",
+        "recurring_template_id",
+    ) == {"recurring_operating_expenses.id"}
+    assert _foreign_key_targets("operating_expenses", "created_by") == {
+        "users.id",
+    }
+    assert _foreign_key_targets(
+        "recurring_operating_expenses",
+        "category_id",
+    ) == {"operating_expense_categories.id"}
+    assert _foreign_key_targets(
+        "recurring_operating_expenses",
+        "supplier_id",
+    ) == {"suppliers.id"}
+    assert _foreign_key_targets(
+        "recurring_operating_expenses",
+        "created_by",
+    ) == {"users.id"}
     assert _foreign_key_targets(
         "route_return_items",
         "source_exit_movement_id",
@@ -469,6 +499,28 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_purchase_items_quantity_positive",
         "ck_purchase_items_subtotal",
         "ck_purchase_items_total",
+    }
+    assert _check_constraint_names("operating_expense_categories") == {
+        "ck_operating_expense_categories_name_not_blank",
+    }
+    assert _check_constraint_names("operating_expenses") == {
+        "ck_operating_expenses_amount_positive",
+        "ck_operating_expenses_description_not_blank",
+        "ck_operating_expenses_number_not_blank",
+        "ck_operating_expenses_payment_method",
+        "ck_operating_expenses_payment_status",
+        "ck_operating_expenses_status",
+        "ck_operating_expenses_void_state",
+    }
+    assert _check_constraint_names("recurring_operating_expenses") == {
+        "ck_recurring_operating_expenses_amount_positive",
+        "ck_recurring_operating_expenses_date_range",
+        "ck_recurring_operating_expenses_description_not_blank",
+        "ck_recurring_operating_expenses_frequency",
+        "ck_recurring_operating_expenses_name_not_blank",
+        "ck_recurring_operating_expenses_next_due_after_start",
+        "ck_recurring_operating_expenses_next_due_before_end",
+        "ck_recurring_operating_expenses_payment_method",
     }
 
 
