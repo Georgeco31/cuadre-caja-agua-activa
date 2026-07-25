@@ -6,6 +6,10 @@ from app.models.customer import Customer
 from app.models.denomination import Denomination
 from app.models.delivery_route import DeliveryRoute
 from app.models.employee import Employee
+from app.models.employee_advance import EmployeeAdvance
+from app.models.employee_attendance import EmployeeAttendance
+from app.models.employee_loan import EmployeeLoan
+from app.models.employee_loan_payment import EmployeeLoanPayment
 from app.models.expense import Expense
 from app.models.inventory_location import InventoryLocation
 from app.models.inventory_movement import InventoryMovement
@@ -47,6 +51,10 @@ __all__ = [
     "Denomination",
     "DeliveryRoute",
     "Employee",
+    "EmployeeAdvance",
+    "EmployeeAttendance",
+    "EmployeeLoan",
+    "EmployeeLoanPayment",
     "Expense",
     "InventoryLocation",
     "InventoryMovement",

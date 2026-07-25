@@ -28,10 +28,12 @@ cerrar la validación del anterior.
 
 ### C. Empleados avanzado
 
-- Anticipos y préstamos.
-- Asistencia y novedades.
-- Pagos y roles.
-- Descuentos y saldos por empleado.
+- Anticipos y préstamos. **Implementado base en el Bloque 48.**
+- Asistencia y novedades básicas. **Implementado base en el Bloque 48.**
+- Abonos y saldos de préstamos por empleado. **Implementado base en el
+  Bloque 48.**
+- Pagos y roles. **Pendiente para el siguiente bloque.**
+- Descuentos de nómina por empleado. **Pendiente para el siguiente bloque.**
 - Períodos cerrados y trazabilidad de correcciones.
 
 ### D. Producción avanzada
@@ -174,30 +176,36 @@ y conciliación explícita con caja o bancos.
 
 ## Bloque 48 - Empleados avanzado
 
+**Estado: implementado base.**
+
 ### Objetivo
 
 Controlar obligaciones con empleados sin convertir la ficha base en una
 nómina improvisada.
 
-### Alcance mínimo
+### Base implementada
 
-- Asistencia, ausencias y novedades.
-- Anticipos y préstamos con saldo.
-- Ingresos y descuentos.
-- Períodos de pago.
-- Roles de pago calculados en backend.
-- Pago, anulación y cierre de período.
-- Historial por empleado.
+- Asistencia diaria editable con estados de presencia, ausencia, atraso,
+  permiso, vacaciones y enfermedad.
+- Anticipos administrativos con anulación lógica y motivo.
+- Préstamos con principal, total abonado y saldo pendiente.
+- Abonos parciales o totales, con reversión del saldo al anular.
+- Resumen e historial reciente por empleado.
+- Validaciones de empleado activo, importes positivos, asistencia única por
+  fecha y bloqueo de estados incompatibles.
+- Aislamiento de caja, bancos y gastos operativos.
 
-### Reglas que deben definirse antes
+### Pendiente para el siguiente bloque
 
 - Frecuencias, redondeos y períodos.
 - Fórmulas legales y conceptos aplicables.
-- Autorización de anticipos.
-- Descuentos máximos y saldos.
+- Roles de pago calculados en backend.
+- Descuentos de anticipos y préstamos dentro del rol.
+- Pago, anulación y cierre de período.
+- IESS, décimos, vacaciones, horas extras y comisiones.
 - Privacidad y permisos de información laboral.
 
-### Criterio de cierre
+### Criterio de cierre futuro
 
 Un período piloto debe poder calcularse, revisarse, pagarse y auditarse sin
 modificar períodos cerrados directamente.

@@ -10,7 +10,7 @@
 | Pendiente | Está planificado y tiene dependencias identificadas |
 | No implementado | No existe modelo, endpoint ni pantalla funcional del módulo |
 
-La valoración corresponde al corte del Bloque 47. “Implementado” no significa
+La valoración corresponde al corte del Bloque 48. “Implementado” no significa
 que el módulo pueda operar sin conciliación, backup o control manual.
 
 ## Matriz
@@ -26,7 +26,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 | 7. Rutas de entrega | Implementado avanzado | Rutas, cargas, inventario vehicular, retorno, actividad comercial, cierre financiero, dinero recibido y comparación con caja | Planificación, asignación formal de personal, liquidación física completa, mapas y geolocalización | Alta | Alto: cierre y recibo no cambian caja ni inventario automáticamente |
 | 8. Compras y proveedores | Implementado base | Proveedores, items, snapshots, totales backend, filtros, detalle y anulación de compras | Recepción en inventario, cuentas por pagar, pagos, devoluciones, retenciones y costeo avanzado | Alta | Medio: las compras quedan registradas, pero el ingreso a stock y el pago requieren control separado |
 | 9. Gastos operativos | Implementado base | Gastos generales fuera de caja, categorías, proveedor opcional, estados y métodos informativos, vencimientos, edición activa, anulación, plantillas manuales y resumen agrupado | Subcategorías, centros de costo, pagos parciales reales, cuentas por pagar, adjuntos y conciliación explícita con caja/bancos | Alta | Medio: existe control administrativo, pero el movimiento real de dinero se concilia fuera del módulo |
-| 10. Empleados, anticipos y roles | Parcial | Ficha base, cargo, tipo, sueldo referencial, frecuencia, alta/baja | Asistencia, anticipos, préstamos, novedades, pagos, descuentos, roles y cierres de período | Alta | Alto: obligaciones laborales se controlan fuera del sistema |
+| 10. Empleados, anticipos y roles | Implementado base | Ficha base, alta/baja, asistencia diaria, anticipos, préstamos, abonos, saldos, resumen por empleado y anulaciones lógicas | Roles de pago, períodos, descuentos automáticos, IESS, décimos, vacaciones, horas extras, comisiones y permisos | Alta | Medio: existe control administrativo, pero la nómina y el movimiento real de dinero siguen fuera del sistema |
 | 11. Camiones y mantenimiento | Parcial | Vehículos, placa, tipo, capacidad, combustible referencial, estado y uso en cargas | Mantenimiento, combustible consumido, kilometraje, asignaciones, documentos, costos y rentabilidad | Media | Medio: no hay alerta de mantenimiento ni costo real por vehículo |
 | 12. Producción o envasado | Implementado base | Lotes, cantidades, merma, snapshots, anulación y aplicación reversible a inventario | Insumos, materia prima, fórmulas, consumo, lotes de insumo, mano de obra y costeo | Alta | Alto: se conoce cantidad producida, no costo real completo |
 | 13. Reportes gerenciales | Parcial | Caja acumulada, cartera, estado de cuenta, rutas vs caja, resumen diario y mensual | Gráficos, Excel/PDF, indicadores, rentabilidad, comparativos avanzados y programación | Media | Medio: decisiones gerenciales requieren consolidación externa |
@@ -38,7 +38,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 - Recepcion de compras en inventario y cuentas por pagar.
 - Listas de precios.
 - Madurez de gastos operativos: centros de costo, pagos reales y conciliación.
-- Empleados avanzado.
+- Roles de pago y obligaciones laborales avanzadas.
 - Producción con insumos y costos.
 - Automatizaciones y conciliaciones que hoy dependen del operador.
 

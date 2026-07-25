@@ -17,6 +17,10 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "customers",
         "delivery_routes",
         "employees",
+        "employee_advances",
+        "employee_attendance",
+        "employee_loan_payments",
+        "employee_loans",
         "inventory_locations",
         "inventory_movements",
         "inventory_stocks",
@@ -64,6 +68,12 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["customers"].c.credit_limit,
         Base.metadata.tables["delivery_routes"].c.expected_daily_cash,
         Base.metadata.tables["employees"].c.base_salary,
+        Base.metadata.tables["employee_attendance"].c.hours_worked,
+        Base.metadata.tables["employee_advances"].c.amount,
+        Base.metadata.tables["employee_loans"].c.principal_amount,
+        Base.metadata.tables["employee_loans"].c.paid_amount,
+        Base.metadata.tables["employee_loans"].c.balance_amount,
+        Base.metadata.tables["employee_loan_payments"].c.amount,
         Base.metadata.tables["products"].c.default_price,
         Base.metadata.tables["products"].c.cost_estimate,
         Base.metadata.tables["price_list_items"].c.unit_price,
@@ -154,6 +164,34 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("credit_payments", "created_by") == {"users.id"}
     assert _foreign_key_targets("credit_payments", "route_load_id") == {
         "route_loads.id",
+    }
+    assert _foreign_key_targets("employee_attendance", "employee_id") == {
+        "employees.id",
+    }
+    assert _foreign_key_targets("employee_attendance", "created_by") == {
+        "users.id",
+    }
+    assert _foreign_key_targets("employee_advances", "employee_id") == {
+        "employees.id",
+    }
+    assert _foreign_key_targets("employee_advances", "created_by") == {
+        "users.id",
+    }
+    assert _foreign_key_targets("employee_loans", "employee_id") == {
+        "employees.id",
+    }
+    assert _foreign_key_targets("employee_loans", "created_by") == {
+        "users.id",
+    }
+    assert _foreign_key_targets(
+        "employee_loan_payments",
+        "employee_loan_id",
+    ) == {"employee_loans.id"}
+    assert _foreign_key_targets("employee_loan_payments", "employee_id") == {
+        "employees.id",
+    }
+    assert _foreign_key_targets("employee_loan_payments", "created_by") == {
+        "users.id",
     }
     assert _foreign_key_targets("inventory_locations", "vehicle_id") == {
         "vehicles.id",
@@ -366,6 +404,33 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_employees_first_name_not_blank",
         "ck_employees_last_name_not_blank",
         "ck_employees_payment_frequency",
+    }
+    assert _check_constraint_names("employee_attendance") == {
+        "ck_employee_attendance_hours_nonnegative",
+        "ck_employee_attendance_status",
+    }
+    assert _check_constraint_names("employee_advances") == {
+        "ck_employee_advances_amount_positive",
+        "ck_employee_advances_number_not_blank",
+        "ck_employee_advances_reason_not_blank",
+        "ck_employee_advances_status",
+        "ck_employee_advances_void_state",
+    }
+    assert _check_constraint_names("employee_loans") == {
+        "ck_employee_loans_balance_valid",
+        "ck_employee_loans_number_not_blank",
+        "ck_employee_loans_paid_valid",
+        "ck_employee_loans_principal_positive",
+        "ck_employee_loans_reason_not_blank",
+        "ck_employee_loans_status",
+        "ck_employee_loans_status_balance",
+        "ck_employee_loans_void_state",
+    }
+    assert _check_constraint_names("employee_loan_payments") == {
+        "ck_employee_loan_payments_amount_positive",
+        "ck_employee_loan_payments_number_not_blank",
+        "ck_employee_loan_payments_status",
+        "ck_employee_loan_payments_void_state",
     }
     assert _check_constraint_names("delivery_routes") == {
         "ck_delivery_routes_expected_cash_nonnegative",

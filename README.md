@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
 
 ## Problema que resuelve
 
@@ -45,6 +45,9 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Registro, consulta, busqueda y edicion de empleados.
 - Datos base de cargo, tipo, sueldo referencial y frecuencia de pago.
 - Activacion e inactivacion de empleados sin borrado fisico.
+- Asistencia diaria editable y única por empleado y fecha.
+- Anticipos y préstamos administrativos con anulación lógica.
+- Abonos reversibles, saldos pendientes y resumen por empleado.
 - Registro, consulta, busqueda y edicion de rutas de entrega.
 - Zonas, sectores, dias de atencion y referencias operativas por ruta.
 - Activacion e inactivacion de rutas sin borrado fisico.
@@ -93,8 +96,9 @@ Quedan fuera del MVP:
 - Aplicacion de compras a inventario, pagos a proveedores y cuentas por pagar
   avanzadas.
 - Conciliacion o movimiento automatico de gastos operativos en caja o bancos.
+- Roles de pago, nómina y cálculos laborales automáticos.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 45 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores y compras administrativas. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Asociar ventas y abonos a una carga, registrar su cierre financiero o registrar una compra no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 48 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos y control administrativo de empleados. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra o administrar obligaciones de empleados no modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 
@@ -233,8 +237,10 @@ cuadre-caja-agua-activa/
 - Bloque 47: gastos operativos generales, categorías, proveedor opcional,
   plantillas recurrentes manuales, anulación y resumen, sin movimientos
   automáticos en caja, bancos, compras o inventario.
+- Bloque 48: asistencia, anticipos, préstamos, abonos y saldos por empleado,
+  con anulación lógica y sin movimientos automáticos de caja, bancos o gastos.
 
-Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, anticipos a empleados, roles de pago, nomina, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, roles de pago, nomina, cálculos laborales automáticos, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

@@ -40,6 +40,20 @@ import type {
   EmployeePayload,
   EmployeeUpdatePayload,
 } from "@/types/employee";
+import type {
+  EmployeeAccountSummary,
+  EmployeeAdvance,
+  EmployeeAdvancePayload,
+  EmployeeAttendance,
+  EmployeeAttendancePayload,
+  EmployeeAttendanceUpdatePayload,
+  EmployeeControlFilters,
+  EmployeeLoan,
+  EmployeeLoanPayment,
+  EmployeeLoanPaymentFilters,
+  EmployeeLoanPaymentPayload,
+  EmployeeLoanPayload,
+} from "@/types/employeeControls";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type {
   InventoryLocation,
@@ -592,6 +606,161 @@ export async function activateEmployee(
     method: "PATCH",
     headers: authHeaders(token),
   });
+}
+
+export async function listEmployeeAttendance(
+  token: string,
+  filters: EmployeeControlFilters = {},
+): Promise<EmployeeAttendance[]> {
+  return request<EmployeeAttendance[]>(
+    `/employees/attendance${buildEmployeeControlQuery(filters)}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createEmployeeAttendance(
+  token: string,
+  payload: EmployeeAttendancePayload,
+): Promise<EmployeeAttendance> {
+  return request<EmployeeAttendance>("/employees/attendance", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateEmployeeAttendance(
+  token: string,
+  attendanceId: number,
+  payload: EmployeeAttendanceUpdatePayload,
+): Promise<EmployeeAttendance> {
+  return request<EmployeeAttendance>(
+    `/employees/attendance/${attendanceId}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function listEmployeeAdvances(
+  token: string,
+  filters: EmployeeControlFilters = {},
+): Promise<EmployeeAdvance[]> {
+  return request<EmployeeAdvance[]>(
+    `/employees/advances${buildEmployeeControlQuery(filters)}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createEmployeeAdvance(
+  token: string,
+  payload: EmployeeAdvancePayload,
+): Promise<EmployeeAdvance> {
+  return request<EmployeeAdvance>("/employees/advances", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function voidEmployeeAdvance(
+  token: string,
+  advanceId: number,
+  reason: string,
+): Promise<EmployeeAdvance> {
+  return request<EmployeeAdvance>(`/employees/advances/${advanceId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function listEmployeeLoans(
+  token: string,
+  filters: EmployeeControlFilters = {},
+): Promise<EmployeeLoan[]> {
+  return request<EmployeeLoan[]>(
+    `/employees/loans${buildEmployeeControlQuery(filters)}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createEmployeeLoan(
+  token: string,
+  payload: EmployeeLoanPayload,
+): Promise<EmployeeLoan> {
+  return request<EmployeeLoan>("/employees/loans", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function voidEmployeeLoan(
+  token: string,
+  loanId: number,
+  reason: string,
+): Promise<EmployeeLoan> {
+  return request<EmployeeLoan>(`/employees/loans/${loanId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function listEmployeeLoanPayments(
+  token: string,
+  filters: EmployeeLoanPaymentFilters = {},
+): Promise<EmployeeLoanPayment[]> {
+  return request<EmployeeLoanPayment[]>(
+    `/employees/loan-payments${buildEmployeeControlQuery(filters)}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function createEmployeeLoanPayment(
+  token: string,
+  loanId: number,
+  payload: EmployeeLoanPaymentPayload,
+): Promise<EmployeeLoanPayment> {
+  return request<EmployeeLoanPayment>(
+    `/employees/loans/${loanId}/payments`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function voidEmployeeLoanPayment(
+  token: string,
+  paymentId: number,
+  reason: string,
+): Promise<EmployeeLoanPayment> {
+  return request<EmployeeLoanPayment>(
+    `/employees/loan-payments/${paymentId}/void`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    },
+  );
+}
+
+export async function getEmployeeAccountSummary(
+  token: string,
+  employeeId: number,
+  filters: Pick<EmployeeControlFilters, "date_from" | "date_to"> = {},
+): Promise<EmployeeAccountSummary> {
+  return request<EmployeeAccountSummary>(
+    `/employees/${employeeId}/account-summary${buildEmployeeControlQuery(
+      filters,
+    )}`,
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function listDeliveryRoutes(
@@ -2173,6 +2342,29 @@ function authHeaders(token: string): HeadersInit {
   return {
     Authorization: `Bearer ${token}`,
   };
+}
+
+function buildEmployeeControlQuery(
+  filters: EmployeeLoanPaymentFilters,
+): string {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.employee_id !== undefined) {
+    searchParams.set("employee_id", String(filters.employee_id));
+  }
+  if (filters.loan_id !== undefined) {
+    searchParams.set("loan_id", String(filters.loan_id));
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  const query = searchParams.toString();
+  return query ? `?${query}` : "";
 }
 
 async function getErrorMessage(response: Response): Promise<string> {

@@ -10,8 +10,9 @@ manual, produccion aplicada a inventario, carga de camion, retorno, actividad
 comercial, cierre financiero por ruta, el reporte comparativo de rutas contra
 caja, el registro trazable del dinero de ruta recibido en un cuadre abierto, el
 resumen operativo diario, el reporte mensual operativo de solo lectura y el
-registro administrativo de compras, listas de precios y gastos operativos
-generales con categorías y plantillas recurrentes. El
+registro administrativo de compras, listas de precios, gastos operativos
+generales con categorías y plantillas recurrentes, y control de asistencia,
+anticipos, préstamos y abonos de empleados. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
 por ventas, liquidacion fisica de ruta, consumo de insumos, nomina,
@@ -397,7 +398,39 @@ El modulo base usa la tabla `employees` y los endpoints:
 
 El listado acepta `search`, `is_active`, `employee_type` y `job_position`. La busqueda general consulta nombres, identificacion, telefonos, cargo y tipo interno.
 
-`identification` es unico cuando se registra y permite valores nulos. `base_salary` usa `Numeric(12, 2)` y no admite valores negativos. Los empleados no se eliminan fisicamente: se inactivan y pueden registrar `termination_date`; al reactivarlos se limpia esa fecha. Este modulo no relaciona empleados con usuarios del sistema y no crea anticipos, pagos, roles de pago, nomina, asistencia, rutas, camiones ni datos falsos en seeds.
+`identification` es unico cuando se registra y permite valores nulos.
+`base_salary` usa `Numeric(12, 2)` y no admite valores negativos. Los empleados
+no se eliminan fisicamente: se inactivan y pueden registrar
+`termination_date`; al reactivarlos se limpia esa fecha. El módulo no relaciona
+empleados con usuarios del sistema, rutas o camiones.
+
+## Control administrativo de empleados
+
+Las tablas `employee_attendance`, `employee_advances`, `employee_loans` y
+`employee_loan_payments` agregan el control administrativo del Bloque 48. Los
+endpoints autenticados son:
+
+- `POST|GET /api/v1/employees/attendance`
+- `GET|PATCH /api/v1/employees/attendance/{attendance_id}`
+- `POST|GET /api/v1/employees/advances`
+- `GET /api/v1/employees/advances/{advance_id}`
+- `POST /api/v1/employees/advances/{advance_id}/void`
+- `POST|GET /api/v1/employees/loans`
+- `GET /api/v1/employees/loans/{loan_id}`
+- `POST /api/v1/employees/loans/{loan_id}/void`
+- `POST /api/v1/employees/loans/{loan_id}/payments`
+- `GET /api/v1/employees/loan-payments`
+- `POST /api/v1/employees/loan-payments/{payment_id}/void`
+- `GET /api/v1/employees/{employee_id}/account-summary`
+
+Los montos y horas usan `Numeric`/`Decimal`. Cada empleado admite una sola
+asistencia por fecha. Los anticipos, préstamos y abonos se conservan al
+anularse; anular un abono revierte el saldo del préstamo. No se puede abonar
+por encima del saldo, abonar a préstamos pagados o anulados, ni anular un
+préstamo con pagos activos.
+
+Este control no crea roles de pago ni datos en seeds y no modifica caja,
+bancos, gastos del cuadre o gastos operativos.
 
 ## Rutas de entrega
 

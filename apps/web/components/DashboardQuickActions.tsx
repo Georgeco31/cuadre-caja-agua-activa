@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/employees/control",
+    title: "Control de empleados",
+    description: "Asistencia, anticipos y préstamos de empleados.",
+    primary: false,
+  },
+  {
     href: "/dashboard/operating-expenses",
     title: "Gastos operativos",
     description: "Registrar gastos generales fuera del cuadre diario de caja.",
