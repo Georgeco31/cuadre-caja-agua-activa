@@ -2,6 +2,12 @@ import Link from "next/link";
 
 const actions = [
   {
+    href: "/dashboard/payroll",
+    title: "Roles de pago",
+    description: "Calcular roles de empleados sin modificar caja automáticamente.",
+    primary: false,
+  },
+  {
     href: "/dashboard/employees/control",
     title: "Control de empleados",
     description: "Asistencia, anticipos y préstamos de empleados.",

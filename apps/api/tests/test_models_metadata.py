@@ -26,6 +26,10 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "inventory_stocks",
         "operating_expense_categories",
         "operating_expenses",
+        "payroll_item_advance_deductions",
+        "payroll_item_loan_deductions",
+        "payroll_items",
+        "payroll_runs",
         "products",
         "price_list_items",
         "price_lists",
@@ -116,6 +120,19 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["purchase_items"].c.total_amount,
         Base.metadata.tables["operating_expenses"].c.amount,
         Base.metadata.tables["recurring_operating_expenses"].c.amount,
+        Base.metadata.tables["payroll_runs"].c.gross_total,
+        Base.metadata.tables["payroll_runs"].c.total_deductions,
+        Base.metadata.tables["payroll_runs"].c.net_pay_total,
+        Base.metadata.tables["payroll_items"].c.base_salary_snapshot,
+        Base.metadata.tables["payroll_items"].c.base_salary_amount,
+        Base.metadata.tables["payroll_items"].c.gross_amount,
+        Base.metadata.tables["payroll_items"].c.net_pay_amount,
+        Base.metadata.tables[
+            "payroll_item_advance_deductions"
+        ].c.amount_deducted,
+        Base.metadata.tables[
+            "payroll_item_loan_deductions"
+        ].c.amount_deducted,
     ]
 
     for column in monetary_columns:

@@ -32,8 +32,10 @@ cerrar la validación del anterior.
 - Asistencia y novedades básicas. **Implementado base en el Bloque 48.**
 - Abonos y saldos de préstamos por empleado. **Implementado base en el
   Bloque 48.**
-- Pagos y roles. **Pendiente para el siguiente bloque.**
-- Descuentos de nómina por empleado. **Pendiente para el siguiente bloque.**
+- Roles calculados por período. **Implementado base en el Bloque 49.**
+- Descuentos de anticipos, préstamos y otros conceptos por empleado.
+  **Implementado base en el Bloque 49.**
+- Pago real de nómina y conciliación con caja o bancos. **Pendiente futuro.**
 - Períodos cerrados y trazabilidad de correcciones.
 
 ### D. Producción avanzada
@@ -61,8 +63,9 @@ cerrar la validación del anterior.
 | 46 | Listas de precios por cliente/ruta | Clientes, rutas, productos y ventas |
 | 47 | Gastos operativos generales | Proveedores y reglas de caja/bancos |
 | 48 | Empleados avanzado | Fichas de empleados |
-| 49 | Producción avanzada | Compras, inventario y productos |
-| 50 | Reportes avanzados | Datos estables de los bloques anteriores |
+| 49 | Roles de pago base | Empleados avanzado |
+| 50 | Producción avanzada | Compras, inventario y productos |
+| 51 | Reportes avanzados | Datos estables de los bloques anteriores |
 
 ## Bloque 45 - Compras y proveedores
 
@@ -195,13 +198,17 @@ nómina improvisada.
   fecha y bloqueo de estados incompatibles.
 - Aislamiento de caja, bancos y gastos operativos.
 
-### Pendiente para el siguiente bloque
+### Completado en el Bloque 49
 
 - Frecuencias, redondeos y períodos.
-- Fórmulas legales y conceptos aplicables.
 - Roles de pago calculados en backend.
 - Descuentos de anticipos y préstamos dentro del rol.
-- Pago, anulación y cierre de período.
+- Anulación lógica y liberación de deducciones.
+
+### Pendiente futuro
+
+- Pago real de nómina y cierre formal de período.
+- Fórmulas legales y conceptos aplicables.
 - IESS, décimos, vacaciones, horas extras y comisiones.
 - Privacidad y permisos de información laboral.
 
@@ -210,7 +217,46 @@ nómina improvisada.
 Un período piloto debe poder calcularse, revisarse, pagarse y auditarse sin
 modificar períodos cerrados directamente.
 
-## Bloque 49 - Producción avanzada
+## Bloque 49 - Roles de pago base
+
+**Estado: implementado base.**
+
+### Objetivo
+
+Calcular y congelar roles por período sin convertir el cálculo en un pago ni
+crear movimientos financieros implícitos.
+
+### Base implementada
+
+- Período, fecha de rol, número único, estado activo o anulado y notas.
+- Uno o varios empleados activos por rol, sin duplicados.
+- Snapshots de identidad, cargo, frecuencia y sueldo base.
+- Resumen congelado de asistencia, ausencias, atrasos, permisos, vacaciones,
+  enfermedad y horas del período.
+- Bonos, otros ingresos y otros descuentos manuales.
+- Deducción completa de anticipos activos seleccionados.
+- Deducción parcial de préstamos activos sin superar el saldo visible.
+- Totales de ingresos, descuentos y neto calculados con `Decimal` en backend.
+- Preview sin persistencia, listado, filtros, detalle, resumen por empleado y
+  anulación con motivo.
+- Bloqueo de anticipos y préstamos ya usados en otro rol activo; la anulación
+  libera las referencias.
+- Aislamiento explícito de caja, bancos, gastos, saldos de préstamos, estados
+  de anticipos y pagos reales de nómina.
+
+### Regla base documentada
+
+El sueldo base no se prorratea en este MVP. La asistencia se conserva como
+referencia del período. Para simplificar el control, un préstamo no puede
+aparecer en más de un rol activo, aunque el descuento sea parcial.
+
+### Pendiente futuro
+
+- Pago real, comprobantes, aprobación y cierre formal de períodos.
+- IESS, décimos, vacaciones avanzadas, horas extras, comisiones y retenciones.
+- Exportaciones, firma y privacidad por roles de usuario.
+
+## Bloque 50 - Producción avanzada
 
 ### Objetivo
 
@@ -238,7 +284,7 @@ versión, cantidades y costos usados.
 Un lote piloto debe disminuir insumos, aumentar producto terminado mediante
 la aplicación vigente y producir un costo reproducible.
 
-## Bloque 50 - Reportes avanzados, gráficos y exportación
+## Bloque 51 - Reportes avanzados, gráficos y exportación
 
 ### Objetivo
 
@@ -269,16 +315,17 @@ El mismo filtro debe devolver los mismos totales en API, pantalla, Excel y PDF.
 ```text
 Bloque 45: compras/proveedores
   +--> Bloque 47: gastos con proveedores
-  +--> Bloque 49: costo y consumo de insumos
+  +--> Bloque 50: costo y consumo de insumos
 
 Bloque 46: listas de precios
   +--> mejora ventas y rentabilidad
 
 Bloque 48: empleados avanzado
-  +--> aporta mano de obra al Bloque 49
+  +--> Bloque 49: roles de pago base
+  +--> aporta mano de obra al Bloque 50
 
-Bloques 45-49 estables
-  +--> Bloque 50: reportes confiables
+Bloques 45-50 estables
+  +--> Bloque 51: reportes confiables
 ```
 
 ## Reglas de ejecución del roadmap

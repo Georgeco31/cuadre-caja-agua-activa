@@ -6,7 +6,7 @@ El proyecto inicio como un sistema para ordenar el cierre de caja diario mediant
 
 A partir del Bloque 23, el proyecto evoluciona estrategicamente hacia **Agua Activa ERP**, un sistema interno modular para controlar produccion, inventario, ventas, caja, rutas, empleados, compras, camiones y rentabilidad. El modulo actual de caja se mantiene como el primer modulo funcional del ERP y no se elimina.
 
-En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
+En esta etapa ya existe backend FastAPI con autenticacion JWT, frontend Next.js protegido, modulo operativo de caja, modulos base de clientes, productos, empleados, rutas, vehiculos y proveedores, control administrativo de asistencia, anticipos y préstamos de empleados, roles de pago base, registro comercial de ventas de contado y a credito, cartera de cobros y cuentas por cobrar, inventario base, produccion, carga y retorno de camion, consulta de actividad comercial, cierre financiero asociado a una ruta, compras administrativas, listas de precios, gastos operativos generales y resumen operativo diario de solo lectura.
 
 ## Problema que resuelve
 
@@ -48,6 +48,12 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Asistencia diaria editable y única por empleado y fecha.
 - Anticipos y préstamos administrativos con anulación lógica.
 - Abonos reversibles, saldos pendientes y resumen por empleado.
+- Roles de pago por período con sueldo base, asistencia de referencia, bonos,
+  otros ingresos y descuentos.
+- Deducciones congeladas de anticipos y préstamos sin cambiar sus registros o
+  saldos originales.
+- Vista previa, totales backend, detalle, filtros, resumen por empleado y
+  anulación lógica de roles.
 - Registro, consulta, busqueda y edicion de rutas de entrega.
 - Zonas, sectores, dias de atencion y referencias operativas por ruta.
 - Activacion e inactivacion de rutas sin borrado fisico.
@@ -96,9 +102,10 @@ Quedan fuera del MVP:
 - Aplicacion de compras a inventario, pagos a proveedores y cuentas por pagar
   avanzadas.
 - Conciliacion o movimiento automatico de gastos operativos en caja o bancos.
-- Roles de pago, nómina y cálculos laborales automáticos.
+- Pago real de nómina, IESS, décimos, vacaciones avanzadas, horas extras,
+  comisiones y cálculos laborales legales.
 
-La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 48 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos y control administrativo de empleados. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra o administrar obligaciones de empleados no modifica automaticamente caja, inventario ni bancos.
+La vision ERP documenta esos temas como modulos futuros. Los Bloques 24 al 49 implementan las bases de clientes, productos, empleados, rutas, vehiculos, ventas de contado y a credito, cobros, reportes de cartera, inventario manual, produccion aplicada a inventario, carga, retorno, actividad comercial, cierre financiero de ruta, proveedores, compras administrativas, listas de precios, gastos operativos, control administrativo de empleados y roles de pago base. Registrar una produccion no mueve stock por si solo; una carga o retorno explicito si traslada stock entre ubicaciones. Asociar ventas y abonos a una carga, registrar su cierre financiero, registrar una compra o calcular un rol no modifica automaticamente caja, inventario ni bancos.
 
 ## Stack definido
 
@@ -239,8 +246,11 @@ cuadre-caja-agua-activa/
   automáticos en caja, bancos, compras o inventario.
 - Bloque 48: asistencia, anticipos, préstamos, abonos y saldos por empleado,
   con anulación lógica y sin movimientos automáticos de caja, bancos o gastos.
+- Bloque 49: roles de pago base por período con snapshots, asistencia de
+  referencia, deducciones de anticipos y préstamos, preview, detalle y
+  anulación, sin pago real ni movimientos de caja, bancos o gastos.
 
-Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, roles de pago, nomina, cálculos laborales automáticos, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
+Todavia no se han creado recibos de cobro de clientes, cobros masivos, anticipos de clientes, facturacion electronica, ingreso automatico por denominaciones o conciliacion contable del cierre de ruta con caja o bancos, descuento de inventario por ventas, liquidacion fisica del inventario de ruta, recepcion de compras en inventario, pagos reales a proveedores, cuentas por pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, cálculos laborales legales, mantenimiento, combustible, kilometraje, asignaciones formales, consumo de insumos, mapas, geolocalizacion, exportaciones PDF/Excel, edicion avanzada de ventas, edicion de gastos del cuadre, eliminacion fisica de gastos, cookies ni refresh tokens.
 
 ## Documentacion
 

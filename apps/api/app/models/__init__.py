@@ -16,6 +16,12 @@ from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
 from app.models.operating_expense import OperatingExpense
 from app.models.operating_expense_category import OperatingExpenseCategory
+from app.models.payroll_item import PayrollItem
+from app.models.payroll_item_advance_deduction import (
+    PayrollItemAdvanceDeduction,
+)
+from app.models.payroll_item_loan_deduction import PayrollItemLoanDeduction
+from app.models.payroll_run import PayrollRun
 from app.models.price_list import PriceList
 from app.models.price_list_item import PriceListItem
 from app.models.product import Product
@@ -61,6 +67,10 @@ __all__ = [
     "InventoryStock",
     "OperatingExpense",
     "OperatingExpenseCategory",
+    "PayrollItem",
+    "PayrollItemAdvanceDeduction",
+    "PayrollItemLoanDeduction",
+    "PayrollRun",
     "PriceList",
     "PriceListItem",
     "Product",

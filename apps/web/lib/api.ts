@@ -84,6 +84,15 @@ import type {
   RecurringOperatingExpenseUpdatePayload,
 } from "@/types/operatingExpense";
 import type {
+  EmployeePayrollSummary,
+  PayrollPreview,
+  PayrollPreviewPayload,
+  PayrollRun,
+  PayrollRunFilters,
+  PayrollRunPayload,
+  PayrollRunSummary,
+} from "@/types/payroll";
+import type {
   Product,
   ProductFilters,
   ProductPayload,
@@ -759,6 +768,95 @@ export async function getEmployeeAccountSummary(
     `/employees/${employeeId}/account-summary${buildEmployeeControlQuery(
       filters,
     )}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function previewPayrollRun(
+  token: string,
+  payload: PayrollPreviewPayload,
+): Promise<PayrollPreview> {
+  return request<PayrollPreview>("/payroll/runs/preview", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function createPayrollRun(
+  token: string,
+  payload: PayrollRunPayload,
+): Promise<PayrollRun> {
+  return request<PayrollRun>("/payroll/runs", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function listPayrollRuns(
+  token: string,
+  filters: PayrollRunFilters = {},
+): Promise<PayrollRunSummary[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.employee_id !== undefined) {
+    searchParams.set("employee_id", String(filters.employee_id));
+  }
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  const query = searchParams.toString();
+  return request<PayrollRunSummary[]>(
+    `/payroll/runs${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getPayrollRun(
+  token: string,
+  payrollRunId: number,
+): Promise<PayrollRun> {
+  return request<PayrollRun>(`/payroll/runs/${payrollRunId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function voidPayrollRun(
+  token: string,
+  payrollRunId: number,
+  reason: string,
+): Promise<PayrollRun> {
+  return request<PayrollRun>(`/payroll/runs/${payrollRunId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function getEmployeePayrollSummary(
+  token: string,
+  employeeId: number,
+  filters: Pick<PayrollRunFilters, "date_from" | "date_to"> = {},
+): Promise<EmployeePayrollSummary> {
+  const searchParams = new URLSearchParams();
+  if (filters.date_from) {
+    searchParams.set("date_from", filters.date_from);
+  }
+  if (filters.date_to) {
+    searchParams.set("date_to", filters.date_to);
+  }
+  const query = searchParams.toString();
+  return request<EmployeePayrollSummary>(
+    `/employees/${employeeId}/payroll-summary${query ? `?${query}` : ""}`,
     { headers: authHeaders(token) },
   );
 }

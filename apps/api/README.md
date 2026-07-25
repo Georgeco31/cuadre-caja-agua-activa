@@ -11,11 +11,11 @@ comercial, cierre financiero por ruta, el reporte comparativo de rutas contra
 caja, el registro trazable del dinero de ruta recibido en un cuadre abierto, el
 resumen operativo diario, el reporte mensual operativo de solo lectura y el
 registro administrativo de compras, listas de precios, gastos operativos
-generales con categorías y plantillas recurrentes, y control de asistencia,
-anticipos, préstamos y abonos de empleados. El
+generales con categorías y plantillas recurrentes, control de asistencia,
+anticipos, préstamos y abonos de empleados, y roles de pago base. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
-por ventas, liquidacion fisica de ruta, consumo de insumos, nomina,
+por ventas, liquidacion fisica de ruta, consumo de insumos, pago real de nomina,
 mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
@@ -266,7 +266,10 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
-Los endpoints de cuadres, denominaciones, reportes, clientes, productos, proveedores, compras, empleados, rutas, vehiculos, ventas y cobros requieren el header `Authorization: Bearer ...`. Este bloque no implementa cookies, refresh tokens ni registro publico.
+Los endpoints de cuadres, denominaciones, reportes, clientes, productos,
+proveedores, compras, empleados, roles de pago, rutas, vehiculos, ventas y
+cobros requieren el header `Authorization: Bearer ...`. Este bloque no
+implementa cookies, refresh tokens ni registro publico.
 
 ## Clientes
 
@@ -429,8 +432,35 @@ anularse; anular un abono revierte el saldo del préstamo. No se puede abonar
 por encima del saldo, abonar a préstamos pagados o anulados, ni anular un
 préstamo con pagos activos.
 
-Este control no crea roles de pago ni datos en seeds y no modifica caja,
-bancos, gastos del cuadre o gastos operativos.
+Este control no crea datos en seeds y no modifica caja, bancos, gastos del
+cuadre o gastos operativos.
+
+## Roles de pago base
+
+Las tablas `payroll_runs`, `payroll_items`,
+`payroll_item_advance_deductions` y `payroll_item_loan_deductions` congelan el
+cálculo administrativo del Bloque 49. Los endpoints autenticados son:
+
+- `POST /api/v1/payroll/runs/preview`
+- `POST /api/v1/payroll/runs`
+- `GET /api/v1/payroll/runs`
+- `GET /api/v1/payroll/runs/{payroll_run_id}`
+- `POST /api/v1/payroll/runs/{payroll_run_id}/void`
+- `GET /api/v1/employees/{employee_id}/payroll-summary`
+
+El preview no persiste datos. Al crear, el backend usa el sueldo base completo
+del empleado sin prorratearlo, conserva la asistencia del período como
+referencia y calcula ingresos, descuentos y neto con `Decimal`/`Numeric`. El
+neto negativo se bloquea.
+
+Los anticipos seleccionados se descuentan completos. Los préstamos admiten un
+monto parcial, pero la regla simple del MVP impide usar el mismo préstamo en
+más de un rol activo. Los anticipos tampoco pueden repetirse en roles activos.
+Anular el rol libera ambas referencias para roles futuros.
+
+Crear o anular un rol no modifica `employee_advances`, `employee_loans`, no
+crea `employee_loan_payments`, no paga sueldos y no crea movimientos de caja,
+banco, gastos del cuadre o gastos operativos.
 
 ## Rutas de entrega
 

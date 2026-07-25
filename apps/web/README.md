@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos y préstamos, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, liquidacion fisica de inventario de ruta, consumo de insumos, roles de pago o nomina, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo de insumos, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -62,6 +62,7 @@ Rutas principales:
 - `/dashboard/operating-expenses`
 - `/dashboard/employees`
 - `/dashboard/employees/control`
+- `/dashboard/payroll`
 - `/dashboard/delivery-routes`
 - `/dashboard/vehicles`
 - `/dashboard/inventory`
@@ -105,7 +106,7 @@ http://localhost:3000/login
 - El dashboard ofrece acceso a `/dashboard/monthly-summary` para consultar el comportamiento operativo de un mes completo.
 - El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, control de empleados, rutas, vehiculos, inventario, produccion, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, control de empleados, roles de pago, rutas, vehiculos, inventario, produccion, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -188,8 +189,18 @@ http://localhost:3000/login
 - La asistencia puede registrarse y editarse. Los anticipos, préstamos y abonos
   se anulan con motivo y permanecen visibles en el historial.
 - Después de cada alta o anulación la pantalla vuelve a consultar los importes
-  oficiales del backend. Este módulo no modifica caja, bancos o gastos y no
-  genera roles de pago, nómina, IESS, décimos ni vacaciones.
+  oficiales del backend. Este módulo no modifica caja, bancos o gastos.
+- La pantalla `/dashboard/payroll` permite seleccionar período y empleados
+  activos, capturar bonos, otros ingresos y descuentos, elegir anticipos y
+  definir descuentos parciales de préstamos.
+- La vista previa y los totales oficiales se calculan en
+  `POST /api/v1/payroll/runs/preview`. La creación congela datos del empleado,
+  asistencia e importes mediante `POST /api/v1/payroll/runs`.
+- El historial permite filtrar, consultar detalle y anular con motivo. Anular
+  libera anticipos y préstamos para un rol futuro porque solo los roles activos
+  bloquean su reutilización.
+- El módulo base no paga nómina, no cambia anticipos o saldos de préstamos y no
+  crea movimientos de caja, banco o gastos operativos.
 - La pantalla `/dashboard/delivery-routes` lista rutas desde `GET /api/v1/delivery-routes` y permite buscar por nombre, codigo, zona, sector o dias de atencion.
 - El alta usa `POST /api/v1/delivery-routes` y la edicion usa `PATCH /api/v1/delivery-routes/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/delivery-routes/{id}/deactivate` y `PATCH /api/v1/delivery-routes/{id}/activate`; no se eliminan rutas fisicamente.
@@ -257,7 +268,7 @@ El uso de `localStorage` es una solución simple para desarrollo. No reemplaza u
 ## Auditoria general del Bloque 44
 
 El inventario auditado de rutas web y endpoints relacionados esta en
-`../../docs/13-auditoria-general-erp.md`. Existen 32 paginas `page.tsx`,
+`../../docs/13-auditoria-general-erp.md`. Existen 33 paginas `page.tsx`,
 incluidas `/`, `/login` y las rutas del dashboard documentadas arriba.
 
 Para el piloto:
