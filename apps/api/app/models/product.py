@@ -40,6 +40,12 @@ class Product(Base):
             "cost_estimate >= 0",
             name="ck_products_cost_estimate_nonnegative",
         ),
+        CheckConstraint(
+            "product_kind IN "
+            "('finished_good', 'raw_material', 'supply', 'packaging', "
+            "'service', 'other')",
+            name="ck_products_product_kind",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -63,6 +69,13 @@ class Product(Base):
         nullable=False,
         server_default="0.00",
     )
+    product_kind: Mapped[str] = mapped_column(
+        String(30),
+        nullable=False,
+        server_default="finished_good",
+        index=True,
+    )
+    production_notes: Mapped[str | None] = mapped_column(Text)
     is_returnable_container: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,

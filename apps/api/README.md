@@ -12,10 +12,11 @@ caja, el registro trazable del dinero de ruta recibido en un cuadre abierto, el
 resumen operativo diario, el reporte mensual operativo de solo lectura y el
 registro administrativo de compras, listas de precios, gastos operativos
 generales con categorías y plantillas recurrentes, control de asistencia,
-anticipos, préstamos y abonos de empleados, y roles de pago base. El
+anticipos, préstamos y abonos de empleados, roles de pago base, clasificacion
+productiva y formulas con costos estimados. El
 frontend vive en `apps/web`. Todavia no incluye conciliacion automatica,
 ingreso automatico por denominaciones, cobros masivos, inventario automatico
-por ventas, liquidacion fisica de ruta, consumo de insumos, pago real de nomina,
+por ventas, liquidacion fisica de ruta, consumo automatico de insumos, pago real de nomina,
 mantenimiento, combustible, cookies ni refresh tokens.
 
 ## Requisitos
@@ -294,12 +295,20 @@ El catalogo base usa la tabla `products` y los endpoints:
 - `GET /api/v1/products`
 - `GET /api/v1/products/{product_id}`
 - `PATCH /api/v1/products/{product_id}`
+- `PATCH /api/v1/products/{product_id}/production-classification`
 - `PATCH /api/v1/products/{product_id}/deactivate`
 - `PATCH /api/v1/products/{product_id}/activate`
 
-El listado acepta `search`, `is_active`, `category` y `unit`. La busqueda general consulta nombre, SKU, categoria y presentacion.
+El listado acepta `search`, `is_active`, `category`, `unit` y `product_kind`.
+La busqueda general consulta nombre, SKU, categoria y presentacion.
 
-`sku` es unico cuando se registra. `default_price` y `cost_estimate` usan `Numeric(12, 2)` y no admiten valores negativos. Los productos no se eliminan fisicamente: se inactivan y reactivan mediante `is_active`. Este modulo no crea ventas, inventario, produccion, historial de precios, precios especiales ni productos falsos en seeds.
+`product_kind` clasifica el producto como `finished_good`, `raw_material`,
+`supply`, `packaging`, `service` u `other`; los productos existentes quedan
+como `finished_good`. `sku` es unico cuando se registra. `default_price` y
+`cost_estimate` usan `Numeric(12, 2)` y no admiten valores negativos. Los
+productos no se eliminan fisicamente: se inactivan y reactivan mediante
+`is_active`. La clasificacion no crea ventas, movimientos, producciones ni
+datos falsos.
 
 ## Proveedores y compras base
 
@@ -592,6 +601,39 @@ Cada produccion exige una fecha y al menos un producto existente y activo. El ba
 La migracion `0013_prod_inventory` agrega `production_inventory_applications` y `production_inventory_application_items`. Crear una produccion sigue sin modificar inventario. La accion `apply-inventory` exige una ubicacion activa, calcula `quantity_produced - quantity_waste`, omite items con neto cero y crea entradas y stock en una sola transaccion. Solo puede existir una aplicacion activa por lote.
 
 La anulacion de una aplicacion exige motivo, anula sus movimientos y revierte el stock sin permitir cantidades negativas. Todos los registros se conservan. Un lote con aplicacion activa no puede anularse hasta revertirla; un movimiento vinculado tampoco puede anularse directamente desde inventario mientras la aplicacion siga activa. Los seeds no crean producciones ni aplicaciones falsas y este flujo no modifica caja, ventas, cobros o rutas.
+
+## Formulas y costos estimados de produccion
+
+La migracion `0024_recipes` agrega la clasificacion productiva a `products` y
+crea `production_recipes` y `production_recipe_items`. Cantidades, costos y
+porcentajes se procesan con `Decimal` y columnas `Numeric`; los items conservan
+snapshots de SKU, nombre, clasificacion y presentacion.
+
+Endpoints autenticados:
+
+- `POST /api/v1/production/recipes`
+- `GET /api/v1/production/recipes`
+- `GET /api/v1/production/recipes/{recipe_id}`
+- `PATCH /api/v1/production/recipes/{recipe_id}`
+- `PATCH /api/v1/production/recipes/{recipe_id}/activate`
+- `PATCH /api/v1/production/recipes/{recipe_id}/deactivate`
+- `POST /api/v1/production/recipes/{recipe_id}/void`
+- `POST /api/v1/production/recipes/{recipe_id}/items`
+- `PATCH /api/v1/production/recipe-items/{item_id}`
+- `PATCH /api/v1/production/recipe-items/{item_id}/deactivate`
+- `PATCH /api/v1/production/recipe-items/{item_id}/activate`
+- `GET /api/v1/production/recipes/{recipe_id}/cost-estimate`
+
+El backend calcula `total_cost`, `estimated_material_cost` y
+`estimated_cost_per_unit`; el estimador puede escalar cantidades y costos para
+otra cantidad de salida. Una formula se crea inactiva, puede existir sin items,
+pero necesita al menos un item activo para activarse. Formulas e items se
+anulan o desactivan sin borrado fisico.
+
+Este modulo es exclusivamente informativo: no modifica stock, no crea
+`inventory_movements`, no cambia caja, compras, ventas o producciones
+existentes y no actualiza automaticamente el costo del producto terminado.
+Los seeds no crean formulas ni items.
 
 ## Carga de camion
 

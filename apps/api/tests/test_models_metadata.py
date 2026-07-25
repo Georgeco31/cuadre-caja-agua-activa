@@ -37,6 +37,8 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "production_inventory_application_items",
         "production_inventory_applications",
         "production_items",
+        "production_recipe_items",
+        "production_recipes",
         "purchase_items",
         "purchases",
         "recurring_operating_expenses",
@@ -92,6 +94,13 @@ def test_money_columns_use_numeric() -> None:
         Base.metadata.tables["inventory_movements"].c.total_cost,
         Base.metadata.tables["production_items"].c.quantity_produced,
         Base.metadata.tables["production_items"].c.quantity_waste,
+        Base.metadata.tables["production_recipes"].c.output_quantity,
+        Base.metadata.tables["production_recipes"].c.estimated_material_cost,
+        Base.metadata.tables["production_recipes"].c.estimated_cost_per_unit,
+        Base.metadata.tables["production_recipe_items"].c.quantity_required,
+        Base.metadata.tables["production_recipe_items"].c.unit_cost,
+        Base.metadata.tables["production_recipe_items"].c.total_cost,
+        Base.metadata.tables["production_recipe_items"].c.waste_percentage,
         Base.metadata.tables[
             "production_inventory_application_items"
         ].c.quantity_applied,
@@ -237,6 +246,20 @@ def test_required_foreign_keys_are_defined() -> None:
     assert _foreign_key_targets("production_items", "product_id") == {
         "products.id",
     }
+    assert _foreign_key_targets("production_recipes", "output_product_id") == {
+        "products.id",
+    }
+    assert _foreign_key_targets("production_recipes", "created_by") == {
+        "users.id",
+    }
+    assert _foreign_key_targets(
+        "production_recipe_items",
+        "recipe_id",
+    ) == {"production_recipes.id"}
+    assert _foreign_key_targets(
+        "production_recipe_items",
+        "input_product_id",
+    ) == {"products.id"}
     assert _foreign_key_targets(
         "production_inventory_applications",
         "production_batch_id",
@@ -413,6 +436,7 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_products_cost_estimate_nonnegative",
         "ck_products_default_price_nonnegative",
         "ck_products_name_not_blank",
+        "ck_products_product_kind",
         "ck_products_unit",
     }
     assert _check_constraint_names("employees") == {
@@ -522,6 +546,22 @@ def test_model_check_constraints_are_registered() -> None:
         "ck_production_items_quantity_produced_positive",
         "ck_production_items_quantity_waste_nonnegative",
         "ck_production_items_waste_not_greater_than_produced",
+    }
+    assert _check_constraint_names("production_recipes") == {
+        "ck_production_recipes_costs_nonnegative",
+        "ck_production_recipes_name_not_blank",
+        "ck_production_recipes_number_not_blank",
+        "ck_production_recipes_output_quantity_positive",
+        "ck_production_recipes_status",
+        "ck_production_recipes_valid_dates",
+        "ck_production_recipes_void_state",
+    }
+    assert _check_constraint_names("production_recipe_items") == {
+        "ck_production_recipe_items_costs_nonnegative",
+        "ck_production_recipe_items_kind_snapshot",
+        "ck_production_recipe_items_name_snapshot_not_blank",
+        "ck_production_recipe_items_quantity_positive",
+        "ck_production_recipe_items_waste_nonnegative",
     }
     assert _check_constraint_names("production_inventory_applications") == {
         "ck_production_inventory_applications_status",

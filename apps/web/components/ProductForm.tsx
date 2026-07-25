@@ -4,9 +4,11 @@ import { useState, type FormEvent } from "react";
 
 import {
   PRODUCT_CATEGORY_LABELS,
+  PRODUCT_KIND_LABELS,
   PRODUCT_UNIT_LABELS,
   type Product,
   type ProductCategory,
+  type ProductKind,
   type ProductPayload,
   type ProductUnit,
 } from "@/types/product";
@@ -27,12 +29,15 @@ type ProductFormValues = {
   presentation: string;
   defaultPrice: string;
   costEstimate: string;
+  productKind: ProductKind;
+  productionNotes: string;
   isReturnableContainer: boolean;
   notes: string;
 };
 
 const categories = Object.keys(PRODUCT_CATEGORY_LABELS) as ProductCategory[];
 const units = Object.keys(PRODUCT_UNIT_LABELS) as ProductUnit[];
+const productKinds = Object.keys(PRODUCT_KIND_LABELS) as ProductKind[];
 
 export function ProductForm({
   product = null,
@@ -80,6 +85,8 @@ export function ProductForm({
       presentation: optionalText(values.presentation),
       default_price: defaultPrice,
       cost_estimate: costEstimate,
+      product_kind: values.productKind,
+      production_notes: optionalText(values.productionNotes),
       is_returnable_container: values.isReturnableContainer,
       notes: optionalText(values.notes),
     });
@@ -157,6 +164,18 @@ export function ProductForm({
             disabled={isSubmitting}
             onChange={(value) => setValues({ ...values, costEstimate: value })}
           />
+          <SelectField
+            label="Clasificación de producción"
+            value={values.productKind}
+            disabled={isSubmitting}
+            options={productKinds.map((productKind) => ({
+              value: productKind,
+              label: PRODUCT_KIND_LABELS[productKind],
+            }))}
+            onChange={(value) =>
+              setValues({ ...values, productKind: value as ProductKind })
+            }
+          />
         </div>
 
         <label className="block">
@@ -185,6 +204,20 @@ export function ProductForm({
             }
           />
           Envase retornable
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">
+            Notas de producción
+          </span>
+          <textarea
+            className="mt-1 min-h-20 w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100 disabled:cursor-not-allowed disabled:bg-slate-100"
+            value={values.productionNotes}
+            disabled={isSubmitting}
+            onChange={(event) =>
+              setValues({ ...values, productionNotes: event.target.value })
+            }
+          />
         </label>
 
         <label className="block">
@@ -318,6 +351,8 @@ function buildInitialValues(product: Product | null): ProductFormValues {
     presentation: product?.presentation ?? "",
     defaultPrice: product?.default_price ?? "0.00",
     costEstimate: product?.cost_estimate ?? "0.00",
+    productKind: product?.product_kind ?? "finished_good",
+    productionNotes: product?.production_notes ?? "",
     isReturnableContainer: product?.is_returnable_container ?? false,
     notes: product?.notes ?? "",
   };

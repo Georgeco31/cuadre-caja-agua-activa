@@ -5,6 +5,8 @@ from app.api.deps import get_current_user, get_db
 from app.schemas.product import (
     ProductCategory,
     ProductCreate,
+    ProductKind,
+    ProductProductionClassificationUpdate,
     ProductRead,
     ProductUnit,
     ProductUpdate,
@@ -35,6 +37,7 @@ def list_products(
     is_active: bool | None = None,
     category: ProductCategory | None = None,
     unit: ProductUnit | None = None,
+    product_kind: ProductKind | None = None,
     db: Session = Depends(get_db),
 ):
     return product_service.list_products(
@@ -43,6 +46,7 @@ def list_products(
         is_active=is_active,
         category=category,
         unit=unit,
+        product_kind=product_kind,
     )
 
 
@@ -62,6 +66,25 @@ def update_product(
 ):
     try:
         return product_service.update_product(db, product_id, payload)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.patch(
+    "/{product_id}/production-classification",
+    response_model=ProductRead,
+)
+def update_product_production_classification(
+    product_id: int,
+    payload: ProductProductionClassificationUpdate,
+    db: Session = Depends(get_db),
+):
+    try:
+        return product_service.update_production_classification(
+            db,
+            product_id,
+            payload,
+        )
     except ValueError as error:
         raise _http_error(error) from error
 

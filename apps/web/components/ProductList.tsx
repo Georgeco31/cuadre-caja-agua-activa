@@ -1,5 +1,6 @@
 import {
   PRODUCT_CATEGORY_LABELS,
+  PRODUCT_KIND_LABELS,
   PRODUCT_UNIT_LABELS,
   type Product,
 } from "@/types/product";
@@ -36,12 +37,13 @@ export function ProductList({
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1240px] border-collapse text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">Producto</th>
                 <th className="px-4 py-3 font-medium">Presentación</th>
                 <th className="px-4 py-3 font-medium">Categoría</th>
+                <th className="px-4 py-3 font-medium">Producción</th>
                 <th className="px-4 py-3 font-medium">Precio base</th>
                 <th className="px-4 py-3 font-medium">Costo estimado</th>
                 <th className="px-4 py-3 font-medium">Retornable</th>
@@ -74,6 +76,14 @@ export function ProductList({
                     </td>
                     <td className="px-4 py-3 align-top text-slate-700">
                       {PRODUCT_CATEGORY_LABELS[product.category]}
+                    </td>
+                    <td className="px-4 py-3 align-top text-slate-700">
+                      <p>{PRODUCT_KIND_LABELS[product.product_kind]}</p>
+                      {product.production_notes ? (
+                        <p className="mt-1 max-w-56 text-xs text-slate-500">
+                          {product.production_notes}
+                        </p>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3 align-top font-medium text-slate-950">
                       {formatMoney(product.default_price)}

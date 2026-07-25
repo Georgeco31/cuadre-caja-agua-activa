@@ -10,7 +10,7 @@
 | Pendiente | Está planificado y tiene dependencias identificadas |
 | No implementado | No existe modelo, endpoint ni pantalla funcional del módulo |
 
-La valoración corresponde al corte del Bloque 49. “Implementado” no significa
+La valoración corresponde al corte del Bloque 50. “Implementado” no significa
 que el módulo pueda operar sin conciliación, backup o control manual.
 
 ## Matriz
@@ -19,7 +19,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 | --- | --- | --- | --- | --- | --- |
 | 1. Caja y bancos | Parcial | Cuadre diario, denominaciones, conteos, gastos de caja, cierre, historial, correcciones, resumen y comparación con rutas | Bancos, conciliación, saldo inicial, múltiples cajas/turnos, ingreso automático y gastos generales | Alta | Alto: caja no se concilia automáticamente con ventas, cobros o bancos |
 | 2. Clientes | Implementado base | Alta, consulta, filtros, edición, activación/inactivación, crédito habilitado y límite | Historial de cambios, contactos avanzados, documentos, anticipos y segmentación comercial completa | Media | Medio: cambios de maestro no tienen auditoría general |
-| 3. Productos y precios | Parcial | Catálogo, SKU, presentación, precio base, costo estimado, retornabilidad y estado | Listas por cliente/ruta, vigencias, promociones, reglas de precedencia y costos reales | Alta | Alto: el precio especial depende de captura manual |
+| 3. Productos y precios | Implementado base | Catálogo, SKU, presentación, precio base, costo estimado, retornabilidad, estado, clasificación productiva y listas por cliente/ruta | Promociones, historial general de cambios y costos reales | Alta | Medio: el costo del catálogo sigue siendo estimado y no se actualiza desde producción |
 | 4. Ventas | Implementado base | Contado, crédito, múltiples ítems, snapshots, totales backend, filtros, detalle, vínculo opcional a carga y anulación | Facturación, edición controlada, devoluciones, descuentos formales y descarga automática de inventario | Alta | Alto: venta registrada no disminuye stock |
 | 5. Créditos, cobros y abonos | Implementado avanzado | Límite, saldo, abonos parciales/totales, anulación reversible, cartera, vencidos y estado de cuenta | Recibos formales, cobros masivos, anticipos, refinanciación y conciliación bancaria | Alta | Alto: requiere comparación externa de comprobantes y efectivo |
 | 6. Inventario | Implementado base | Ubicaciones, stock, entradas, salidas, ajustes, costos opcionales, anulación, producción, carga y retorno vinculados | Kardex/valoración avanzada, conteos físicos, transferencias generales y descarga por ventas | Alta | Alto: omitir un movimiento explícito deja módulos desalineados |
@@ -28,7 +28,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 | 9. Gastos operativos | Implementado base | Gastos generales fuera de caja, categorías, proveedor opcional, estados y métodos informativos, vencimientos, edición activa, anulación, plantillas manuales y resumen agrupado | Subcategorías, centros de costo, pagos parciales reales, cuentas por pagar, adjuntos y conciliación explícita con caja/bancos | Alta | Medio: existe control administrativo, pero el movimiento real de dinero se concilia fuera del módulo |
 | 10. Empleados, anticipos y roles | Implementado base | Ficha base, alta/baja, asistencia diaria, anticipos, préstamos, abonos, saldos, roles por período, snapshots, deducciones seleccionadas, preview, detalle, resumen por empleado y anulaciones lógicas | Pago real de nómina, cierre formal de períodos, IESS, décimos, vacaciones avanzadas, horas extras, comisiones, retenciones, aprobación y permisos | Alta | Medio: el cálculo queda congelado, pero el pago y movimiento real de dinero siguen fuera del sistema |
 | 11. Camiones y mantenimiento | Parcial | Vehículos, placa, tipo, capacidad, combustible referencial, estado y uso en cargas | Mantenimiento, combustible consumido, kilometraje, asignaciones, documentos, costos y rentabilidad | Media | Medio: no hay alerta de mantenimiento ni costo real por vehículo |
-| 12. Producción o envasado | Implementado base | Lotes, cantidades, merma, snapshots, anulación y aplicación reversible a inventario | Insumos, materia prima, fórmulas, consumo, lotes de insumo, mano de obra y costeo | Alta | Alto: se conoce cantidad producida, no costo real completo |
+| 12. Producción o envasado | Implementado base | Lotes, cantidades, merma, snapshots, anulación, aplicación reversible a inventario, clasificación de insumos, fórmulas y costos estimados escalables | Consumo real de insumos, fórmula aplicada por lote, lotes de materia prima, mano de obra, costos indirectos y costeo contable | Alta | Alto: la fórmula es informativa y no descuenta insumos ni determina costo real |
 | 13. Reportes gerenciales | Parcial | Caja acumulada, cartera, estado de cuenta, rutas vs caja, resumen diario y mensual | Gráficos, Excel/PDF, indicadores, rentabilidad, comparativos avanzados y programación | Media | Medio: decisiones gerenciales requieren consolidación externa |
 
 ## Lectura por prioridad
@@ -39,7 +39,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 - Listas de precios.
 - Madurez de gastos operativos: centros de costo, pagos reales y conciliación.
 - Pago real de nómina y obligaciones laborales avanzadas.
-- Producción con insumos y costos.
+- Consumo trazable de insumos y costos reales de producción.
 - Automatizaciones y conciliaciones que hoy dependen del operador.
 
 ### Prioridad media

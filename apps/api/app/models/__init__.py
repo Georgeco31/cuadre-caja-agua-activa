@@ -27,6 +27,8 @@ from app.models.price_list_item import PriceListItem
 from app.models.product import Product
 from app.models.production_batch import ProductionBatch
 from app.models.production_item import ProductionItem
+from app.models.production_recipe import ProductionRecipe
+from app.models.production_recipe_item import ProductionRecipeItem
 from app.models.production_inventory_application import (
     ProductionInventoryApplication,
 )
@@ -76,6 +78,8 @@ __all__ = [
     "Product",
     "ProductionBatch",
     "ProductionItem",
+    "ProductionRecipe",
+    "ProductionRecipeItem",
     "ProductionInventoryApplication",
     "ProductionInventoryApplicationItem",
     "Purchase",

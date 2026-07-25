@@ -96,8 +96,19 @@ import type {
   Product,
   ProductFilters,
   ProductPayload,
+  ProductProductionClassificationPayload,
   ProductUpdatePayload,
 } from "@/types/product";
+import type {
+  ProductionRecipe,
+  ProductionRecipeCostEstimate,
+  ProductionRecipeFilters,
+  ProductionRecipeItem,
+  ProductionRecipeItemPayload,
+  ProductionRecipeItemUpdatePayload,
+  ProductionRecipePayload,
+  ProductionRecipeUpdatePayload,
+} from "@/types/productionRecipe";
 import type {
   PriceList,
   PriceListFilters,
@@ -1031,6 +1042,9 @@ export async function listProducts(
   if (filters.unit) {
     searchParams.set("unit", filters.unit);
   }
+  if (filters.product_kind) {
+    searchParams.set("product_kind", filters.product_kind);
+  }
 
   const query = searchParams.toString();
   return request<Product[]>(`/products${query ? `?${query}` : ""}`, {
@@ -1068,6 +1082,172 @@ export async function updateProduct(
     headers: authHeaders(token),
     body: JSON.stringify(payload),
   });
+}
+
+export async function updateProductProductionClassification(
+  token: string,
+  productId: number,
+  payload: ProductProductionClassificationPayload,
+): Promise<Product> {
+  return request<Product>(
+    `/products/${productId}/production-classification`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function listProductionRecipes(
+  token: string,
+  filters: ProductionRecipeFilters = {},
+): Promise<ProductionRecipe[]> {
+  const searchParams = new URLSearchParams();
+  if (filters.search) {
+    searchParams.set("search", filters.search);
+  }
+  if (filters.status) {
+    searchParams.set("status", filters.status);
+  }
+  if (filters.output_product_id !== undefined) {
+    searchParams.set(
+      "output_product_id",
+      String(filters.output_product_id),
+    );
+  }
+  if (filters.product_kind) {
+    searchParams.set("product_kind", filters.product_kind);
+  }
+  if (filters.is_valid_today !== undefined) {
+    searchParams.set("is_valid_today", String(filters.is_valid_today));
+  }
+  const query = searchParams.toString();
+  return request<ProductionRecipe[]>(
+    `/production/recipes${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getProductionRecipe(
+  token: string,
+  recipeId: number,
+): Promise<ProductionRecipe> {
+  return request<ProductionRecipe>(`/production/recipes/${recipeId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createProductionRecipe(
+  token: string,
+  payload: ProductionRecipePayload,
+): Promise<ProductionRecipe> {
+  return request<ProductionRecipe>("/production/recipes", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateProductionRecipe(
+  token: string,
+  recipeId: number,
+  payload: ProductionRecipeUpdatePayload,
+): Promise<ProductionRecipe> {
+  return request<ProductionRecipe>(`/production/recipes/${recipeId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function setProductionRecipeActive(
+  token: string,
+  recipeId: number,
+  isActive: boolean,
+): Promise<ProductionRecipe> {
+  return request<ProductionRecipe>(
+    `/production/recipes/${recipeId}/${
+      isActive ? "activate" : "deactivate"
+    }`,
+    { method: "PATCH", headers: authHeaders(token) },
+  );
+}
+
+export async function voidProductionRecipe(
+  token: string,
+  recipeId: number,
+  reason: string,
+): Promise<ProductionRecipe> {
+  return request<ProductionRecipe>(
+    `/production/recipes/${recipeId}/void`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    },
+  );
+}
+
+export async function createProductionRecipeItem(
+  token: string,
+  recipeId: number,
+  payload: ProductionRecipeItemPayload,
+): Promise<ProductionRecipeItem> {
+  return request<ProductionRecipeItem>(
+    `/production/recipes/${recipeId}/items`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function updateProductionRecipeItem(
+  token: string,
+  itemId: number,
+  payload: ProductionRecipeItemUpdatePayload,
+): Promise<ProductionRecipeItem> {
+  return request<ProductionRecipeItem>(
+    `/production/recipe-items/${itemId}`,
+    {
+      method: "PATCH",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function setProductionRecipeItemActive(
+  token: string,
+  itemId: number,
+  isActive: boolean,
+): Promise<ProductionRecipeItem> {
+  return request<ProductionRecipeItem>(
+    `/production/recipe-items/${itemId}/${
+      isActive ? "activate" : "deactivate"
+    }`,
+    { method: "PATCH", headers: authHeaders(token) },
+  );
+}
+
+export async function getProductionRecipeCostEstimate(
+  token: string,
+  recipeId: number,
+  outputQuantity?: string,
+): Promise<ProductionRecipeCostEstimate> {
+  const searchParams = new URLSearchParams();
+  if (outputQuantity) {
+    searchParams.set("output_quantity", outputQuantity);
+  }
+  const query = searchParams.toString();
+  return request<ProductionRecipeCostEstimate>(
+    `/production/recipes/${recipeId}/cost-estimate${
+      query ? `?${query}` : ""
+    }`,
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function deactivateProduct(

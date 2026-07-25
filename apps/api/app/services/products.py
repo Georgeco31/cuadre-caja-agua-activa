@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 
 from app.models.product import Product
 from app.repositories import products
-from app.schemas.product import ProductCreate, ProductUpdate
+from app.schemas.product import (
+    ProductCreate,
+    ProductProductionClassificationUpdate,
+    ProductUpdate,
+)
 
 
 def create_product(db: Session, payload: ProductCreate) -> Product:
@@ -21,6 +25,7 @@ def list_products(
     is_active: bool | None = None,
     category: str | None = None,
     unit: str | None = None,
+    product_kind: str | None = None,
 ) -> list[Product]:
     return products.list_products(
         db=db,
@@ -28,6 +33,7 @@ def list_products(
         is_active=is_active,
         category=category,
         unit=unit,
+        product_kind=product_kind,
     )
 
 
@@ -68,6 +74,17 @@ def deactivate_product(db: Session, product_id: int) -> Product:
 def activate_product(db: Session, product_id: int) -> Product:
     product = get_product(db, product_id)
     products.set_product_active(db, product, True)
+    _commit_product(db, product)
+    return product
+
+
+def update_production_classification(
+    db: Session,
+    product_id: int,
+    payload: ProductProductionClassificationUpdate,
+) -> Product:
+    product = get_product(db, product_id)
+    products.update_product(db, product, payload.model_dump(exclude_unset=True))
     _commit_product(db, product)
     return product
 

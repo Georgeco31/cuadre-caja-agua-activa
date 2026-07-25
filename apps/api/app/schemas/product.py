@@ -21,6 +21,14 @@ ProductUnit = Literal[
     "container",
     "other",
 ]
+ProductKind = Literal[
+    "finished_good",
+    "raw_material",
+    "supply",
+    "packaging",
+    "service",
+    "other",
+]
 
 
 class ProductCreate(BaseModel):
@@ -41,6 +49,8 @@ class ProductCreate(BaseModel):
         max_digits=12,
         decimal_places=2,
     )
+    product_kind: ProductKind = "finished_good"
+    production_notes: str | None = None
     is_returnable_container: bool = False
     notes: str | None = None
 
@@ -49,7 +59,13 @@ class ProductCreate(BaseModel):
     def validate_name(cls, value: str) -> str:
         return _normalize_required_text(value, "El nombre del producto es obligatorio.")
 
-    @field_validator("sku", "description", "presentation", "notes")
+    @field_validator(
+        "sku",
+        "description",
+        "presentation",
+        "production_notes",
+        "notes",
+    )
     @classmethod
     def normalize_optional_text(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)
@@ -74,6 +90,8 @@ class ProductUpdate(BaseModel):
         max_digits=12,
         decimal_places=2,
     )
+    product_kind: ProductKind | None = None
+    production_notes: str | None = None
     is_returnable_container: bool | None = None
     notes: str | None = None
 
@@ -84,7 +102,13 @@ class ProductUpdate(BaseModel):
             return None
         return _normalize_required_text(value, "El nombre del producto es obligatorio.")
 
-    @field_validator("sku", "description", "presentation", "notes")
+    @field_validator(
+        "sku",
+        "description",
+        "presentation",
+        "production_notes",
+        "notes",
+    )
     @classmethod
     def normalize_optional_text(cls, value: str | None) -> str | None:
         return _normalize_optional_text(value)
@@ -97,6 +121,7 @@ class ProductUpdate(BaseModel):
             "unit": self.unit,
             "default_price": self.default_price,
             "cost_estimate": self.cost_estimate,
+            "product_kind": self.product_kind,
             "is_returnable_container": self.is_returnable_container,
         }
         for field_name, value in required_fields.items():
@@ -115,6 +140,8 @@ class ProductRead(BaseModel):
     presentation: str | None
     default_price: Decimal
     cost_estimate: Decimal
+    product_kind: ProductKind
+    production_notes: str | None
     is_returnable_container: bool
     is_active: bool
     notes: str | None
@@ -122,6 +149,16 @@ class ProductRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductProductionClassificationUpdate(BaseModel):
+    product_kind: ProductKind
+    production_notes: str | None = None
+
+    @field_validator("production_notes")
+    @classmethod
+    def normalize_production_notes(cls, value: str | None) -> str | None:
+        return _normalize_optional_text(value)
 
 
 def _normalize_required_text(value: str, message: str) -> str:

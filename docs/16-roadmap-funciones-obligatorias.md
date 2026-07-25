@@ -40,9 +40,10 @@ cerrar la validación del anterior.
 
 ### D. Producción avanzada
 
-- Insumos y materia prima.
-- Fórmulas o recetas versionadas.
-- Consumo de insumos.
+- Insumos y materia prima. **Implementado base en el Bloque 50.**
+- Fórmulas o recetas con snapshots. **Implementado base en el Bloque 50.**
+- Costos estimados por fórmula y unidad. **Implementado base en el Bloque 50.**
+- Consumo automático de insumos. **Pendiente futuro.**
 - Costos directos e indirectos.
 - Costo por lote y por unidad.
 - Mermas con causa y análisis.
@@ -258,15 +259,31 @@ aparecer en más de un rol activo, aunque el descuento sea parcial.
 
 ## Bloque 50 - Producción avanzada
 
+**Estado: implementado base.**
+
 ### Objetivo
 
-Conectar compras, insumos, inventario y producción para conocer consumo y
-costo real.
+Crear la base de insumos, materia prima, formulas y costos estimados sin
+automatizar consumo ni movimientos de inventario.
 
-### Alcance mínimo
+### Base implementada
 
-- Catálogo de insumos y unidades.
-- Fórmulas versionadas por producto.
+- Clasificacion de productos como terminado, materia prima, insumo, empaque,
+  servicio u otro.
+- Formulas por producto terminado con cantidad de salida, vigencia, estados y
+  anulacion logica.
+- Items activables con cantidad requerida, costo unitario, costo total,
+  porcentaje de merma, notas y snapshots del producto.
+- Costos estimados total y por unidad calculados con `Decimal` en backend.
+- Estimacion escalada para otra cantidad de salida.
+- Filtros por texto, estado, producto, clasificacion y vigencia.
+- Aislamiento de inventario, movimientos, produccion existente, caja, compras,
+  ventas y costos del producto terminado.
+
+### Pendiente futuro
+
+- Versionado formal de formulas por producto y snapshot de la formula aplicada
+  a un lote real.
 - Lotes de insumo cuando aplique.
 - Reserva o consumo explícito.
 - Costo promedio o método elegido.
@@ -274,7 +291,7 @@ costo real.
 - Costo del lote y costo unitario.
 - Variación de merma contra estándar.
 
-### Regla crítica
+### Regla crítica futura
 
 Una fórmula no debe reescribir el historial. Cada lote debe conservar la
 versión, cantidades y costos usados.

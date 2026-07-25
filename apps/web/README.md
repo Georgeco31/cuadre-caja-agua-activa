@@ -2,7 +2,7 @@
 
 App web Next.js para Agua Activa ERP.
 
-Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo de insumos, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
+Este frontend incluye login, panel operativo, modulo de caja, historial, reporte acumulado, resumen operativo diario, correcciones controladas, los modulos base de clientes, productos, proveedores, compras, listas de precios, gastos operativos generales, empleados, asistencia, anticipos, préstamos y roles de pago base, rutas y vehiculos, ventas de contado y a credito, cobros sobre cartera, reportes de cuentas por cobrar, inventario manual, produccion aplicada a inventario, formulas y costos estimados, carga de camion, retorno, actividad comercial, cierre financiero por ruta, comparacion informativa de rutas contra caja y registro trazable del dinero de ruta recibido en caja. Todavia no incluye conciliacion automatica, ingreso automatico por denominaciones, cobros masivos, inventario automatico por ventas, aplicacion de compras a inventario, pagos reales a proveedores, pago real de nómina, IESS, décimos, vacaciones avanzadas, liquidacion fisica de inventario de ruta, consumo automatico de insumos, mantenimiento, combustible, edicion de gastos del cuadre, cookies ni refresh tokens.
 
 ## Requisitos
 
@@ -67,6 +67,7 @@ Rutas principales:
 - `/dashboard/vehicles`
 - `/dashboard/inventory`
 - `/dashboard/production`
+- `/dashboard/production/recipes`
 - `/dashboard/route-loads`
 - `/dashboard/route-returns`
 - `/dashboard/route-activity`
@@ -106,7 +107,7 @@ http://localhost:3000/login
 - El dashboard ofrece acceso a `/dashboard/monthly-summary` para consultar el comportamiento operativo de un mes completo.
 - El dashboard ofrece acceso a `/dashboard/daily-summary` para consultar caja, produccion, rutas, ventas, cobros y alertas de una fecha.
 - Si existe cuadre de hoy, el dashboard muestra el resumen oficial desde `GET /api/v1/cash-sessions/{id}/summary`.
-- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, control de empleados, roles de pago, rutas, vehiculos, inventario, produccion, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
+- El dashboard muestra acciones rapidas hacia caja, historial, reportes, clientes, productos, empleados, control de empleados, roles de pago, rutas, vehiculos, inventario, produccion, formulas, carga de camion, ventas de contado, ventas a credito, cobros y cuentas por cobrar.
 - El dashboard muestra los últimos cuadres registrados desde `GET /api/v1/cash-sessions` y el total final desde el resumen oficial de cada cuadre.
 - El dashboard muestra un recordatorio de backup para el cierre del día o fin de pruebas.
 - La pantalla de cuadre diario muestra un selector de fecha con la fecha actual por defecto.
@@ -149,6 +150,10 @@ http://localhost:3000/login
 - La pantalla `/dashboard/products` lista productos desde `GET /api/v1/products` y permite buscar por nombre, SKU, categoria o presentacion.
 - El alta usa `POST /api/v1/products` y la edicion usa `PATCH /api/v1/products/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/products/{id}/deactivate` y `PATCH /api/v1/products/{id}/activate`; no se eliminan productos fisicamente.
+- El formulario y listado de productos muestran la clasificacion de produccion
+  y sus notas. El endpoint especifico
+  `PATCH /api/v1/products/{id}/production-classification` permite actualizar
+  solo esos datos.
 - El catalogo muestra presentacion, precio base, costo estimado, retornabilidad y estado, sin crear ventas ni movimientos de inventario.
 - La pantalla `/dashboard/pricing` administra listas generales, especiales, por
   cliente, por ruta y por combinacion cliente+ruta. Permite definir vigencia,
@@ -238,6 +243,15 @@ http://localhost:3000/login
 - La aplicacion exige ubicacion y confirmacion, usa `POST /api/v1/production/batches/{id}/apply-inventory` y vuelve a consultar el lote y su trazabilidad.
 - Una aplicacion activa muestra ubicacion, fecha y movimientos generados. Puede anularse con motivo mediante `POST /api/v1/production/inventory-applications/{id}/void`; la API revierte el stock oficial.
 - Una produccion anulada no puede aplicarse. Una produccion con aplicacion activa exige anular primero esa aplicacion.
+- La pantalla `/dashboard/production/recipes` permite crear y filtrar formulas,
+  editar su encabezado, agregar o editar insumos, activar/desactivar items y
+  formulas, anular con motivo y probar costos para otra cantidad de salida.
+- Los productos terminados e insumos se seleccionan desde el catalogo activo.
+  El costo sugerido del item proviene de `cost_estimate`, pero los costos
+  oficiales siempre son recalculados por la API.
+- La pantalla muestra de forma permanente que una formula no consume
+  inventario. No crea movimientos ni modifica caja, compras, ventas,
+  producciones existentes o el costo del producto terminado.
 - La pantalla `/dashboard/route-loads` carga rutas, vehiculos, ubicaciones y productos activos, muestra stock oficial disponible en el origen y registra una carga mediante `POST /api/v1/route-loads`.
 - Cada carga traslada inventario desde el origen hacia una ubicacion tipo `vehicle`. El listado permite filtrar, consultar movimientos vinculados y anular con motivo mediante `POST /api/v1/route-loads/{id}/void`.
 - Despues de crear o anular una carga, la pantalla vuelve a consultar cargas y stock oficial. No calcula stock, registra ventas, cobros, dinero entregado, devoluciones, liquidaciones ni cierres de ruta.
@@ -268,7 +282,7 @@ El uso de `localStorage` es una solución simple para desarrollo. No reemplaza u
 ## Auditoria general del Bloque 44
 
 El inventario auditado de rutas web y endpoints relacionados esta en
-`../../docs/13-auditoria-general-erp.md`. Existen 33 paginas `page.tsx`,
+`../../docs/13-auditoria-general-erp.md`. Existen 34 paginas `page.tsx`,
 incluidas `/`, `/login` y las rutas del dashboard documentadas arriba.
 
 Para el piloto:

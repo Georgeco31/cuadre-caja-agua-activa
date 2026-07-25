@@ -25,6 +25,7 @@ def list_products(
     is_active: bool | None = None,
     category: str | None = None,
     unit: str | None = None,
+    product_kind: str | None = None,
 ) -> list[Product]:
     statement = select(Product)
 
@@ -44,6 +45,8 @@ def list_products(
         statement = statement.where(Product.category == category)
     if unit is not None:
         statement = statement.where(Product.unit == unit)
+    if product_kind is not None:
+        statement = statement.where(Product.product_kind == product_kind)
 
     statement = statement.order_by(func.lower(Product.name), Product.id)
     return list(db.scalars(statement))
