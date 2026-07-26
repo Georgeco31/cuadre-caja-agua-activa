@@ -289,6 +289,9 @@ cuadre-caja-agua-activa/
 - Bloque 53: auditoria tecnica completa preproduccion, riesgos priorizados,
   checklist de servidor local y plan de correcciones. Sin migraciones, seeds
   ni cambios de logica.
+- Bloque 54: roles `operator` y `admin_auditor`, cuentas personales,
+  administracion de usuarios, permisos backend para acciones criticas y
+  navegacion frontend segun rol.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -334,17 +337,20 @@ de gastos, cookies ni refresh tokens.
   red, firewall, Tailscale, backups, restore y piloto.
 - `docs/21-plan-correcciones-pre-produccion.md`: prioridades, responsables y
   criterios de cierre.
+- `docs/22-matriz-permisos-roles.md`: permisos efectivos de `operator` y
+  `admin_auditor` por accion.
 
 ## Antes de usar datos reales
 
-El corte del Bloque 53 permite avanzar a roles y permisos, pero **todavia no
-autoriza mover el ERP al servidor ni iniciar el piloto**. Leer en este orden:
+El Bloque 54 resuelve la separacion base de roles, pero **todavia no autoriza
+mover el ERP al servidor ni iniciar el piloto**. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
 3. `docs/21-plan-correcciones-pre-produccion.md`.
-4. `docs/20-checklist-preparacion-servidor-local.md`.
-5. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
+4. `docs/22-matriz-permisos-roles.md`.
+5. `docs/20-checklist-preparacion-servidor-local.md`.
+6. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
    esten cerrados.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,

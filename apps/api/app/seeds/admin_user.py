@@ -17,12 +17,17 @@ def seed_admin_user(
 
     existing_user = get_user_by_username(db, username)
     if existing_user is not None:
+        if existing_user.role != "admin_auditor":
+            existing_user.role = "admin_auditor"
+            db.commit()
+            db.refresh(existing_user)
         return existing_user
 
     user = create_user(
         db=db,
         username=username,
         password_hash=get_password_hash(password),
+        role="admin_auditor",
         is_active=is_active,
     )
     db.commit()

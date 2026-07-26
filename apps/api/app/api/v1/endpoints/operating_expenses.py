@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.operating_expense import (
     OperatingExpenseCategoryCreate,
@@ -36,6 +36,7 @@ router = APIRouter(
     "/categories",
     response_model=OperatingExpenseCategoryRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_category(
     payload: OperatingExpenseCategoryCreate,
@@ -77,6 +78,7 @@ def get_category(category_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/categories/{category_id}",
     response_model=OperatingExpenseCategoryRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def update_category(
     category_id: int,
@@ -92,6 +94,7 @@ def update_category(
 @router.patch(
     "/categories/{category_id}/deactivate",
     response_model=OperatingExpenseCategoryRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_category(category_id: int, db: Session = Depends(get_db)):
     try:
@@ -103,6 +106,7 @@ def deactivate_category(category_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/categories/{category_id}/activate",
     response_model=OperatingExpenseCategoryRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_category(category_id: int, db: Session = Depends(get_db)):
     try:
@@ -115,6 +119,7 @@ def activate_category(category_id: int, db: Session = Depends(get_db)):
     "/recurring",
     response_model=RecurringOperatingExpenseRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_recurring_template(
     payload: RecurringOperatingExpenseCreate,
@@ -167,6 +172,7 @@ def get_recurring_template(template_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/recurring/{template_id}",
     response_model=RecurringOperatingExpenseRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def update_recurring_template(
     template_id: int,
@@ -186,6 +192,7 @@ def update_recurring_template(
 @router.patch(
     "/recurring/{template_id}/deactivate",
     response_model=RecurringOperatingExpenseRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_recurring_template(
     template_id: int,
@@ -200,6 +207,7 @@ def deactivate_recurring_template(
 @router.patch(
     "/recurring/{template_id}/activate",
     response_model=RecurringOperatingExpenseRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_recurring_template(
     template_id: int,
@@ -320,7 +328,11 @@ def update_expense(
         raise _http_error(error) from error
 
 
-@router.post("/{expense_id}/void", response_model=OperatingExpenseRead)
+@router.post(
+    "/{expense_id}/void",
+    response_model=OperatingExpenseRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_expense(
     expense_id: int,
     payload: OperatingExpenseVoid,

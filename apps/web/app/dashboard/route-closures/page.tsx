@@ -23,6 +23,7 @@ import {
   voidRouteClosure,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { DeliveryRoute } from "@/types/deliveryRoute";
 import type { RouteCommercialActivity } from "@/types/routeActivity";
 import type {
@@ -43,6 +44,7 @@ const emptyFilters: RouteClosureFilterValues = {
 };
 
 export default function RouteClosuresPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [loads, setLoads] = useState<RouteLoad[]>([]);
@@ -214,7 +216,7 @@ export default function RouteClosuresPage() {
   function handleError(possibleError: unknown) {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -283,6 +285,7 @@ export default function RouteClosuresPage() {
               onSubmit={handleCreate}
             />
             <RouteClosureList
+              canVoid={canVoid}
               closures={closures}
               routes={routes}
               vehicles={vehicles}

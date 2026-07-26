@@ -19,6 +19,7 @@ import {
   voidPayrollRun,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import {
   isValidMoneyInputDraft,
   parseMoneyInputToCents,
@@ -69,6 +70,7 @@ const emptyFilters: FilterDraft = {
 };
 
 export default function PayrollPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -416,7 +418,7 @@ export default function PayrollPage() {
   function handleError(possibleError: unknown, fallback: string) {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -840,6 +842,7 @@ export default function PayrollPage() {
 
         {selectedRun ? (
           <PayrollDetail
+            canVoid={canVoid}
             isSaving={isSaving}
             onClose={() => setSelectedRun(null)}
             onVoid={handleVoid}
@@ -931,6 +934,7 @@ function PayrollPreviewCard({ preview }: { preview: PayrollPreview }) {
 }
 
 function PayrollDetail({
+  canVoid,
   run,
   voidReason,
   setVoidReason,
@@ -938,6 +942,7 @@ function PayrollDetail({
   onClose,
   isSaving,
 }: {
+  canVoid: boolean;
   run: PayrollRun;
   voidReason: string;
   setVoidReason: (value: string) => void;
@@ -1033,7 +1038,7 @@ function PayrollDetail({
           </article>
         ))}
       </div>
-      {run.status === "active" ? (
+      {run.status === "active" && canVoid ? (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <label className="text-sm font-medium text-red-900">
             Motivo de anulación
@@ -1052,11 +1057,11 @@ function PayrollDetail({
             Anular rol
           </button>
         </div>
-      ) : (
+      ) : run.status === "voided" ? (
         <p className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
           Motivo de anulación: {run.void_reason}
         </p>
-      )}
+      ) : null}
     </section>
   );
 }

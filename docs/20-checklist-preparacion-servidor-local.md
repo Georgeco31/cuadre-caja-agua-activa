@@ -7,16 +7,16 @@ autoriza ejecutar todavía el traslado, Tailscale ni una restauración.
 
 - [ ] Bloque 54 de roles y permisos aprobado.
 - [ ] Cuentas personales creadas; ninguna contraseña compartida.
-- [ ] Matriz `operator`/`admin-auditor` aprobada por George.
+- [ ] Matriz `operator`/`admin_auditor` aprobada por George.
 - [ ] Todos los hallazgos críticos del documento 19 cerrados.
 - [ ] Rama `main` limpia y sincronizada.
 - [ ] Commit exacto de despliegue registrado.
 - [ ] Tag `pre-pilot-local-v1` creado.
 - [ ] `git status --short` vacío.
-- [ ] Backend: 917 o más pruebas aprobadas, sin fallos nuevos.
+- [ ] Backend: 930 o más pruebas aprobadas, sin fallos nuevos.
 - [ ] Frontend: typecheck y build aprobados.
 - [ ] `docker compose config` aprobado sin publicar su salida.
-- [ ] `alembic heads`, `current` y base en la misma revisión.
+- [ ] `alembic heads`, `current` y base en `0026_user_roles`.
 - [ ] Ninguna operación Alembic histórica no autorizada incluida.
 - [ ] Backup de línea base creado.
 - [ ] Restore de ese backup aprobado en base aislada.
@@ -140,7 +140,7 @@ docker compose down -v
 - [ ] `GET /api/v1/health` devuelve `status=ok`.
 - [ ] `/login` carga sin error.
 - [ ] Login operator válido.
-- [ ] Login admin-auditor válido.
+- [ ] Login `admin_auditor` válido.
 - [ ] Credenciales inválidas son rechazadas.
 - [ ] Token vencido redirige a login.
 - [ ] Operator no puede abrir ni invocar acciones administrativas.
@@ -218,7 +218,7 @@ docker compose down -v
 ## 13. Piloto
 
 - [ ] Base restaurable y backup de línea base.
-- [ ] Un operador y un admin-auditor definidos.
+- [ ] Un `operator` y un `admin_auditor` definidos.
 - [ ] Alcance limitado: productos/clientes/ruta seleccionados.
 - [ ] Controles actuales se mantienen en paralelo.
 - [ ] Conciliación diaria de caja, ventas, cobros, rutas e inventario.
@@ -238,4 +238,3 @@ El servidor puede entrar a piloto únicamente cuando:
 - backup automático y restore aislado tengan evidencia;
 - las pruebas técnicas estén aprobadas;
 - George autorice explícitamente el inicio.
-

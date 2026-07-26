@@ -22,6 +22,7 @@ import {
   voidProductionRecipe,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import {
   PRODUCT_KIND_LABELS,
   type Product,
@@ -56,6 +57,7 @@ const emptyFilters: RecipeFilterValues = {
 };
 
 export default function ProductionRecipesPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -363,7 +365,7 @@ export default function ProductionRecipesPage() {
   function handleRequestError(possibleError: unknown) {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -446,6 +448,7 @@ export default function ProductionRecipesPage() {
               />
               {selectedRecipe ? (
                 <RecipeDetail
+                  canVoid={canVoid}
                   key={`${selectedRecipe.id}-${selectedRecipe.updated_at}`}
                   recipe={selectedRecipe}
                   products={products}
@@ -626,6 +629,7 @@ function RecipeCreateForm({
 }
 
 function RecipeDetail({
+  canVoid,
   recipe,
   products,
   inputProducts,
@@ -640,6 +644,7 @@ function RecipeDetail({
   onEstimate,
   onClose,
 }: {
+  canVoid: boolean;
   recipe: ProductionRecipe;
   products: Product[];
   inputProducts: Product[];
@@ -731,14 +736,14 @@ function RecipeDetail({
                   ? "Desactivar fórmula"
                   : "Activar fórmula"}
             </button>
-            <button
+            {canVoid ? <button
               className="h-9 rounded-md border border-red-300 px-3 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:text-slate-400"
               type="button"
               disabled={Boolean(busyKey)}
               onClick={onVoidRecipe}
             >
               Anular fórmula
-            </button>
+            </button> : null}
           </div>
           <RecipeItemCreateForm
             products={inputProducts}

@@ -4,14 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi import status as http_status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_db, require_admin_auditor
 from app.schemas.management_dashboard import ManagementDashboard
 from app.services.management_dashboard import get_management_dashboard
 
 router = APIRouter(
     prefix="/reports",
     tags=["reports"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_auditor)],
 )
 
 

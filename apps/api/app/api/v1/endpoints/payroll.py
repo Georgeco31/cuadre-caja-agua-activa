@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.payroll import (
     EmployeePayrollSummary,
@@ -89,7 +89,11 @@ def get_payroll_run(
         raise _http_error(error) from error
 
 
-@router.post("/runs/{payroll_run_id}/void", response_model=PayrollRunRead)
+@router.post(
+    "/runs/{payroll_run_id}/void",
+    response_model=PayrollRunRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_payroll_run(
     payroll_run_id: int,
     payload: PayrollVoid,

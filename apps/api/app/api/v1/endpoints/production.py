@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.production import (
     ProductionBatchCreate,
@@ -76,7 +76,11 @@ def get_production_batch(batch_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.post("/batches/{batch_id}/void", response_model=ProductionBatchRead)
+@router.post(
+    "/batches/{batch_id}/void",
+    response_model=ProductionBatchRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_production_batch(
     batch_id: int,
     payload: ProductionBatchVoid,
@@ -131,6 +135,7 @@ def get_production_inventory_application(
 @router.post(
     "/inventory-applications/{application_id}/void",
     response_model=ProductionInventoryApplicationRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def void_production_inventory_application(
     application_id: int,

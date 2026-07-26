@@ -26,6 +26,7 @@ type RouteReturnListProps = {
   filters: RouteReturnFilterValues;
   isLoading?: boolean;
   voidingReturnId?: number | null;
+  canVoid?: boolean;
   onFiltersChange: (filters: RouteReturnFilterValues) => void;
   onFilter: () => void;
   onClear: () => void;
@@ -41,6 +42,7 @@ export function RouteReturnList({
   filters,
   isLoading = false,
   voidingReturnId = null,
+  canVoid = false,
   onFiltersChange,
   onFilter,
   onClear,
@@ -243,7 +245,7 @@ export function RouteReturnList({
                           >
                             {isExpanded ? "Ocultar" : "Detalle"}
                           </button>
-                          {routeReturn.status === "active" ? (
+                          {canVoid && routeReturn.status === "active" ? (
                             <button
                               className="font-semibold text-red-700 hover:text-red-600 disabled:text-slate-400"
                               type="button"

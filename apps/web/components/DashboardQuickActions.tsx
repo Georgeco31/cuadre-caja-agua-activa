@@ -1,17 +1,27 @@
 import Link from "next/link";
+import type { UserRole } from "@/types/auth";
 
 const actions = [
+  {
+    href: "/dashboard/users",
+    title: "Usuarios y permisos",
+    description: "Crear cuentas, asignar roles y controlar accesos.",
+    primary: false,
+    adminOnly: true,
+  },
   {
     href: "/dashboard/exports",
     title: "Exportaciones",
     description: "Descargar reportes del ERP en Excel y PDF.",
     primary: false,
+    adminOnly: true,
   },
   {
     href: "/dashboard/management",
     title: "Panel gerencial",
     description: "Ver indicadores, alertas y gráficos generales del negocio.",
     primary: false,
+    adminOnly: true,
   },
   {
     href: "/dashboard/production/material-consumption",
@@ -48,6 +58,7 @@ const actions = [
     title: "Listas de precios",
     description: "Gestionar precios especiales por cliente o ruta.",
     primary: false,
+    adminOnly: true,
   },
   {
     href: "/dashboard/purchases",
@@ -198,7 +209,13 @@ const actions = [
   },
 ] as const;
 
-export function DashboardQuickActions() {
+export function DashboardQuickActions({ role }: { role?: UserRole }) {
+  const visibleActions = actions.filter(
+    (action) =>
+      !("adminOnly" in action && action.adminOnly) ||
+      role === "admin_auditor",
+  );
+
   return (
     <section aria-labelledby="dashboard-actions-title" className="space-y-3">
       <div>
@@ -212,7 +229,7 @@ export function DashboardQuickActions() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {actions.map((action) => (
+        {visibleActions.map((action) => (
           <Link
             className={
               action.primary

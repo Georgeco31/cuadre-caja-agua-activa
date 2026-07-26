@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LogoutButton } from "@/components/LogoutButton";
-import { ApiError, downloadFile } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/auth";
+import { ApiError, downloadFile, getCurrentUser } from "@/lib/api";
+import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type {
   ReportExportDefinition,
   ReportExportFormat,
@@ -157,6 +157,7 @@ export default function ReportExportsPage() {
   const [error, setError] = useState("");
   const [downloadingFormat, setDownloadingFormat] =
     useState<ReportExportFormat | null>(null);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -164,8 +165,32 @@ export default function ReportExportsPage() {
       router.replace("/login");
       return;
     }
-    setToken(storedToken);
+    void authorizePage(storedToken);
   }, [router]);
+
+  async function authorizePage(activeToken: string) {
+    try {
+      const currentUser = await getCurrentUser(activeToken);
+      saveUser(currentUser);
+      if (currentUser.role !== "admin_auditor") {
+        setForbidden(true);
+        setError("No tienes permisos para acceder a las exportaciones.");
+        return;
+      }
+      setToken(activeToken);
+    } catch (loadError) {
+      if (loadError instanceof ApiError && loadError.status === 401) {
+        removeToken();
+        router.replace("/login");
+        return;
+      }
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "No se pudo validar tu sesión.",
+      );
+    }
+  }
 
   const selectedReports = useMemo(
     () => ({
@@ -235,7 +260,7 @@ export default function ReportExportsPage() {
     } catch (downloadError) {
       if (
         downloadError instanceof ApiError &&
-        (downloadError.status === 401 || downloadError.status === 403)
+        downloadError.status === 401
       ) {
         removeToken();
         router.replace("/login");
@@ -287,6 +312,10 @@ export default function ReportExportsPage() {
           <LogoutButton />
         </header>
 
+        {forbidden && error ? <ErrorMessage message={error} /> : null}
+
+        {!forbidden ? (
+          <>
         <ExportSection
           dateFrom={dateFrom}
           dateTo={dateTo}
@@ -338,6 +367,8 @@ export default function ReportExportsPage() {
           Los archivos reflejan los datos registrados en el sistema para el
           período seleccionado y no modifican información.
         </p>
+          </>
+        ) : null}
       </div>
     </main>
   );

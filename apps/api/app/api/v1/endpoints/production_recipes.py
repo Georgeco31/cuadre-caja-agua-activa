@@ -3,7 +3,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.product import ProductKind
 from app.schemas.production_recipe import (
@@ -106,7 +106,11 @@ def deactivate_recipe(recipe_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.post("/recipes/{recipe_id}/void", response_model=ProductionRecipeRead)
+@router.post(
+    "/recipes/{recipe_id}/void",
+    response_model=ProductionRecipeRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_recipe(
     recipe_id: int,
     payload: ProductionRecipeVoid,

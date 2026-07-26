@@ -64,6 +64,7 @@ Rutas principales:
 - `/dashboard/employees`
 - `/dashboard/employees/control`
 - `/dashboard/payroll`
+- `/dashboard/users` (solo `admin_auditor`)
 - `/dashboard/delivery-routes`
 - `/dashboard/vehicles`
 - `/dashboard/inventory`
@@ -104,6 +105,14 @@ http://localhost:3000/login
 - Login en `/login`.
 - Dashboard protegido en `/dashboard`.
 - El dashboard consulta el usuario actual desde `GET /api/v1/auth/me`.
+- La sesion conserva `username`, `role` e `is_active`; si un token anterior no
+  trae rol, `/auth/me` sigue siendo la fuente oficial.
+- El dashboard muestra el rol y oculta usuarios, panel gerencial,
+  exportaciones completas y listas de precios a `operator`.
+- `/dashboard/users` permite a `admin_auditor` crear cuentas, asignar
+  `operator` o `admin_auditor`, activar/desactivar y cambiar contraseñas.
+- Los botones de correccion, anulacion y ajuste directo se ocultan a
+  `operator`; el backend sigue siendo la autoridad ante acceso directo.
 - El dashboard consulta el cuadre de hoy desde `GET /api/v1/cash-sessions/by-date/{session_date}`.
 - El dashboard ofrece acceso a `/dashboard/management` para consultar
   indicadores, alertas y gráficos gerenciales por rango.
@@ -319,7 +328,8 @@ Para el piloto:
 - Usar `../../docs/15-guia-piloto-datos-reales.md`.
 - Seguir diariamente `../../docs/14-checklist-uso-real-agua-activa.md`.
 - Mantener el sistema en equipos controlados: el JWT se guarda en
-  `localStorage` y todavia no hay roles, cookies seguras ni refresh tokens.
+  `localStorage`; ya existen roles base, pero todavia no hay cookies seguras ni
+  refresh tokens.
 - No asumir automatizaciones entre ventas, inventario, rutas y caja.
 
 El Bloque 44 no cambia componentes, rutas ni logica del frontend.

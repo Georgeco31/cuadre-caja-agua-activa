@@ -12,7 +12,9 @@ from app.api.deps import get_db
 from app.db.base import Base
 from app.main import app
 from app.models.denomination import Denomination
+from app.repositories.users import create_user
 from app.seeds.admin_user import seed_admin_user
+from app.security.password import get_password_hash
 import app.models as _models  # noqa: F401
 
 
@@ -154,6 +156,28 @@ def api_auth_headers(api_client) -> dict[str, str]:
     response = client.post(
         "/api/v1/auth/login",
         json={"username": "admin", "password": "admin123"},
+    )
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def api_operator_auth_headers(api_client) -> dict[str, str]:
+    client, testing_session_local = api_client
+    with testing_session_local() as session:
+        create_user(
+            db=session,
+            username="operator",
+            password_hash=get_password_hash("operator123"),
+            role="operator",
+            is_active=True,
+        )
+        session.commit()
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json={"username": "operator", "password": "operator123"},
     )
     assert response.status_code == 200
     token = response.json()["access_token"]

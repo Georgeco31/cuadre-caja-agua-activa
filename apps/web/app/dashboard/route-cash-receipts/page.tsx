@@ -17,6 +17,7 @@ import {
   voidRouteCashReceipt,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import {
   formatCentsAsMoneyInput,
   isValidMoneyInputDraft,
@@ -47,6 +48,7 @@ const emptyFilters: ReceiptFilterValues = {
 };
 
 export default function RouteCashReceiptsPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [closures, setClosures] = useState<RouteClosure[]>([]);
@@ -271,7 +273,7 @@ export default function RouteCashReceiptsPage() {
   function handleError(possibleError: unknown) {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -681,7 +683,7 @@ export default function RouteCashReceiptsPage() {
                         ) : null}
                       </td>
                       <td className="px-4 py-3 align-top">
-                        {receipt.status === "active" ? (
+                        {canVoid && receipt.status === "active" ? (
                           <button
                             className="font-semibold text-red-700 hover:text-red-600 disabled:text-slate-400"
                             type="button"

@@ -8,6 +8,7 @@ from app.core.config import get_settings
 
 def create_access_token(
     subject: str | int,
+    role: str | None = None,
     expires_delta: timedelta | None = None,
 ) -> str:
     settings = get_settings()
@@ -18,6 +19,8 @@ def create_access_token(
         "sub": str(subject),
         "exp": expire,
     }
+    if role is not None:
+        payload["role"] = role
     return jwt.encode(
         payload,
         settings.auth_secret_key,

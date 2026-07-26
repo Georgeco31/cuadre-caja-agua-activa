@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.route_load import (
     RouteLoadCreate,
@@ -98,7 +98,11 @@ def get_route_load_financial_closure(
         raise _http_error(error) from error
 
 
-@router.post("/{load_id}/void", response_model=RouteLoadRead)
+@router.post(
+    "/{load_id}/void",
+    response_model=RouteLoadRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_route_load(
     load_id: int,
     payload: RouteLoadVoid,

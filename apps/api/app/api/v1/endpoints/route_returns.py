@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.route_return import (
     RouteReturnCreate,
@@ -68,7 +68,11 @@ def get_route_return(return_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.post("/{return_id}/void", response_model=RouteReturnRead)
+@router.post(
+    "/{return_id}/void",
+    response_model=RouteReturnRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_route_return(
     return_id: int,
     payload: RouteReturnVoid,

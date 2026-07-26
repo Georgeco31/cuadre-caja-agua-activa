@@ -5,11 +5,28 @@
 Cerrar de forma verificable los riesgos encontrados en el Bloque 53 sin
 mezclar cambios de negocio, infraestructura y recuperación en un solo paso.
 
+## Estado del Bloque 54
+
+El bloqueador base de roles quedó resuelto en código:
+
+- [x] `operator` y `admin_auditor` definidos.
+- [x] Usuarios existentes migran a `admin_auditor`.
+- [x] Administración de cuentas personales protegida en backend.
+- [x] Correcciones, anulaciones, precios, panel y exportaciones críticas
+  protegidas con `403`.
+- [x] Navegación y botones críticos limitados según rol.
+- [x] No se puede desactivar o degradar al último administrador activo.
+- [x] Suite backend, typecheck, build y migración local validados.
+
+Esto no cierra los riesgos de servidor, red, backups, restore, auditoría
+avanzada ni piloto. La matriz vigente está en
+[`22-matriz-permisos-roles.md`](22-matriz-permisos-roles.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
 | --- | --- | --- | --- | --- | --- |
-| P0-01 | 54 | Roles `operator` y `admin-auditor`, cuentas personales y permisos backend | Desarrollo + George | Crítica | Matriz aprobada; pruebas permiten/deniegan cada grupo; secretaria no usa admin |
+| P0-01 | 54 | Roles `operator` y `admin_auditor`, cuentas personales y permisos backend | Desarrollo + George | Crítica | Matriz aprobada; pruebas permiten/deniegan cada grupo; secretaria no usa admin |
 | P0-02 | 54 | Auditoría de acciones por usuario para correcciones/anulaciones críticas | Desarrollo | Crítica | Cada acción conserva usuario y motivo; pruebas lo verifican |
 | P0-03 | 54 | Migración de roles revisada manualmente | Desarrollo | Crítica | Upgrade/downgrade aislados; diff no elimina índices/constraints históricos |
 | P0-04 | 54B | Reconciliar deuda Alembic en bloque dedicado | Desarrollo | Alta | `alembic check` limpio o baseline de excepciones explícito y aprobado |
@@ -87,19 +104,19 @@ Bloque 56: piloto controlado
 
 ## Matriz mínima de permisos por decidir
 
-La tabla es una propuesta para validación con George, no una regla ya
-implementada:
+La tabla quedó implementada como matriz base. El detalle operativo está en el
+documento 22:
 
 | Capacidad | Operator | Admin-auditor |
 | --- | --- | --- |
 | Login y dashboard operativo | Sí | Sí |
 | Caja abierta: conteo/gastos/cierre | Sí | Sí |
 | Historial de caja | Lectura | Lectura |
-| Correcciones de cuadre cerrado | No o aprobación | Sí |
+| Correcciones de cuadre cerrado | No | Sí |
 | Catálogos operativos | Según módulo | Sí |
 | Ventas/cobros/rutas | Sí | Sí |
-| Inventario/producción | Según puesto | Sí |
-| Anulaciones sensibles | No o aprobación | Sí |
+| Inventario/producción | Operación normal | Sí |
+| Anulaciones sensibles | No | Sí |
 | Gastos/compras/nómina | Según puesto | Sí |
 | Panel gerencial | No | Sí |
 | Excel/PDF gerencial | No | Sí |
@@ -117,4 +134,3 @@ La preproducción queda cerrada cuando:
 - backup automático y restore aislado están aprobados;
 - pruebas y build pasan desde el commit etiquetado;
 - el checklist 20 está completo y firmado por George.
-

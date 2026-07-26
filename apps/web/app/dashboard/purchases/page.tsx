@@ -17,6 +17,7 @@ import {
   voidPurchase,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Product } from "@/types/product";
 import {
   PURCHASE_DOCUMENT_TYPE_LABELS,
@@ -68,6 +69,7 @@ const emptyFilters: PurchaseFilterValues = {
 };
 
 export default function PurchasesPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -297,7 +299,7 @@ export default function PurchasesPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -868,7 +870,7 @@ export default function PurchasesPage() {
                               >
                                 Ver detalle
                               </button>
-                              {purchase.status === "active" ? (
+                              {canVoid && purchase.status === "active" ? (
                                 <button
                                   className="font-semibold text-red-700 hover:text-red-500"
                                   type="button"
@@ -895,14 +897,14 @@ export default function PurchasesPage() {
           purchase={viewingPurchase}
           onClose={() => setViewingPurchase(null)}
           onVoid={
-            viewingPurchase.status === "active"
+            canVoid && viewingPurchase.status === "active"
               ? () => openVoidDialog(viewingPurchase)
               : undefined
           }
         />
       ) : null}
 
-      {voidingPurchase ? (
+      {canVoid && voidingPurchase ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
           role="dialog"

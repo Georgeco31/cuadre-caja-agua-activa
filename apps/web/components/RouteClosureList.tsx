@@ -26,6 +26,7 @@ type RouteClosureListProps = {
   filters: RouteClosureFilterValues;
   isLoading: boolean;
   voidingClosureId: number | null;
+  canVoid?: boolean;
   onFiltersChange: (filters: RouteClosureFilterValues) => void;
   onFilter: () => void;
   onClear: () => void;
@@ -39,6 +40,7 @@ export function RouteClosureList({
   filters,
   isLoading,
   voidingClosureId,
+  canVoid = false,
   onFiltersChange,
   onFilter,
   onClear,
@@ -241,7 +243,7 @@ export function RouteClosureList({
                           >
                             {isExpanded ? "Ocultar" : "Detalle"}
                           </button>
-                          {closure.status === "active" ? (
+                          {canVoid && closure.status === "active" ? (
                             <button
                               className="font-semibold text-red-700 hover:text-red-600 disabled:text-slate-400"
                               type="button"

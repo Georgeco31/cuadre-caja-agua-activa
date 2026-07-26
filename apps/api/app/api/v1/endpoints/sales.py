@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.sale import (
     CashSaleCreate,
@@ -98,7 +98,11 @@ def get_sale(sale_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.post("/{sale_id}/void", response_model=SaleRead)
+@router.post(
+    "/{sale_id}/void",
+    response_model=SaleRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_sale(
     sale_id: int,
     payload: SaleVoid,

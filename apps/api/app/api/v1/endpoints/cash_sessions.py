@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.repositories import cash_sessions
 from app.schemas.cash_count_item import (
@@ -177,6 +177,7 @@ def list_expenses(
 @router.post(
     "/{cash_session_id}/corrections/count-items",
     response_model=CorrectionCountItemResponse,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def correct_count_item(
     cash_session_id: int,
@@ -205,6 +206,7 @@ def correct_count_item(
 @router.post(
     "/{cash_session_id}/corrections/expenses",
     response_model=CorrectionExpenseResponse,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_corrective_expense(
     cash_session_id: int,
@@ -236,6 +238,7 @@ def create_corrective_expense(
 @router.get(
     "/{cash_session_id}/corrections",
     response_model=list[CorrectionLogRead],
+    dependencies=[Depends(require_admin_auditor)],
 )
 def list_corrections(
     cash_session_id: int,

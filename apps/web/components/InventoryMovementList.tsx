@@ -27,6 +27,7 @@ type InventoryMovementListProps = {
   locations: InventoryLocation[];
   filters: InventoryMovementFilterValues;
   isLoading?: boolean;
+  canVoid?: boolean;
   onFiltersChange: (filters: InventoryMovementFilterValues) => void;
   onFilter: () => void;
   onClear: () => void;
@@ -46,6 +47,7 @@ export function InventoryMovementList({
   locations,
   filters,
   isLoading = false,
+  canVoid = false,
   onFiltersChange,
   onFilter,
   onClear,
@@ -269,7 +271,7 @@ export function InventoryMovementList({
                     ) : null}
                   </td>
                   <td className="px-4 py-3 align-top">
-                    {movement.status === "active" ? (
+                      {canVoid && movement.status === "active" ? (
                       <button
                         className="font-semibold text-red-700 hover:text-red-600"
                         type="button"

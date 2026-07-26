@@ -18,6 +18,7 @@ import {
   voidProductionMaterialConsumption,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { InventoryLocation } from "@/types/inventory";
 import type { ProductionBatch } from "@/types/production";
 import type { ProductionRecipe } from "@/types/productionRecipe";
@@ -29,6 +30,7 @@ import {
 } from "@/types/productionMaterialConsumption";
 
 export default function ProductionMaterialConsumptionPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [batches, setBatches] = useState<ProductionBatch[]>([]);
@@ -307,7 +309,7 @@ export default function ProductionMaterialConsumptionPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -712,7 +714,7 @@ export default function ProductionMaterialConsumptionPage() {
                           Motivo de anulación: {consumption.void_reason}
                         </p>
                       ) : null}
-                      {consumption.status === "active" ? (
+                      {canVoid && consumption.status === "active" ? (
                         <div className="mt-4 flex justify-end">
                           <button
                             className="h-9 rounded-md border border-red-300 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50"
@@ -732,7 +734,7 @@ export default function ProductionMaterialConsumptionPage() {
         )}
       </div>
 
-      {voidingConsumption ? (
+      {canVoid && voidingConsumption ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
           role="dialog"

@@ -18,6 +18,7 @@ import {
   ApiError,
   correctCashCountItem,
   createCorrectiveExpense,
+  getCurrentUser,
   getCashSession,
   getCashSessionSummary,
   listCashCountItems,
@@ -25,7 +26,7 @@ import {
   listDenominations,
   listExpenses,
 } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/auth";
+import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type { CashSession } from "@/types/cashSession";
 import type { CountItemDetail } from "@/types/countItem";
 import type {
@@ -54,6 +55,7 @@ export default function CashSessionHistoryDetailPage() {
     useState(false);
   const [isSubmittingExpenseCorrection, setIsSubmittingExpenseCorrection] =
     useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const cashSessionId = Number(params.cashSessionId);
   const isClosed = cashSession?.status === "closed";
@@ -95,21 +97,26 @@ export default function CashSessionHistoryDetailPage() {
     setMessage("");
 
     try {
+      const currentUser = await getCurrentUser(activeToken);
+      saveUser(currentUser);
+      const canCorrect = currentUser.role === "admin_auditor";
+      setIsAdmin(canCorrect);
       const [
         loadedCashSession,
         loadedSummary,
         loadedCountItems,
         loadedExpenses,
         loadedDenominations,
-        loadedCorrectionLogs,
       ] = await Promise.all([
         getCashSession(activeToken, activeCashSessionId),
         getCashSessionSummary(activeToken, activeCashSessionId),
         listCashCountItems(activeToken, activeCashSessionId),
         listExpenses(activeToken, activeCashSessionId),
         listDenominations(activeToken),
-        listCorrections(activeToken, activeCashSessionId),
       ]);
+      const loadedCorrectionLogs = canCorrect
+        ? await listCorrections(activeToken, activeCashSessionId)
+        : [];
 
       setCashSession(loadedCashSession);
       setSummary(loadedSummary);
@@ -205,7 +212,7 @@ export default function CashSessionHistoryDetailPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -262,6 +269,7 @@ export default function CashSessionHistoryDetailPage() {
               />
             </div>
 
+            {isAdmin ? (
             <section
               aria-labelledby="corrections-title"
               className="space-y-4"
@@ -300,6 +308,12 @@ export default function CashSessionHistoryDetailPage() {
 
               <CorrectionLogsList correctionLogs={correctionLogs} />
             </section>
+            ) : (
+              <p className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
+                Las correcciones de cuadres cerrados y su auditoría están
+                disponibles solo para el administrador/auditor.
+              </p>
+            )}
           </>
         ) : null}
       </div>

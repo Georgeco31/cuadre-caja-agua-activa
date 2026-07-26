@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.credit_payment import (
     CreditPaymentCreate,
@@ -85,6 +85,7 @@ def list_credit_payments(
 @router.post(
     "/credit-payments/{payment_id}/void",
     response_model=CreditPaymentRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def void_credit_payment(
     payment_id: int,

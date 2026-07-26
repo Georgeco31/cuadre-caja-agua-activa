@@ -19,6 +19,7 @@ import {
   voidCreditPayment,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type {
   CreditPayment,
   CreditPaymentPayload,
@@ -28,6 +29,7 @@ import type { Sale } from "@/types/sale";
 import type { RouteLoad } from "@/types/routeLoad";
 
 export default function ReceivablesPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -223,7 +225,7 @@ export default function ReceivablesPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -347,6 +349,7 @@ export default function ReceivablesPage() {
             />
 
             <CreditPaymentList
+              canVoid={canVoid}
               payments={payments}
               isLoading={isRefreshing}
               hasCustomerFilter={Boolean(customerFilter)}

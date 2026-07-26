@@ -3,7 +3,12 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import (
+    ensure_admin_auditor,
+    get_current_user,
+    get_db,
+    require_admin_auditor,
+)
 from app.models.user import User
 from app.schemas.inventory import (
     InventoryLocationCreate,
@@ -130,6 +135,8 @@ def create_movement(
     current_user: User = Depends(get_current_user),
 ):
     try:
+        if payload.movement_type in {"adjustment_in", "adjustment_out"}:
+            ensure_admin_auditor(current_user)
         return inventory_service.create_movement(
             db,
             payload,
@@ -180,6 +187,7 @@ def get_movement(movement_id: int, db: Session = Depends(get_db)):
 @router.post(
     "/movements/{movement_id}/void",
     response_model=InventoryMovementRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def void_movement(
     movement_id: int,
@@ -199,4 +207,3 @@ def _http_error(error: ValueError) -> HTTPException:
     if "ya esta registrado" in detail or "ya esta anulado" in detail:
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
-

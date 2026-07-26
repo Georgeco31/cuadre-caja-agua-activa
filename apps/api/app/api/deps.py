@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -11,6 +11,10 @@ from app.security.tokens import decode_access_token
 
 
 bearer_scheme = HTTPBearer(auto_error=False)
+ROLE_OPERATOR = "operator"
+ROLE_ADMIN_AUDITOR = "admin_auditor"
+VALID_ROLES = frozenset({ROLE_OPERATOR, ROLE_ADMIN_AUDITOR})
+PERMISSION_DENIED_DETAIL = "No tienes permisos para realizar esta acción."
 
 
 def get_db() -> Generator[Session]:
@@ -47,6 +51,42 @@ def get_current_user(
         )
 
     return user
+
+
+get_current_active_user = get_current_user
+
+
+def require_roles(*roles: str) -> Callable[..., User]:
+    invalid_roles = set(roles) - VALID_ROLES
+    if not roles or invalid_roles:
+        raise ValueError("La dependencia de roles contiene roles invalidos.")
+
+    def role_dependency(
+        current_user: User = Depends(get_current_active_user),
+    ) -> User:
+        if current_user.role not in roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=PERMISSION_DENIED_DETAIL,
+            )
+        return current_user
+
+    return role_dependency
+
+
+def ensure_admin_auditor(current_user: User) -> None:
+    if current_user.role != ROLE_ADMIN_AUDITOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=PERMISSION_DENIED_DETAIL,
+        )
+
+
+require_admin_auditor = require_roles(ROLE_ADMIN_AUDITOR)
+require_operator_or_admin = require_roles(
+    ROLE_OPERATOR,
+    ROLE_ADMIN_AUDITOR,
+)
 
 
 def _credentials_exception() -> HTTPException:

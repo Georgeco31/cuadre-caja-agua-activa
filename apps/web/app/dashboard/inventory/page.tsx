@@ -33,6 +33,7 @@ import {
   voidInventoryMovement,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type {
   InventoryLocation,
   InventoryLocationPayload,
@@ -61,6 +62,7 @@ const emptyMovementFilters: InventoryMovementFilterValues = {
 };
 
 export default function InventoryPage() {
+  const canManageCriticalActions = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [locations, setLocations] = useState<InventoryLocation[]>([]);
@@ -357,7 +359,7 @@ export default function InventoryPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -458,6 +460,7 @@ export default function InventoryPage() {
             </div>
 
             <InventoryMovementForm
+              canAdjust={canManageCriticalActions}
               products={activeProducts}
               locations={activeLocations}
               isSubmitting={isSavingMovement}
@@ -465,6 +468,7 @@ export default function InventoryPage() {
             />
 
             <InventoryMovementList
+              canVoid={canManageCriticalActions}
               movements={movements}
               products={products}
               locations={locations}
@@ -484,7 +488,7 @@ export default function InventoryPage() {
         )}
       </div>
 
-      {voidingMovement ? (
+      {canManageCriticalActions && voidingMovement ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
           role="dialog"
@@ -578,4 +582,3 @@ function getErrorMessage(possibleError: unknown): string {
   }
   return "No se pudo completar la solicitud.";
 }
-

@@ -71,6 +71,24 @@ cerrar la validación del anterior.
 | 50 | Producción avanzada | Compras, inventario y productos |
 | 51 | Consumo controlado de insumos | Producción, fórmulas e inventario |
 | 52 | Reportes avanzados | Datos estables de los bloques anteriores |
+| 54 | Roles y permisos | Auditoría técnica del Bloque 53 |
+
+## Bloque 54 - Roles y permisos
+
+**Estado: implementado y validado en código; el despliegue/piloto sigue
+pendiente de los bloques de preproducción.**
+
+- Roles controlados `operator` y `admin_auditor`.
+- Migración `0026_user_roles` compatible con usuarios existentes.
+- Administración de cuentas personales en `/api/v1/users` y
+  `/dashboard/users`.
+- Protección backend de correcciones, anulaciones, ajustes, precios, panel
+  gerencial, exportaciones y usuarios.
+- Navegación y acciones críticas adaptadas al rol.
+- Protección para conservar al menos un `admin_auditor` activo.
+
+La matriz efectiva se documenta en
+[`22-matriz-permisos-roles.md`](22-matriz-permisos-roles.md).
 
 ## Bloque 45 - Compras y proveedores
 

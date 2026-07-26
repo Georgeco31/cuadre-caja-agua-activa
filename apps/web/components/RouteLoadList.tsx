@@ -26,6 +26,7 @@ type RouteLoadListProps = {
   filters: RouteLoadFilterValues;
   isLoading?: boolean;
   voidingLoadId?: number | null;
+  canVoid?: boolean;
   onFiltersChange: (filters: RouteLoadFilterValues) => void;
   onFilter: () => void;
   onClear: () => void;
@@ -41,6 +42,7 @@ export function RouteLoadList({
   filters,
   isLoading = false,
   voidingLoadId = null,
+  canVoid = false,
   onFiltersChange,
   onFilter,
   onClear,
@@ -237,7 +239,7 @@ export function RouteLoadList({
                           >
                             {isExpanded ? "Ocultar" : "Detalle"}
                           </button>
-                          {routeLoad.status === "active" ? (
+                          {canVoid && routeLoad.status === "active" ? (
                             <button
                               className="font-semibold text-red-700 hover:text-red-600 disabled:text-slate-400"
                               type="button"

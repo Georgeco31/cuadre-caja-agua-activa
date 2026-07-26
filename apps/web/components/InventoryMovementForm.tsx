@@ -14,6 +14,7 @@ type InventoryMovementFormProps = {
   products: Product[];
   locations: InventoryLocation[];
   isSubmitting?: boolean;
+  canAdjust?: boolean;
   onSubmit: (payload: InventoryMovementPayload) => Promise<boolean>;
 };
 
@@ -35,6 +36,7 @@ export function InventoryMovementForm({
   products,
   locations,
   isSubmitting = false,
+  canAdjust = false,
   onSubmit,
 }: InventoryMovementFormProps) {
   const [values, setValues] = useState<FormValues>(buildInitialValues);
@@ -81,6 +83,13 @@ export function InventoryMovementForm({
   }
 
   const cannotRegister = products.length === 0 || locations.length === 0;
+  const availableMovementTypes = canAdjust
+    ? movementTypes
+    : movementTypes.filter(
+        (movementType) =>
+          movementType !== "adjustment_in" &&
+          movementType !== "adjustment_out",
+      );
 
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -129,7 +138,7 @@ export function InventoryMovementForm({
                 })
               }
             >
-              {movementTypes.map((movementType) => (
+              {availableMovementTypes.map((movementType) => (
                 <option key={movementType} value={movementType}>
                   {INVENTORY_MOVEMENT_TYPE_LABELS[movementType]}
                 </option>

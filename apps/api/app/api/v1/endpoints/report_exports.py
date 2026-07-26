@@ -5,7 +5,7 @@ from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_db, require_admin_auditor
 from app.services.excel_export import (
     build_excel_response,
     build_inventory_workbook,
@@ -23,7 +23,7 @@ from app.services.excel_export import (
 router = APIRouter(
     prefix="/reports/exports",
     tags=["report-exports"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_auditor)],
 )
 
 

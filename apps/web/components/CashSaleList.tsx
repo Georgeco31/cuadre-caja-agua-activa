@@ -28,6 +28,7 @@ export type CashSaleListProps = {
   filters: CashSaleFilterValues;
   hasActiveFilters?: boolean;
   isLoading?: boolean;
+  canVoid?: boolean;
   voidingSaleId?: number | null;
   onFiltersChange: (filters: CashSaleFilterValues) => void;
   onFilter: () => void;
@@ -46,6 +47,7 @@ export function CashSaleList({
   filters,
   hasActiveFilters = false,
   isLoading = false,
+  canVoid = false,
   voidingSaleId = null,
   onFiltersChange,
   onFilter,
@@ -232,6 +234,7 @@ export function CashSaleList({
                     mode={mode}
                     isExpanded={isExpanded}
                     isVoiding={isVoiding}
+                    canVoid={canVoid}
                     onToggle={() =>
                       setExpandedSaleId(isExpanded ? null : sale.id)
                     }
@@ -252,6 +255,7 @@ type SaleRowsProps = {
   mode: "cash" | "credit";
   isExpanded: boolean;
   isVoiding: boolean;
+  canVoid: boolean;
   onToggle: () => void;
   onVoid: () => void;
 };
@@ -261,6 +265,7 @@ function SaleRows({
   mode,
   isExpanded,
   isVoiding,
+  canVoid,
   onToggle,
   onVoid,
 }: SaleRowsProps) {
@@ -329,7 +334,7 @@ function SaleRows({
             >
               {isExpanded ? "Ocultar" : "Ver detalle"}
             </button>
-            {sale.status === "active" ? (
+            {canVoid && sale.status === "active" ? (
               <button
                 className="font-semibold text-red-700 hover:text-red-600 disabled:cursor-not-allowed disabled:text-slate-400"
                 type="button"

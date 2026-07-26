@@ -12,6 +12,7 @@ import {
   createPriceList,
   createPriceListItem,
   getPriceList,
+  getCurrentUser,
   listCustomers,
   listDeliveryRoutes,
   listPriceLists,
@@ -22,7 +23,7 @@ import {
   updatePriceList,
   updatePriceListItem,
 } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/auth";
+import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type { Customer } from "@/types/customer";
 import type { DeliveryRoute } from "@/types/deliveryRoute";
 import {
@@ -88,6 +89,7 @@ export default function PricingPage() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -95,9 +97,27 @@ export default function PricingPage() {
       router.replace("/login");
       return;
     }
-    setToken(storedToken);
-    void loadInitialData(storedToken);
+    void authorizePage(storedToken);
   }, [router]);
+
+  async function authorizePage(activeToken: string) {
+    try {
+      const currentUser = await getCurrentUser(activeToken);
+      saveUser(currentUser);
+      if (currentUser.role !== "admin_auditor") {
+        setForbidden(true);
+        setIsLoading(false);
+        return;
+      }
+      setToken(activeToken);
+      await loadInitialData(activeToken);
+    } catch (loadError) {
+      if (!redirectIfUnauthorized(loadError)) {
+        setError(getErrorMessage(loadError));
+        setIsLoading(false);
+      }
+    }
+  }
 
   async function loadInitialData(activeToken: string) {
     setIsLoading(true);
@@ -342,7 +362,7 @@ export default function PricingPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -356,6 +376,28 @@ export default function PricingPage() {
       <main className="min-h-screen bg-slate-50 px-4 py-6">
         <div className="mx-auto max-w-7xl">
           <LoadingState label="Cargando listas de precios..." />
+        </div>
+      </main>
+    );
+  }
+
+  if (forbidden) {
+    return (
+      <main className="min-h-screen bg-slate-50 px-4 py-6">
+        <div className="mx-auto max-w-3xl rounded-xl border border-amber-200 bg-amber-50 p-6">
+          <Link
+            className="text-sm font-semibold text-water-700"
+            href="/dashboard"
+          >
+            Volver al dashboard
+          </Link>
+          <h1 className="mt-4 text-2xl font-semibold text-amber-950">
+            No tienes permisos
+          </h1>
+          <p className="mt-2 text-sm text-amber-900">
+            La administración de listas de precios está reservada al
+            administrador/auditor.
+          </p>
         </div>
       </main>
     );

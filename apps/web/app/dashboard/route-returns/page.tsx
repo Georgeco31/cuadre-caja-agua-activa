@@ -24,6 +24,7 @@ import {
   voidRouteReturn,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { DeliveryRoute } from "@/types/deliveryRoute";
 import type {
   InventoryLocation,
@@ -47,6 +48,7 @@ const emptyFilters: RouteReturnFilterValues = {
 };
 
 export default function RouteReturnsPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [routes, setRoutes] = useState<DeliveryRoute[]>([]);
@@ -238,7 +240,7 @@ export default function RouteReturnsPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -294,6 +296,7 @@ export default function RouteReturnsPage() {
               onSubmit={handleCreate}
             />
             <RouteReturnList
+              canVoid={canVoid}
               returns={returns}
               routes={routes}
               vehicles={vehicles}
@@ -314,7 +317,7 @@ export default function RouteReturnsPage() {
         )}
       </div>
 
-      {voidingReturn ? (
+      {canVoid && voidingReturn ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
           role="dialog"

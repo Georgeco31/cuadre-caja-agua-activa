@@ -20,6 +20,7 @@ import {
   voidCashSale,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Customer } from "@/types/customer";
 import type { Product } from "@/types/product";
 import type { RouteLoad } from "@/types/routeLoad";
@@ -35,6 +36,7 @@ const emptyFilters: CashSaleFilterValues = {
 };
 
 export default function CreditSalesPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -192,7 +194,7 @@ export default function CreditSalesPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -243,6 +245,7 @@ export default function CreditSalesPage() {
               onSubmit={handleCreateSale}
             />
             <CreditSaleList
+              canVoid={canVoid}
               sales={sales}
               customers={customers}
               filters={filters}

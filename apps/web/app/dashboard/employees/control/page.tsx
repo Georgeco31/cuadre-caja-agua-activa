@@ -25,6 +25,7 @@ import {
   voidEmployeeLoanPayment,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import {
   formatCentsAsMoneyInput,
   isValidMoneyInputDraft,
@@ -83,6 +84,7 @@ type PaymentForm = {
 const emptyPeriod: PeriodFilters = { dateFrom: "", dateTo: "" };
 
 export default function EmployeeControlPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -535,7 +537,7 @@ export default function EmployeeControlPage() {
   function handleError(possibleError: unknown, fallback: string) {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -727,6 +729,7 @@ export default function EmployeeControlPage() {
 
             {section === "advances" ? (
               <AdvancesSection
+                canVoid={canVoid}
                 advances={advances}
                 disabled={!selectedEmployee.is_active || isSaving}
                 changingId={changingId}
@@ -739,6 +742,7 @@ export default function EmployeeControlPage() {
 
             {section === "loans" ? (
               <LoansSection
+                canVoid={canVoid}
                 loans={loans}
                 disabled={!selectedEmployee.is_active || isSaving}
                 changingId={changingId}
@@ -752,6 +756,7 @@ export default function EmployeeControlPage() {
 
             {section === "payments" ? (
               <PaymentsSection
+                canVoid={canVoid}
                 payments={payments}
                 payableLoans={payableLoans}
                 disabled={!selectedEmployee.is_active || isSaving}
@@ -970,6 +975,7 @@ function AttendanceSection({
 }
 
 type AdvancesSectionProps = {
+  canVoid: boolean;
   advances: EmployeeAdvance[];
   disabled: boolean;
   changingId: number | null;
@@ -980,6 +986,7 @@ type AdvancesSectionProps = {
 };
 
 function AdvancesSection({
+  canVoid,
   advances,
   disabled,
   changingId,
@@ -1068,7 +1075,7 @@ function AdvancesSection({
               <StatusBadge status={advance.status} />
             </TableCell>
             <TableCell>
-              {advance.status === "active" ? (
+              {canVoid && advance.status === "active" ? (
                 <button
                   className={dangerButtonClassName}
                   disabled={changingId === advance.id}
@@ -1089,6 +1096,7 @@ function AdvancesSection({
 }
 
 type LoansSectionProps = {
+  canVoid: boolean;
   loans: EmployeeLoan[];
   disabled: boolean;
   changingId: number | null;
@@ -1100,6 +1108,7 @@ type LoansSectionProps = {
 };
 
 function LoansSection({
+  canVoid,
   loans,
   disabled,
   changingId,
@@ -1213,7 +1222,7 @@ function LoansSection({
                     Abonar
                   </button>
                 ) : null}
-                {loan.status === "active" ? (
+                {canVoid && loan.status === "active" ? (
                   <button
                     className={dangerButtonClassName}
                     disabled={changingId === loan.id}
@@ -1234,6 +1243,7 @@ function LoansSection({
 }
 
 type PaymentsSectionProps = {
+  canVoid: boolean;
   payments: EmployeeLoanPayment[];
   payableLoans: EmployeeLoan[];
   disabled: boolean;
@@ -1245,6 +1255,7 @@ type PaymentsSectionProps = {
 };
 
 function PaymentsSection({
+  canVoid,
   payments,
   payableLoans,
   disabled,
@@ -1339,7 +1350,7 @@ function PaymentsSection({
               ) : null}
             </TableCell>
             <TableCell>
-              {payment.status === "active" ? (
+              {canVoid && payment.status === "active" ? (
                 <button
                   className={dangerButtonClassName}
                   disabled={changingId === payment.id}

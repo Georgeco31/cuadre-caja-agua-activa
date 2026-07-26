@@ -8,6 +8,7 @@ type CreditPaymentListProps = {
   payments: CreditPayment[];
   isLoading?: boolean;
   hasCustomerFilter?: boolean;
+  canVoid?: boolean;
   voidingPaymentId?: number | null;
   onVoid: (payment: CreditPayment) => void;
 };
@@ -16,6 +17,7 @@ export function CreditPaymentList({
   payments,
   isLoading = false,
   hasCustomerFilter = false,
+  canVoid = false,
   voidingPaymentId = null,
   onVoid,
 }: CreditPaymentListProps) {
@@ -96,7 +98,7 @@ export function CreditPaymentList({
                       ) : null}
                     </td>
                     <td className="px-4 py-3 align-top">
-                      {payment.status === "active" ? (
+                      {canVoid && payment.status === "active" ? (
                         <button
                           className="font-semibold text-red-700 hover:text-red-600 disabled:cursor-not-allowed disabled:text-slate-400"
                           type="button"

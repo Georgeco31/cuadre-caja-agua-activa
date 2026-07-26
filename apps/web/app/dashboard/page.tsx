@@ -20,7 +20,7 @@ import {
   getCurrentUser,
   listCashSessions,
 } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/auth";
+import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type { CurrentUser } from "@/types/auth";
 import type { CashSession } from "@/types/cashSession";
 import type { CashSessionSummary } from "@/types/summary";
@@ -69,6 +69,7 @@ export default function DashboardPage() {
       );
 
       setUser(currentUser);
+      saveUser(currentUser);
       setTodayData(loadedTodayData);
       setRecentSessions(loadedRecentSessions);
     } catch (loadError) {
@@ -125,7 +126,7 @@ export default function DashboardPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+          possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -160,7 +161,10 @@ export default function DashboardPage() {
             </h1>
             {user ? (
               <p className="mt-2 text-sm text-slate-600">
-                Bienvenido, {user.username}
+                Bienvenido, {user.username} ·{" "}
+                {user.role === "admin_auditor"
+                  ? "Administrador / auditor"
+                  : "Operador"}
               </p>
             ) : null}
           </div>
@@ -175,7 +179,7 @@ export default function DashboardPage() {
               cashSession={todayData?.cashSession ?? null}
               summary={todayData?.summary ?? null}
             />
-            <DashboardQuickActions />
+            <DashboardQuickActions role={user?.role} />
             <DashboardRecentSessions items={recentSessions} />
             <BackupReminderCard />
           </>

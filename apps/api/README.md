@@ -310,7 +310,7 @@ docker compose run --rm api python -m app.seeds.run
 
 Los seeds son idempotentes: pueden ejecutarse varias veces sin duplicar denominaciones ni usuario admin.
 
-## Autenticacion de administrador
+## Autenticacion y roles
 
 La API usa autenticacion Bearer con JWT para los endpoints de negocio. `GET /api/v1/health` y `POST /api/v1/auth/login` son publicos.
 
@@ -335,10 +335,25 @@ curl http://localhost:8000/api/v1/auth/me \
   -H "Authorization: Bearer TOKEN_AQUI"
 ```
 
+`POST /api/v1/auth/login` devuelve el token y el rol. `GET /api/v1/auth/me`
+devuelve `id`, `username`, `role` e `is_active`. Los roles permitidos son
+`operator` y `admin_auditor`; la autorizacion consulta el usuario actual en la
+base de datos y no depende solo del contenido del JWT.
+
+`/api/v1/users` permite al `admin_auditor` listar y crear cuentas, cambiar rol
+o estado y renovar contraseñas. Las contraseñas requieren al menos ocho
+caracteres, se almacenan con hash y nunca se devuelven. El sistema impide
+desactivar o degradar al último administrador activo.
+
 Los endpoints de cuadres, denominaciones, reportes, clientes, productos,
 proveedores, compras, empleados, roles de pago, rutas, vehiculos, ventas y
 cobros requieren el header `Authorization: Bearer ...`. Este bloque no
 implementa cookies, refresh tokens ni registro publico.
+
+Las operaciones normales admiten ambos roles. Correcciones, anulaciones,
+ajustes directos, administracion de precios, panel gerencial, exportaciones
+completas y usuarios requieren `admin_auditor`. La matriz completa esta en
+`../../docs/22-matriz-permisos-roles.md`.
 
 ## Clientes
 
@@ -864,7 +879,7 @@ En el corte auditado:
 - OpenAPI contiene 81 plantillas de ruta y 103 operaciones HTTP.
 - Solo `POST /api/v1/auth/login` y `GET /api/v1/health` son publicos.
 - La revision registrada en ese corte era `0018_route_receipts`; la revision
-  actual del proyecto es `0025_materials`.
+  actual del proyecto es `0026_user_roles`.
 - Las pruebas usan SQLite en memoria; deben complementarse con pruebas de
   integracion PostgreSQL antes de operacion multiusuario.
 - Este bloque no crea migraciones, tablas, seeds ni cambios de logica.

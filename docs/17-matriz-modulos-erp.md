@@ -10,7 +10,7 @@
 | Pendiente | Está planificado y tiene dependencias identificadas |
 | No implementado | No existe modelo, endpoint ni pantalla funcional del módulo |
 
-La valoración corresponde al corte del Bloque 53. “Implementado” no significa
+La valoración corresponde al corte del Bloque 54. “Implementado” no significa
 que el módulo pueda operar sin conciliación, backup o control manual.
 
 ## Matriz
@@ -30,6 +30,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 | 11. Camiones y mantenimiento | Parcial | Vehículos, placa, tipo, capacidad, combustible referencial, estado y uso en cargas | Mantenimiento, combustible consumido, kilometraje, asignaciones, documentos, costos y rentabilidad | Media | Medio: no hay alerta de mantenimiento ni costo real por vehículo |
 | 12. Producción o envasado | Implementado base | Lotes, cantidades, merma, snapshots, anulación, aplicación reversible a inventario, clasificación de insumos, fórmulas, costos estimados y consumo explícito reversible por lote | Lotes de materia prima, consumo parcial avanzado, mano de obra, costos indirectos y costeo contable real | Alta | Medio: el consumo ya descuenta stock de forma controlada, pero todavía no determina el costo contable real del producto terminado |
 | 13. Reportes gerenciales | Implementado base | Caja acumulada, cartera, estado de cuenta, rutas vs caja, resumen diario y mensual, panel gerencial por rango, indicadores, alertas, gráficos base, diez exportaciones Excel detalladas y cinco exportaciones PDF ejecutivas autenticadas | Rentabilidad, comparativos avanzados, programación y BI | Media | Medio: los indicadores y exportaciones son informativos y todavía no sustituyen contabilidad ni conciliación |
+| 14. Usuarios y permisos | Implementado base | Roles `operator`/`admin_auditor`, cuentas personales, activación, cambio de contraseña, último admin protegido y autorización backend de acciones críticas | Permisos granulares, 2FA, recuperación por email y auditoría avanzada | Alta | Medio: el JWT permanece en `localStorage` y falta endurecimiento de sesión para producción |
 
 ## Lectura por prioridad
 
@@ -53,7 +54,7 @@ que el módulo pueda operar sin conciliación, backup o control manual.
 Antes de ampliar el número de usuarios o exponer el sistema fuera del equipo
 local:
 
-- Implementar roles y permisos.
+- Validar periódicamente la matriz de roles y cuentas personales.
 - Mejorar la estrategia de sesión.
 - Automatizar backups con copia externa.
 - Añadir pruebas E2E y pruebas de integración PostgreSQL.

@@ -16,9 +16,11 @@ import {
   getMonthlyOperationalSummary,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { MonthlyOperationalSummary } from "@/types/monthlyOperationalSummary";
 
 export default function MonthlySummaryPage() {
+  const canExport = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(() =>
@@ -119,7 +121,7 @@ export default function MonthlySummaryPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -167,21 +169,21 @@ export default function MonthlySummaryPage() {
               value={selectedMonth}
             />
           </label>
-          <button
+          {canExport ? <button
             className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
             disabled={isLoading || !selectedMonth}
             type="submit"
           >
             Consultar reporte
-          </button>
-          <button
+          </button> : null}
+          {canExport ? <button
             className="h-10 rounded-md border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
             disabled={isLoading}
             onClick={handleCurrentMonth}
             type="button"
           >
             Mes actual
-          </button>
+          </button> : null}
           <button
             className="h-10 rounded-md border border-emerald-600 bg-emerald-50 px-4 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
             disabled={isLoading || exportingFormat !== null || !selectedMonth}

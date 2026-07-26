@@ -205,6 +205,11 @@ import type {
   VehiclePayload,
   VehicleUpdatePayload,
 } from "@/types/vehicle";
+import type {
+  User,
+  UserCreatePayload,
+  UserUpdatePayload,
+} from "@/types/user";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1";
 
@@ -232,6 +237,58 @@ export async function getCurrentUser(token: string): Promise<CurrentUser> {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  });
+}
+
+export async function listUsers(token: string): Promise<User[]> {
+  return request<User[]>("/users", {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createUser(
+  token: string,
+  payload: UserCreatePayload,
+): Promise<User> {
+  return request<User>("/users", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updateUser(
+  token: string,
+  userId: number,
+  payload: UserUpdatePayload,
+): Promise<User> {
+  return request<User>(`/users/${userId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function setUserActive(
+  token: string,
+  userId: number,
+  isActive: boolean,
+): Promise<User> {
+  return request<User>(`/users/${userId}/${isActive ? "activate" : "deactivate"}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+  });
+}
+
+export async function updateUserPassword(
+  token: string,
+  userId: number,
+  newPassword: string,
+): Promise<User> {
+  return request<User>(`/users/${userId}/password`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify({ new_password: newPassword }),
   });
 }
 

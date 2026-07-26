@@ -4,7 +4,7 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.pricing import (
     PriceListCreate,
     PriceListItemCreate,
@@ -28,6 +28,7 @@ router = APIRouter(
     "/price-lists",
     response_model=PriceListRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_price_list(
     payload: PriceListCreate,
@@ -69,7 +70,11 @@ def get_price_list(
         raise _http_error(error) from error
 
 
-@router.patch("/price-lists/{price_list_id}", response_model=PriceListRead)
+@router.patch(
+    "/price-lists/{price_list_id}",
+    response_model=PriceListRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_price_list(
     price_list_id: int,
     payload: PriceListUpdate,
@@ -84,6 +89,7 @@ def update_price_list(
 @router.patch(
     "/price-lists/{price_list_id}/deactivate",
     response_model=PriceListRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_price_list(
     price_list_id: int,
@@ -98,6 +104,7 @@ def deactivate_price_list(
 @router.patch(
     "/price-lists/{price_list_id}/activate",
     response_model=PriceListRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_price_list(
     price_list_id: int,
@@ -113,6 +120,7 @@ def activate_price_list(
     "/price-lists/{price_list_id}/items",
     response_model=PriceListItemRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_price_list_item(
     price_list_id: int,
@@ -132,6 +140,7 @@ def create_price_list_item(
 @router.patch(
     "/price-list-items/{item_id}",
     response_model=PriceListItemRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def update_price_list_item(
     item_id: int,
@@ -147,6 +156,7 @@ def update_price_list_item(
 @router.patch(
     "/price-list-items/{item_id}/deactivate",
     response_model=PriceListItemRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_price_list_item(
     item_id: int,
@@ -161,6 +171,7 @@ def deactivate_price_list_item(
 @router.patch(
     "/price-list-items/{item_id}/activate",
     response_model=PriceListItemRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_price_list_item(
     item_id: int,

@@ -3,8 +3,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { login } from "@/lib/api";
-import { getToken, saveToken } from "@/lib/auth";
+import { getCurrentUser, login } from "@/lib/api";
+import { getToken, removeToken, saveToken, saveUser } from "@/lib/auth";
 
 export function LoginForm() {
   const router = useRouter();
@@ -27,8 +27,11 @@ export function LoginForm() {
     try {
       const response = await login({ username, password });
       saveToken(response.access_token);
+      const currentUser = await getCurrentUser(response.access_token);
+      saveUser(currentUser);
       router.replace("/dashboard");
     } catch (loginError) {
+      removeToken();
       setError(
         loginError instanceof Error
           ? loginError.message

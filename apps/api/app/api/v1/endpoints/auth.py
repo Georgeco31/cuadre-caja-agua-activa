@@ -27,7 +27,10 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
             detail="El usuario esta inactivo.",
         )
 
-    return TokenResponse(access_token=create_access_token(user.id))
+    return TokenResponse(
+        access_token=create_access_token(user.id, role=user.role),
+        role=user.role,
+    )
 
 
 @router.get("/me", response_model=CurrentUserResponse)

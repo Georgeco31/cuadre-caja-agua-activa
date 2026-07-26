@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.employee_controls import (
     AttendanceStatus,
@@ -149,6 +149,7 @@ def get_advance(advance_id: int, db: Session = Depends(get_db)):
 @router.post(
     "/advances/{advance_id}/void",
     response_model=EmployeeAdvanceRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def void_advance(
     advance_id: int,
@@ -208,7 +209,11 @@ def get_loan(loan_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.post("/loans/{loan_id}/void", response_model=EmployeeLoanRead)
+@router.post(
+    "/loans/{loan_id}/void",
+    response_model=EmployeeLoanRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_loan(
     loan_id: int,
     payload: EmployeeControlVoid,
@@ -273,6 +278,7 @@ def list_loan_payments(
 @router.post(
     "/loan-payments/{payment_id}/void",
     response_model=EmployeeLoanPaymentRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def void_loan_payment(
     payment_id: int,

@@ -17,6 +17,7 @@ def test_login_with_valid_credentials_returns_bearer_token(api_client) -> None:
     body = response.json()
     assert body["access_token"]
     assert body["token_type"] == "bearer"
+    assert body["role"] == "admin_auditor"
 
 
 def test_login_with_unknown_username_returns_401(api_client) -> None:
@@ -65,6 +66,7 @@ def test_auth_me_with_valid_token_returns_current_user(
     assert response.status_code == 200
     body = response.json()
     assert body["username"] == "admin"
+    assert body["role"] == "admin_auditor"
     assert body["is_active"] is True
     assert "password_hash" not in body
 

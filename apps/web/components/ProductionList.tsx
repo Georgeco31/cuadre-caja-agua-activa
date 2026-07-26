@@ -30,6 +30,7 @@ type ProductionListProps = {
   >;
   filters: ProductionFilterValues;
   isLoading?: boolean;
+  canVoid?: boolean;
   voidingBatchId?: number | null;
   applyingBatchId?: number | null;
   voidingApplicationId?: number | null;
@@ -56,6 +57,7 @@ export function ProductionList({
   inventoryApplications,
   filters,
   isLoading = false,
+  canVoid = false,
   voidingBatchId = null,
   applyingBatchId = null,
   voidingApplicationId = null,
@@ -248,7 +250,7 @@ export function ProductionList({
                           >
                             {isExpanded ? "Ocultar" : "Detalle"}
                           </button>
-                          {batch.status === "active" ? (
+                          {canVoid && batch.status === "active" ? (
                             <button
                               className="font-semibold text-red-700 hover:text-red-600 disabled:text-slate-400"
                               type="button"
@@ -275,6 +277,7 @@ export function ProductionList({
                               inventoryApplication?.application_id ===
                               voidingApplicationId
                             }
+                            canVoid={canVoid}
                             onApplyInventory={onApplyInventory}
                             onVoidInventoryApplication={
                               onVoidInventoryApplication
@@ -300,6 +303,7 @@ function ProductionDetail({
   inventoryApplication,
   isApplying,
   isVoidingApplication,
+  canVoid,
   onApplyInventory,
   onVoidInventoryApplication,
 }: {
@@ -308,6 +312,7 @@ function ProductionDetail({
   inventoryApplication: ProductionInventoryApplication | undefined;
   isApplying: boolean;
   isVoidingApplication: boolean;
+  canVoid: boolean;
   onApplyInventory: (
     batch: ProductionBatch,
     payload: ProductionInventoryApplyPayload,
@@ -379,6 +384,7 @@ function ProductionDetail({
         application={inventoryApplication}
         isApplying={isApplying}
         isVoiding={isVoidingApplication}
+        canVoid={canVoid}
         onApply={onApplyInventory}
         onVoid={onVoidInventoryApplication}
       />
@@ -392,6 +398,7 @@ function ProductionInventoryPanel({
   application,
   isApplying,
   isVoiding,
+  canVoid,
   onApply,
   onVoid,
 }: {
@@ -400,6 +407,7 @@ function ProductionInventoryPanel({
   application: ProductionInventoryApplication | undefined;
   isApplying: boolean;
   isVoiding: boolean;
+  canVoid: boolean;
   onApply: (
     batch: ProductionBatch,
     payload: ProductionInventoryApplyPayload,
@@ -506,7 +514,7 @@ function ProductionInventoryPanel({
               </tbody>
             </table>
           </div>
-          <div className="flex justify-end">
+          {canVoid ? <div className="flex justify-end">
             <button
               className="h-10 rounded-md border border-red-300 bg-white px-4 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:border-slate-200 disabled:text-slate-400"
               type="button"
@@ -515,7 +523,7 @@ function ProductionInventoryPanel({
             >
               {isVoiding ? "Anulando aplicación..." : "Anular aplicación"}
             </button>
-          </div>
+          </div> : null}
         </div>
       ) : (
         <>

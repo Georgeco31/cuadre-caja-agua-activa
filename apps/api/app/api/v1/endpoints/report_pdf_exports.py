@@ -7,7 +7,7 @@ from fastapi import status as http_status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_db, require_admin_auditor
 from app.services.pdf_export import (
     build_daily_operational_summary_pdf,
     build_management_dashboard_pdf,
@@ -20,7 +20,7 @@ from app.services.pdf_export import (
 router = APIRouter(
     prefix="/reports/exports",
     tags=["report-pdf-exports"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_auditor)],
 )
 
 

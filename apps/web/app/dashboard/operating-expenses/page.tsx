@@ -23,6 +23,7 @@ import {
   voidOperatingExpense,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import { isValidMoneyInputDraft, parseMoneyInputToCents } from "@/lib/money";
 import {
   OPERATING_EXPENSE_PAYMENT_METHOD_LABELS,
@@ -102,6 +103,7 @@ const emptyFilters: ExpenseFilterValues = {
 };
 
 export default function OperatingExpensesPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [section, setSection] = useState<Section>("expenses");
@@ -471,7 +473,7 @@ export default function OperatingExpensesPage() {
   function handleError(possibleError: unknown, fallback: string) {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -534,18 +536,18 @@ export default function OperatingExpensesPage() {
             count={expenses.length}
             onClick={() => setSection("expenses")}
           />
-          <SectionButton
+          {canVoid ? <SectionButton
             active={section === "categories"}
             label="Categorías"
             count={categories.length}
             onClick={() => setSection("categories")}
-          />
-          <SectionButton
+          /> : null}
+          {canVoid ? <SectionButton
             active={section === "recurring"}
             label="Plantillas recurrentes"
             count={templates.length}
             onClick={() => setSection("recurring")}
-          />
+          /> : null}
         </nav>
 
         {error ? <ErrorMessage message={error} /> : null}
@@ -602,6 +604,7 @@ export default function OperatingExpensesPage() {
           />
         ) : (
           <ExpensesSection
+            canVoid={canVoid}
             categories={activeCategories}
             allCategories={categories}
             suppliers={suppliers}
@@ -840,6 +843,7 @@ function CategoriesSection({
 }
 
 function ExpensesSection({
+  canVoid,
   categories,
   allCategories,
   suppliers,
@@ -864,6 +868,7 @@ function ExpensesSection({
   onVoidReasonChange,
   onVoid,
 }: {
+  canVoid: boolean;
   categories: OperatingExpenseCategory[];
   allCategories: OperatingExpenseCategory[];
   suppliers: Supplier[];
@@ -1187,7 +1192,7 @@ function ExpensesSection({
         </div>
       </form>
 
-      {voidingExpense ? (
+      {canVoid && voidingExpense ? (
         <form
           className="rounded-lg border border-red-200 bg-red-50 p-4"
           onSubmit={onVoid}
@@ -1295,7 +1300,7 @@ function ExpensesSection({
                 >
                   Ver detalle
                 </button>
-                {expense.status === "active" ? (
+                {canVoid && expense.status === "active" ? (
                   <button
                     className="h-9 rounded-md border border-red-200 px-3 text-sm font-semibold text-red-700 hover:bg-red-50"
                     type="button"

@@ -7,8 +7,13 @@ import { useRouter } from "next/navigation";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
-import { ApiError, downloadFile, getManagementDashboard } from "@/lib/api";
-import { getToken, removeToken } from "@/lib/auth";
+import {
+  ApiError,
+  downloadFile,
+  getCurrentUser,
+  getManagementDashboard,
+} from "@/lib/api";
+import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type {
   ManagementAlert,
   ManagementDashboard,
@@ -38,6 +43,7 @@ export default function ManagementDashboardPage() {
   const [exportingFormat, setExportingFormat] = useState<
     "xlsx" | "pdf" | null
   >(null);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -46,9 +52,27 @@ export default function ManagementDashboardPage() {
       return;
     }
 
-    setToken(storedToken);
-    loadReport(storedToken, {});
+    void authorizePage(storedToken);
   }, [router]);
+
+  async function authorizePage(activeToken: string) {
+    try {
+      const currentUser = await getCurrentUser(activeToken);
+      saveUser(currentUser);
+      if (currentUser.role !== "admin_auditor") {
+        setForbidden(true);
+        setIsLoading(false);
+        return;
+      }
+      setToken(activeToken);
+      await loadReport(activeToken, {});
+    } catch (loadError) {
+      if (!redirectIfUnauthorized(loadError)) {
+        setError(getErrorMessage(loadError));
+        setIsLoading(false);
+      }
+    }
+  }
 
   async function loadReport(
     activeToken: string,
@@ -139,7 +163,7 @@ export default function ManagementDashboardPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -173,6 +197,19 @@ export default function ManagementDashboardPage() {
           <LogoutButton />
         </header>
 
+        {forbidden ? (
+          <section className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+            <h2 className="text-lg font-semibold text-amber-950">
+              No tienes permisos
+            </h2>
+            <p className="mt-2 text-sm text-amber-900">
+              El panel gerencial está reservado al administrador/auditor.
+            </p>
+          </section>
+        ) : null}
+
+        {!forbidden ? (
+          <>
         <ManagementFilters
           disabled={isLoading || exportingFormat !== null}
           exportingFormat={exportingFormat}
@@ -195,6 +232,8 @@ export default function ManagementDashboardPage() {
           Este panel no modifica información. Los valores son informativos y
           dependen de los registros ingresados en cada módulo.
         </p>
+          </>
+        ) : null}
       </div>
     </main>
   );

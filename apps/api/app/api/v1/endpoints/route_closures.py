@@ -3,7 +3,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.models.user import User
 from app.schemas.route_closure import (
     RouteClosureCreate,
@@ -86,7 +86,11 @@ def get_route_closure_cash_receipt(
         raise _http_error(error) from error
 
 
-@router.post("/{closure_id}/void", response_model=RouteClosureRead)
+@router.post(
+    "/{closure_id}/void",
+    response_model=RouteClosureRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def void_route_closure(
     closure_id: int,
     payload: RouteClosureVoid,

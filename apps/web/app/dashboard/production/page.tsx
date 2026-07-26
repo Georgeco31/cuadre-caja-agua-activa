@@ -24,6 +24,7 @@ import {
   voidProductionInventoryApplication,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { InventoryLocation } from "@/types/inventory";
 import type { Product } from "@/types/product";
 import type {
@@ -43,6 +44,7 @@ const emptyFilters: ProductionFilterValues = {
 };
 
 export default function ProductionPage() {
+  const canVoid = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -286,7 +288,7 @@ export default function ProductionPage() {
   function redirectIfUnauthorized(possibleError: unknown): boolean {
     if (
       possibleError instanceof ApiError &&
-      (possibleError.status === 401 || possibleError.status === 403)
+      possibleError.status === 401
     ) {
       removeToken();
       router.replace("/login");
@@ -347,6 +349,7 @@ export default function ProductionPage() {
               onSubmit={handleCreateProduction}
             />
             <ProductionList
+              canVoid={canVoid}
               batches={batches}
               products={products}
               locations={locations}
@@ -376,7 +379,7 @@ export default function ProductionPage() {
         )}
       </div>
 
-      {voidingBatch ? (
+      {canVoid && voidingBatch ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
           role="dialog"
@@ -442,7 +445,7 @@ export default function ProductionPage() {
         </div>
       ) : null}
 
-      {voidingInventory ? (
+      {canVoid && voidingInventory ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
           role="dialog"
