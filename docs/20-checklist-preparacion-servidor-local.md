@@ -1,7 +1,9 @@
 # 20 - Checklist de preparación del servidor local
 
-Este checklist corresponde al futuro Bloque 55A y etapas siguientes. No
-autoriza ejecutar todavía el traslado, Tailscale ni una restauración.
+La configuración del Bloque 55A ya está preparada en el repositorio. El bloque
+permanece abierto hasta probarla en la PC y este checklist no autoriza ejecutar
+todavía el traslado, Tailscale, una restauración oficial ni el piloto. La guía
+operativa está en [`23-docker-produccion-local.md`](23-docker-produccion-local.md).
 
 ## 1. Antes de mover a la PC
 
@@ -61,29 +63,30 @@ autoriza ejecutar todavía el traslado, Tailscale ni una restauración.
 
 ## 4. Docker de producción
 
-- [ ] Archivo Compose de producción separado del desarrollo.
-- [ ] API ejecuta sin `--reload`.
-- [ ] Web ejecuta `next start`, no `next dev`.
+- [x] Archivo Compose de producción separado del desarrollo.
+- [x] API configurada para ejecutar sin `--reload`.
+- [x] Web configurada para ejecutar `next start`, no `next dev`.
 - [ ] Imágenes construidas desde el commit etiquetado.
-- [ ] PostgreSQL usa volumen persistente nombrado.
-- [ ] PostgreSQL no publica `5432` a la red.
+- [x] PostgreSQL configurado con volumen persistente nombrado separado.
+- [x] Compose productivo no publica `5432` hacia el host.
+- [ ] Verificar desde otra PC que PostgreSQL no es accesible por red.
 - [ ] Si se mantiene el mapeo, se enlaza exclusivamente a `127.0.0.1`.
-- [ ] API y web tienen healthchecks.
-- [ ] Servicios tienen política `restart` adecuada.
-- [ ] Logs tienen rotación y límite.
+- [x] API y Web tienen healthchecks.
+- [x] Servicios tienen política `restart: unless-stopped`.
+- [x] Logs tienen rotación y límite básico.
 - [ ] Límites de CPU/memoria revisados.
-- [ ] Contenedores no root donde sea viable.
+- [x] API y Web configuradas con usuarios no root.
 - [ ] Versiones de imágenes fijadas y actualización planificada.
-- [ ] Migraciones se ejecutan como paso consciente y respaldado.
-- [ ] Seeds no se ejecutan automáticamente en cada arranque.
-- [ ] `docker compose down -v` está prohibido en operación.
+- [x] Migraciones documentadas como paso consciente y respaldado.
+- [x] Seeds no se ejecutan automáticamente en cada arranque.
+- [x] `docker compose down -v` está prohibido en operación.
 
 Comandos operativos esperados, una vez aprobados:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml down
+docker compose -f docker-compose.prod.yml --env-file .env.production.local up -d
+docker compose -f docker-compose.prod.yml --env-file .env.production.local ps
+docker compose -f docker-compose.prod.yml --env-file .env.production.local down
 ```
 
 Nunca:

@@ -292,6 +292,9 @@ cuadre-caja-agua-activa/
 - Bloque 54: roles `operator` y `admin_auditor`, cuentas personales,
   administracion de usuarios, permisos backend para acciones criticas y
   navegacion frontend segun rol.
+- Bloque 55A: configuracion Docker de produccion local separada, imagenes
+  productivas, secretos por entorno, healthchecks y scripts operativos seguros.
+  Queda preparada en el repositorio, pero no cerrada hasta probarse en la PC.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -339,18 +342,22 @@ de gastos, cookies ni refresh tokens.
   criterios de cierre.
 - `docs/22-matriz-permisos-roles.md`: permisos efectivos de `operator` y
   `admin_auditor` por accion.
+- `docs/23-docker-produccion-local.md`: preparacion, seguridad y operacion del
+  Compose de produccion local del Bloque 55A.
 
 ## Antes de usar datos reales
 
-El Bloque 54 resuelve la separacion base de roles, pero **todavia no autoriza
-mover el ERP al servidor ni iniciar el piloto**. Leer en este orden:
+Los Bloques 54 y 55A resuelven la separacion base de roles y preparan Docker
+de produccion local, pero **todavia no autorizan mover el ERP al servidor ni
+iniciar el piloto**. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
 3. `docs/21-plan-correcciones-pre-produccion.md`.
 4. `docs/22-matriz-permisos-roles.md`.
-5. `docs/20-checklist-preparacion-servidor-local.md`.
-6. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
+5. `docs/23-docker-produccion-local.md`.
+6. `docs/20-checklist-preparacion-servidor-local.md`.
+7. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
    esten cerrados.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
@@ -397,6 +404,38 @@ Los datos de PostgreSQL se conservan en el volumen Docker `postgres_data`. Los b
 
 No usar `docker compose down -v` con datos reales. Para apagar sin borrar datos,
 usar siempre `./scripts/local-stop.sh`.
+
+## Produccion local preparada (Bloque 55A)
+
+La configuracion separada usa `docker-compose.prod.yml` y
+`.env.production.local`. PostgreSQL no publica 5432, la API arranca con Uvicorn
+sin reload y la Web se construye con `npm run build` y arranca con
+`npm run start`.
+
+Preparar primero las variables sin secretos de desarrollo:
+
+```bash
+cp .env.production.example .env.production.local
+```
+
+Reemplazar todos los marcadores y seguir la guia completa antes de construir:
+
+```text
+docs/23-docker-produccion-local.md
+```
+
+Comandos operativos:
+
+```bash
+./scripts/prod-local-start.sh
+./scripts/prod-local-health.sh
+./scripts/prod-local-logs.sh
+./scripts/prod-local-stop.sh
+```
+
+El arranque productivo no ejecuta migraciones ni seeds. Esta configuracion
+todavia no autoriza usar la PC como servidor oficial, mover datos, abrir
+puertos, configurar Tailscale ni iniciar el piloto.
 
 ## Frontend
 

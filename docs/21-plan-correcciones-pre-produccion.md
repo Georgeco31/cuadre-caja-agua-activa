@@ -22,6 +22,20 @@ Esto no cierra los riesgos de servidor, red, backups, restore, auditoría
 avanzada ni piloto. La matriz vigente está en
 [`22-matriz-permisos-roles.md`](22-matriz-permisos-roles.md).
 
+## Estado del Bloque 55A
+
+El repositorio ya contiene Compose productivo separado, Dockerfiles
+productivos, plantilla de variables sin secretos, healthchecks, rotación de
+logs y scripts seguros de arranque, health, logs y apagado. PostgreSQL no
+publica 5432, la API no usa reload y la Web no usa el servidor de desarrollo.
+
+Por tanto, P0-05 y la preparación de código de P0-06 quedan **preparados, no
+cerrados**. Su cierre exige construir y probar en la PC, verificar desde otro
+equipo que 5432 no sea accesible y registrar evidencia. Continúan abiertos
+P0-07, P0-08, P0-09, todos los controles de red, los backups automáticos y la
+restauración demostrada. La guía está en
+[`23-docker-produccion-local.md`](23-docker-produccion-local.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -30,10 +44,10 @@ avanzada ni piloto. La matriz vigente está en
 | P0-02 | 54 | Auditoría de acciones por usuario para correcciones/anulaciones críticas | Desarrollo | Crítica | Cada acción conserva usuario y motivo; pruebas lo verifican |
 | P0-03 | 54 | Migración de roles revisada manualmente | Desarrollo | Crítica | Upgrade/downgrade aislados; diff no elimina índices/constraints históricos |
 | P0-04 | 54B | Reconciliar deuda Alembic en bloque dedicado | Desarrollo | Alta | `alembic check` limpio o baseline de excepciones explícito y aprobado |
-| P0-05 | 55A | Compose productivo endurecido | Desarrollo/infraestructura | Crítica | Sin reload/dev; restart, healthchecks, logs, usuarios y volumen verificados |
-| P0-06 | 55A | Retirar exposición de PostgreSQL | Infraestructura | Crítica | `5432` no accesible desde otro equipo; API sí conecta internamente |
+| P0-05 | 55A/55A-2 | Compose productivo endurecido (preparado en repositorio; pendiente prueba en PC) | Desarrollo/infraestructura | Crítica | Sin reload/dev; restart, healthchecks, logs, usuarios y volumen verificados en PC |
+| P0-06 | 55A/55A-2 | Retirar exposición de PostgreSQL (sin `ports` en Compose; pendiente prueba en red) | Infraestructura | Crítica | `5432` no accesible desde otro equipo; API sí conecta internamente |
 | P0-07 | 55A | Rotar contraseña PostgreSQL y secretos productivos | George + infraestructura | Crítica | No hay defaults; health/login pasan; secretos no se publican |
-| P0-08 | 55A | Resolver URL de API, CORS, IP/DNS y firewall LAN | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
+| P0-08 | 55B | Resolver URL de API, CORS, IP/DNS y firewall LAN | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
 | P0-10 | 55B | Backup automático, retención, checksum, cifrado y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada y alerta de fallo |
 | P0-11 | 55B | Restauración real en ambiente aislado | Infraestructura + George | Crítica | Restore aprobado; conteos, Alembic, health, login y muestras coinciden |

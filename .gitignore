@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+!.env.production.example
+.env.production.local
 
 # Python
 __pycache__/
@@ -33,6 +35,10 @@ pnpm-debug.log*
 *.log
 docker-data/
 backups/
+dumps/
+*.backup
+*.dump
+*.sql.gz
 
 # OS / editors
 .DS_Store
