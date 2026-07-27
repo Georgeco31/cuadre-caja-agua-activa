@@ -16,7 +16,8 @@ Ningún script imprime el contenido de `.env.production.local`. El apagado no
 elimina volúmenes y el inicio normal no reconstruye imágenes.
 
 El Bloque 56A amplía esta operación con backup PostgreSQL manual y preparación
-de la tarea diaria. La restauración sigue separada y pendiente.
+de la tarea diaria. El Bloque 56B añade una restauración demostrada en un
+contenedor PostgreSQL temporal, aislado y desechable.
 
 ## Requisitos
 
@@ -51,6 +52,8 @@ partir de su propia carpeta.
 | `prod-local-backup-register-task.ps1` | Registra una tarea diaria; admite `-WhatIf` | Solo al ejecutarlo sin `-WhatIf` |
 | `prod-local-backup-check-task.ps1` | Consulta estado y ejecuciones de la tarea | No |
 | `prod-local-backup-unregister-task.ps1` | Quita la tarea con confirmación o `-Force` | Quita la tarea; conserva backups |
+| `prod-local-restore-test.ps1` | Restaura y valida un dump en un contenedor aislado | Crea y elimina un contenedor temporal; no modifica producción |
+| `prod-local-restore-test-list.ps1` | Lista evidencias seguras de restauración | No |
 
 `prod-local-common.ps1` contiene validaciones compartidas y no se ejecuta
 directamente.
@@ -156,6 +159,37 @@ advertencias de Docker Desktop y los comandos para consultar o quitar la tarea
 están en
 [`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
 
+## Restauración controlada
+
+Probar automáticamente el backup `.dump` más reciente:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-restore-test.ps1
+```
+
+Probar un backup específico:
+
+```powershell
+.\scripts\prod-local-restore-test.ps1 `
+  -BackupPath .\backups\postgres\agua-activa-postgres-20260727-133213.dump
+```
+
+Listar la evidencia segura:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-restore-test-list.ps1
+```
+
+El script detecta la imagen PostgreSQL productiva, crea un contenedor con red
+`none`, sin puertos ni volumen Docker, restaura el dump y valida SHA256,
+`pg_restore --list`, Alembic, tablas, conteos y salud productiva. El password
+temporal solo existe en memoria. En una ejecución correcta, el contenedor
+siempre se elimina y la evidencia queda en `backups/restore-tests`, ignorada por
+Git.
+
+El procedimiento, tratamiento de fallos y comandos prohibidos están en
+[`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
+
 ## Apagar sin borrar datos
 
 ```powershell
@@ -183,7 +217,8 @@ continua.
 1. Confirmar que el cambio a instalar está aprobado.
 2. Ejecutar `git pull` por el procedimiento autorizado.
 3. Crear y comprobar un backup con `prod-local-backup-db.ps1` antes de
-   actualizar. La restauración demostrada sigue pendiente para el Bloque 56B.
+   actualizar. Repetir periódicamente la restauración aislada con
+   `prod-local-restore-test.ps1`.
 4. Reconstruir:
 
    ```powershell
@@ -294,7 +329,7 @@ También está prohibido:
 
 - Reserva DHCP para la IP LAN.
 - Ejecución real comprobada de la tarea diaria, retención y copia externa.
-- Restauración demostrada en un entorno aislado.
+- Pruebas integrales finales sobre un entorno restaurado cuando se autoricen.
 - Rotar contraseñas antes del piloto.
 - Piloto paralelo controlado.
 - Activación del Programador de tareas bajo aprobación, servicio de Windows,

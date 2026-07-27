@@ -10,7 +10,8 @@ Un backup comprobado es obligatorio antes del piloto porque un error operativo,
 una actualización fallida o una avería pueden dejar la información del ERP
 inutilizable. Este bloque reduce el riesgo de pérdida, pero no demuestra aún que
 el sistema pueda recuperarse: la restauración controlada corresponde al Bloque
-56B.
+56B. Esa restauración fue implementada y comprobada posteriormente; consultar
+[`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
 
 ## Alcance
 
@@ -26,8 +27,9 @@ No se respalda en este bloque:
 - `.env.production.local` ni otro archivo con secretos;
 - imágenes Docker, código fuente o configuración del sistema operativo.
 
-Tampoco se implementan restauración, retención o eliminación automática,
-cifrado avanzado, copia automática a USB/nube ni notificaciones.
+El Bloque 56A no implementa restauración, retención o eliminación automática,
+cifrado avanzado, copia automática a USB/nube ni notificaciones. La restauración
+manual aislada se implementa por separado en el Bloque 56B.
 
 ## Carpeta y archivos
 
@@ -90,8 +92,8 @@ Al terminar debe mostrar la ruta, el tamaño, el hash y:
 Validacion: OK: pg_restore --list
 ```
 
-La validación de formato no sustituye una restauración. El backup todavía debe
-probarse en el Bloque 56B.
+La validación de formato no sustituye una restauración. El backup final fue
+restaurado realmente y aprobado después en el Bloque 56B.
 
 ## Listar backups
 
@@ -202,7 +204,7 @@ cifrado avanzado siguen pendientes.
 - Backup manual: implementado y comprobado.
 - Preparación de backup automático: implementada mediante scripts de registro,
   consulta y desregistro; la tarea real no se registra sin aprobación.
-- Restauración demostrada: pendiente para el Bloque 56B.
+- Restauración demostrada: implementada y comprobada en el Bloque 56B.
 - Piloto: pendiente.
 
 ## Evidencia de la prueba en KERNELOS-PC
@@ -228,3 +230,8 @@ ajuste final de limpieza del temporal, sin borrar el backup anterior:
 
 No se ejecutó restauración, no se modificó la base, no se apagaron contenedores,
 no se borraron volúmenes y no se registró la tarea diaria.
+
+Posteriormente, el Bloque 56B restauró el backup final en un contenedor temporal
+aislado y aprobó SHA256, `pg_restore --list`, restore, Alembic, tablas, conteos,
+health productivo y cleanup. Esa prueba no cambió la base productiva. La tarea
+diaria continúa sin registrarse y el piloto continúa pendiente.

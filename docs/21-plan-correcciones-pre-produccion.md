@@ -109,6 +109,22 @@ implementan retención, copia externa automática, alertas, cifrado avanzado ni
 restauración. El procedimiento está en
 [`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
 
+## Estado del Bloque 56B
+
+La restauración real del backup
+`agua-activa-postgres-20260727-133213.dump` quedó demostrada en un contenedor
+`postgres:16-alpine` temporal y desechable. El contenedor no tuvo red, puertos
+publicados ni volumen Docker, y nunca usó el servicio o volumen productivo.
+
+SHA256, `pg_restore --list`, restore, Alembic `0026_user_roles`, 13 tablas
+principales y conteos numéricos aprobaron. `db`, `api` y `web` permanecieron
+healthy, PostgreSQL 5432 siguió sin publicarse y el contenedor temporal fue
+eliminado. La evidencia segura está ignorada por Git y el procedimiento está en
+[`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
+
+Esto cierra la restauración demostrada del alcance 56B. La tarea diaria de
+backup, pruebas integrales y piloto continúan pendientes.
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -123,7 +139,7 @@ restauración. El procedimiento está en
 | P0-08 | 55B-1 | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente antes del piloto) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
 | P0-10 | 56A y posteriores | Backup manual comprobado y tarea diaria preparada; faltan ejecución automática comprobada, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada y alerta de fallo |
-| P0-11 | 56B | Restauración real en ambiente aislado | Infraestructura + George | Crítica | Restore aprobado; conteos, Alembic, health, login y muestras coinciden |
+| P0-11 | 56B | Restauración real en ambiente aislado (demostrada; faltan pruebas integrales de login y muestras) | Infraestructura + George | Crítica | Restore, tablas, conteos, Alembic, health y cleanup aprobados; login y muestras pasan en pruebas integrales |
 | P0-12 | 55B | Manual de recuperación y responsables | George + infraestructura | Alta | Documento puede seguirse de principio a fin y registra RPO/RTO |
 
 ## Correcciones recomendadas antes del piloto
@@ -173,10 +189,13 @@ Bloque 55A: servidor, red, zona horaria y seguridad Docker
 Bloque 56A: backup manual y preparación de tarea diaria
   |
   v
-Bloque 56B: restore aislado; después, retención y copia externa
+Bloque 56B aprobado: restore aislado demostrado
   |
   v
-Piloto controlado, solo después de aprobar 56B
+Pruebas integrales, retención, copia externa y backup diario registrado
+  |
+  v
+Piloto controlado, solo después de cerrar los pendientes
 ```
 
 ## Guardas obligatorias para el Bloque 54

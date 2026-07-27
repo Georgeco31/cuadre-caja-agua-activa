@@ -6,14 +6,17 @@ actual. Los Bloques 55B-2 y 55B-2A dejaron instalado y endurecido Tailscale, y
 George confirmó Web, API, login, dashboard, panel gerencial y exportaciones
 desde su iPhone con datos móviles. También confirmó login, dashboard y una
 pantalla operativa por Wi-Fi/LAN con Tailscale apagado. La reserva DHCP sigue
-  pendiente y es obligatoria antes del piloto. El Bloque 56A implementa backup
-  manual y prepara la tarea diaria, pero no demuestra restauración ni registra
-  automáticamente la tarea. Este checklist no autoriza una restauración oficial
-  ni el piloto. Las evidencias están en
+pendiente y es obligatoria antes del piloto. El Bloque 56A implementa backup
+manual y prepara la tarea diaria, y el Bloque 56B demuestra una restauración
+real en un contenedor temporal aislado. La tarea diaria no fue registrada. Este
+checklist no autoriza una restauración sobre producción ni el piloto. Las
+evidencias están en
 [`24-prueba-docker-produccion-pc.md`](24-prueba-docker-produccion-pc.md) y
 [`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md), y el avance
 Tailscale en
 [`26-tailscale-acceso-remoto-privado.md`](26-tailscale-acceso-remoto-privado.md).
+La restauración controlada está documentada en
+[`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
 
 ## 1. Antes de mover a la PC
 
@@ -30,9 +33,10 @@ Tailscale en
 - [ ] `docker compose config` aprobado sin publicar su salida.
 - [ ] `alembic heads`, `current` y base en `0026_user_roles`.
 - [ ] Ninguna operación Alembic histórica no autorizada incluida.
-- [ ] Backup de línea base creado.
-- [ ] Restore de ese backup aprobado en base aislada.
-- [ ] Conteos y muestras funcionales coinciden tras restore.
+- [x] Backup de línea base creado.
+- [x] Restore de ese backup aprobado en base aislada.
+- [x] Tablas principales y conteos numéricos validados tras el restore.
+- [ ] Muestras funcionales e integrales comparadas tras el restore.
 - [ ] Tiempo máximo de recuperación medido.
 - [ ] Inventario físico del PC, disco y UPS documentado.
 
@@ -123,7 +127,7 @@ docker compose down -v
   el Bloque 56A.
 - [x] Registro, consulta y desregistro de tarea diaria preparados; el registro
   real requiere aprobación.
-- [ ] Restauración demostrada; queda para el Bloque 56B.
+- [x] Restauración demostrada en contenedor temporal aislado por el Bloque 56B.
 - [ ] Piloto controlado; no se inicia con estos scripts.
 
 ## 5. Red local
@@ -218,6 +222,7 @@ docker compose down -v
 
 - [x] Script de backup manual PostgreSQL implementado.
 - [x] Destino `backups/postgres` ignorado por Git.
+- [x] Destino `backups/restore-tests` ignorado por Git.
 - [x] Archivo manual con timestamp, checksum, metadata y tamaño mayor que cero.
 - [x] Formato custom validado con `pg_restore --list`.
 - [x] Preparación de tarea diaria implementada con modo `-WhatIf`.
@@ -238,13 +243,16 @@ docker compose down -v
 
 ## 11. Restauración
 
-- [ ] Restore se realiza primero en un entorno aislado.
-- [ ] Se confirma archivo, fecha, checksum y proyecto.
+- [x] Restore se realiza primero en un entorno aislado, sin red ni puertos.
+- [x] Se confirma archivo, fecha, checksum y proyecto.
 - [ ] Se crea backup del destino antes de restaurar.
 - [ ] Se registra hora inicial y final.
-- [ ] El proceso termina sin error.
-- [ ] Alembic queda en la revisión esperada.
-- [ ] Health y login funcionan.
+- [x] El proceso termina sin error.
+- [x] Alembic queda en la revisión esperada `0026_user_roles`.
+- [x] Tablas principales existen y sus conteos son numéricos.
+- [x] Health productivo aprueba antes y después; 5432 sigue sin publicarse.
+- [x] Contenedor temporal eliminado al finalizar.
+- [ ] Login y flujos integrales funcionan sobre un entorno restaurado accesible.
 - [ ] Conteos de tablas coinciden con el origen.
 - [ ] Se revisan muestras de caja, gastos, ventas, inventario, producción,
   compras y nómina.
@@ -264,7 +272,7 @@ docker compose down -v
 
 ## 13. Piloto
 
-- [ ] Base restaurable y backup de línea base.
+- [x] Base restaurable y backup de línea base.
 - [ ] Un `operator` y un `admin_auditor` definidos.
 - [ ] Alcance limitado: productos/clientes/ruta seleccionados.
 - [ ] Controles actuales se mantienen en paralelo.

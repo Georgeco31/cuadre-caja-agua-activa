@@ -9,10 +9,11 @@ todavía el equipo en servidor oficial** ni autoriza el piloto.
 
 Los bloques posteriores documentaron LAN y Tailscale privado sin Funnel. El
 Bloque 56A incorpora backup manual seguro y prepara la tarea diaria de Windows
-sin registrarla automáticamente. Siguen pendientes la reserva DHCP, la
-ejecución automática comprobada, restauración demostrada y piloto. Ninguno de
-estos bloques mueve o restaura una base oficial, crea migraciones, ejecuta seeds
-o cambia reglas de negocio.
+sin registrarla automáticamente. El Bloque 56B demuestra la restauración real
+del backup en un contenedor temporal aislado, sin tocar la base oficial. Siguen
+pendientes la reserva DHCP, la ejecución automática comprobada, pruebas
+integrales y piloto. Ninguno de estos bloques restaura sobre producción, crea
+migraciones, ejecuta seeds o cambia reglas de negocio.
 
 ## Desarrollo frente a producción local
 
@@ -50,12 +51,16 @@ base de desarrollo.
   con inicio sin build por defecto, estado, rebuild y migración consciente.
 - `scripts/prod-local-backup-*.ps1`: backup PostgreSQL, listado y preparación
   segura de la tarea diaria de Windows del Bloque 56A.
+- `scripts/prod-local-restore-test*.ps1`: restauración controlada en un
+  contenedor temporal y listado seguro de evidencias del Bloque 56B.
 
 Los `.sh` son útiles en macOS/Linux. En KERNELOS-PC se usan los `.ps1` del
 Bloque 55C, documentados en
   [`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
 El backup del Bloque 56A está en
 [`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
+La restauración controlada del Bloque 56B está en
+[`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
 
 ## Aislamiento de PostgreSQL
 
@@ -352,7 +357,7 @@ sin backup o ejecutar seeds repetidamente para intentar reparar usuarios.
 - [x] No existe una migración `0027`.
 - [x] `.env.production.local` no está versionado.
 - [ ] Secretos productivos se generarán directamente en la PC.
-- [ ] Backup reciente y restauración aislada comprobados antes de mover datos.
+- [x] Backup reciente y restauración aislada comprobados antes de mover datos.
 - [ ] Inventario de hardware, disco disponible y UPS documentados.
 - [ ] George autoriza expresamente la prueba en la PC, no el piloto.
 
@@ -412,7 +417,8 @@ prueba controlada**, sin que esto autorice el piloto. Continúan pendientes:
 - Ejecución comprobada de la tarea diaria; el backup manual con checksum y su
   preparación automática ya están implementados en el Bloque 56A.
 - Retención, cifrado avanzado, alertas y copia externa.
-- Restauración demostrada en un entorno aislado.
+- Restauración demostrada: aprobada en el Bloque 56B con evidencia segura; debe
+  repetirse periódicamente y antes de cambios críticos.
 - Reserva DHCP para conservar estable la IP LAN usada en configuración,
   documentos y scripts.
 - Monitoreo, alertas, revisión de disco y prueba de UPS.
