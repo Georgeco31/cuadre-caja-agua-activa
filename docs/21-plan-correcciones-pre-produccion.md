@@ -22,19 +22,36 @@ Esto no cierra los riesgos de servidor, red, backups, restore, auditoría
 avanzada ni piloto. La matriz vigente está en
 [`22-matriz-permisos-roles.md`](22-matriz-permisos-roles.md).
 
-## Estado del Bloque 55A
+## Estado de los Bloques 55A y 55A-2
 
 El repositorio ya contiene Compose productivo separado, Dockerfiles
 productivos, plantilla de variables sin secretos, healthchecks, rotación de
 logs y scripts seguros de arranque, health, logs y apagado. PostgreSQL no
 publica 5432, la API no usa reload y la Web no usa el servidor de desarrollo.
 
-Por tanto, P0-05 y la preparación de código de P0-06 quedan **preparados, no
-cerrados**. Su cierre exige construir y probar en la PC, verificar desde otro
-equipo que 5432 no sea accesible y registrar evidencia. Continúan abiertos
-P0-07, P0-08, P0-09, todos los controles de red, los backups automáticos y la
-restauración demostrada. La guía está en
-[`23-docker-produccion-local.md`](23-docker-produccion-local.md).
+La construcción, health, persistencia, migración `0026_user_roles`, login,
+panel y exportaciones fueron probados en KERNELOS-PC. P0-05 queda comprobado
+para esta prueba controlada. P0-06 mantiene pendiente únicamente la prueba
+negativa de `5432` desde otro equipo de la red. La evidencia está en
+[`24-prueba-docker-produccion-pc.md`](24-prueba-docker-produccion-pc.md).
+
+## Estado del Bloque 55B-1
+
+KERNELOS-PC usa la IPv4 privada `192.168.100.220` en Ethernet. La interfaz quedó
+en perfil `Private`; Web y API se publican en 3000 y 8010 con reglas de Windows
+Firewall limitadas a `Private` y `LocalSubnet`. CORS y
+`NEXT_PUBLIC_API_URL` usan la IP LAN, Web fue reconstruida, health y login
+funcionan desde la propia PC usando esa IP y PostgreSQL sigue sin publicar
+5432.
+
+La prueba desde otro dispositivo LAN fue confirmada como exitosa usando
+`192.168.100.220`, por lo que P0-08 queda resuelto para la prueba controlada.
+La reserva DHCP está pendiente porque no se tienen las credenciales del router
+y debe configurarse antes del piloto, directamente o mediante el
+proveedor/técnico. También queda pendiente confirmar desde otro equipo que
+`5432` no es accesible. No se configuraron Tailscale, port forwarding, backups,
+restauración ni piloto. La evidencia está en
+[`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md).
 
 ## Correcciones obligatorias antes de producción
 
@@ -44,10 +61,10 @@ restauración demostrada. La guía está en
 | P0-02 | 54 | Auditoría de acciones por usuario para correcciones/anulaciones críticas | Desarrollo | Crítica | Cada acción conserva usuario y motivo; pruebas lo verifican |
 | P0-03 | 54 | Migración de roles revisada manualmente | Desarrollo | Crítica | Upgrade/downgrade aislados; diff no elimina índices/constraints históricos |
 | P0-04 | 54B | Reconciliar deuda Alembic en bloque dedicado | Desarrollo | Alta | `alembic check` limpio o baseline de excepciones explícito y aprobado |
-| P0-05 | 55A/55A-2 | Compose productivo endurecido (preparado en repositorio; pendiente prueba en PC) | Desarrollo/infraestructura | Crítica | Sin reload/dev; restart, healthchecks, logs, usuarios y volumen verificados en PC |
-| P0-06 | 55A/55A-2 | Retirar exposición de PostgreSQL (sin `ports` en Compose; pendiente prueba en red) | Infraestructura | Crítica | `5432` no accesible desde otro equipo; API sí conecta internamente |
+| P0-05 | 55A/55A-2 | Compose productivo endurecido (comprobado en KERNELOS-PC para prueba controlada) | Desarrollo/infraestructura | Crítica | Sin reload/dev; restart, healthchecks, logs, usuarios y volumen verificados en PC |
+| P0-06 | 55A/55A-2/55B-1 | Retirar exposición de PostgreSQL (sin `ports`; sin listener en host; pendiente prueba desde otro equipo) | Infraestructura | Crítica | `5432` no accesible desde otro equipo; API sí conecta internamente |
 | P0-07 | 55A | Rotar contraseña PostgreSQL y secretos productivos | George + infraestructura | Crítica | No hay defaults; health/login pasan; secretos no se publican |
-| P0-08 | 55B | Resolver URL de API, CORS, IP/DNS y firewall LAN | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
+| P0-08 | 55B-1 | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente antes del piloto) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
 | P0-10 | 55B | Backup automático, retención, checksum, cifrado y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada y alerta de fallo |
 | P0-11 | 55B | Restauración real en ambiente aislado | Infraestructura + George | Crítica | Restore aprobado; conteos, Alembic, health, login y muestras coinciden |

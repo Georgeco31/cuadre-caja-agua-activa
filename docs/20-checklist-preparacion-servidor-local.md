@@ -1,9 +1,12 @@
 # 20 - Checklist de preparación del servidor local
 
-La configuración del Bloque 55A ya está preparada en el repositorio. El bloque
-permanece abierto hasta probarla en la PC y este checklist no autoriza ejecutar
-todavía el traslado, Tailscale, una restauración oficial ni el piloto. La guía
-operativa está en [`23-docker-produccion-local.md`](23-docker-produccion-local.md).
+La configuración del Bloque 55A fue probada en KERNELOS-PC. El acceso del
+Bloque 55B-1 también fue confirmado desde otro dispositivo LAN usando la IP
+actual; la reserva DHCP sigue pendiente y es obligatoria antes del piloto. Este
+checklist no autoriza todavía Tailscale, una restauración oficial ni el piloto.
+Las evidencias están en
+[`24-prueba-docker-produccion-pc.md`](24-prueba-docker-produccion-pc.md) y
+[`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md).
 
 ## 1. Antes de mover a la PC
 
@@ -54,8 +57,8 @@ operativa está en [`23-docker-produccion-local.md`](23-docker-produccion-local.
 - [ ] `AUTH_ALGORITHM` restringido al algoritmo acordado.
 - [ ] Expiración JWT revisada para el horario operativo.
 - [ ] `NEXT_PUBLIC_API_URL` es accesible desde un PC cliente.
-- [ ] `BACKEND_CORS_ORIGINS` contiene solo orígenes exactos aprobados.
-- [ ] No se usa `*` para CORS.
+- [x] `BACKEND_CORS_ORIGINS` contiene solo orígenes exactos aprobados.
+- [x] No se usa `*` para CORS.
 - [ ] No se usan valores fallback `change-me`.
 - [ ] No se imprime `docker compose config` en tickets o chats.
 - [ ] Existe copia cifrada y controlada de la configuración necesaria para
@@ -97,15 +100,15 @@ docker compose down -v
 
 ## 5. Red local
 
-- [ ] PC servidor conectado por cable cuando sea posible.
-- [ ] Reserva DHCP o IP fija documentada.
+- [x] PC servidor conectado por cable cuando sea posible.
+- [ ] Reserva DHCP o IP fija configurada; recomendación y bloqueo documentados.
 - [ ] Nombre DNS/local estable definido, si la red lo permite.
-- [ ] Un PC cliente resuelve el nombre o alcanza la IP.
-- [ ] Frontend abre desde el cliente.
-- [ ] API health abre desde el cliente solo por el camino aprobado.
-- [ ] Login funciona desde el cliente.
-- [ ] CORS no genera errores.
-- [ ] `NEXT_PUBLIC_API_URL` no apunta a `localhost` desde el cliente.
+- [x] Un cliente LAN alcanza la IP.
+- [x] Frontend abre desde el cliente.
+- [x] API health abre desde el cliente solo por el camino aprobado.
+- [x] Login funciona desde el cliente.
+- [x] CORS no genera errores en la prueba LAN.
+- [x] `NEXT_PUBLIC_API_URL` no apunta a `localhost` desde el cliente.
 - [ ] No existe port forwarding en el router de Internet.
 - [ ] No se usa DMZ del router.
 - [ ] Red Wi-Fi usa cifrado moderno y contraseña controlada.
@@ -114,14 +117,14 @@ docker compose down -v
 ## 6. Firewall
 
 - [ ] Política de entrada por defecto restrictiva.
-- [ ] Puerto PostgreSQL `5432` bloqueado para todos los dispositivos remotos.
-- [ ] Puertos web/API permitidos solo desde la subred local aprobada.
+- [x] Puerto PostgreSQL `5432` sin listener ni publicación en el host.
+- [x] Puertos web/API permitidos solo desde la subred local aprobada.
 - [ ] Acceso Tailscale permitido solo por la interfaz/ACL correspondiente.
 - [ ] Administración remota del sistema limitada a George.
 - [ ] No hay reglas públicas `0.0.0.0/0`.
-- [ ] Reglas probadas desde un equipo permitido.
+- [x] Reglas probadas desde un equipo permitido.
 - [ ] Reglas probadas desde un equipo/red no permitidos.
-- [ ] Resultado y capturas de configuración guardados sin secretos.
+- [x] Resultado de configuración guardado sin secretos.
 
 ## 7. Tailscale privado
 
@@ -140,19 +143,20 @@ docker compose down -v
 
 ## 8. Pruebas de acceso
 
-- [ ] `GET /api/v1/health` devuelve `status=ok`.
-- [ ] `/login` carga sin error.
+- [x] `GET /api/v1/health` devuelve `status=ok` desde la LAN.
+- [x] `/login` carga sin error desde la LAN.
 - [ ] Login operator válido.
-- [ ] Login `admin_auditor` válido.
+- [x] Login `admin_auditor` válido por la IP LAN.
 - [ ] Credenciales inválidas son rechazadas.
 - [ ] Token vencido redirige a login.
 - [ ] Operator no puede abrir ni invocar acciones administrativas.
 - [ ] Ocultar enlace en frontend no es el único control.
-- [ ] Dashboard carga.
+- [x] Dashboard carga por la IP LAN.
 - [ ] Caja diaria carga y conserva un cuadre por fecha.
 - [ ] Historial y detalle cargan.
 - [ ] Clientes, productos, inventario, producción y nómina cargan según rol.
-- [ ] Panel gerencial y exportaciones respetan permisos.
+- [x] Panel gerencial carga con `admin_auditor`; exportaciones ya verificadas
+  en el Bloque 55A-2.
 - [ ] Un Excel y un PDF se descargan.
 - [ ] Rango sin datos devuelve archivo válido y estado vacío.
 - [ ] Ninguna consulta/report/export modifica conteos.
