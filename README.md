@@ -201,7 +201,8 @@ cuadre-caja-agua-activa/
 │   ├── 09-vision-erp-agua-activa.md
 │   ├── 10-modulos-erp.md
 │   ├── 11-roadmap-erp.md
-│   └── 12-reglas-negocio-erp.md
+│   ├── 12-reglas-negocio-erp.md
+│   └── 28-backups-postgresql-windows.md
 ├── scripts/
 │   ├── backup-db.sh
 │   ├── check-health.sh
@@ -300,7 +301,11 @@ cuadre-caja-agua-activa/
   pendiente.
 - Bloque 55C: scripts PowerShell de inicio, apagado seguro, health, logs,
   estado, reconstruccion y migracion consciente para operar desde Windows sin
-  WSL. Backups, restauracion automatizada y piloto siguen pendientes.
+  WSL.
+- Bloque 56A: backup manual PostgreSQL en formato custom, SHA256, metadata
+  segura, validacion con `pg_restore --list` y scripts para preparar, consultar
+  o quitar una tarea diaria de Windows. La tarea no se registra automaticamente;
+  la restauracion demostrada y el piloto siguen pendientes.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -359,6 +364,8 @@ de gastos, cookies ni refresh tokens.
   55B-2A.
 - `docs/27-scripts-powershell-servidor-local.md`: operacion segura en Windows,
   accesos directos, actualizaciones y comandos prohibidos del Bloque 55C.
+- `docs/28-backups-postgresql-windows.md`: backup manual seguro y preparacion
+  del backup diario de PostgreSQL en Windows para el Bloque 56A.
 
 ## Antes de usar datos reales
 
@@ -375,9 +382,10 @@ iniciar el piloto**. Leer en este orden:
 7. `docs/25-red-local-firewall-pc.md`.
 8. `docs/26-tailscale-acceso-remoto-privado.md`.
 9. `docs/27-scripts-powershell-servidor-local.md`.
-10. `docs/20-checklist-preparacion-servidor-local.md`.
-11. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
-   esten cerrados.
+10. `docs/28-backups-postgresql-windows.md`.
+11. `docs/20-checklist-preparacion-servidor-local.md`.
+12. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
+    esten cerrados.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni
@@ -424,7 +432,7 @@ Los datos de PostgreSQL se conservan en el volumen Docker `postgres_data`. Los b
 No usar `docker compose down -v` con datos reales. Para apagar sin borrar datos,
 usar siempre `./scripts/local-stop.sh`.
 
-## Produccion local en Windows (Bloques 55A a 55C)
+## Produccion local en Windows (Bloques 55A a 56A)
 
 La configuracion separada usa `docker-compose.prod.yml` y
 `.env.production.local`. PostgreSQL no publica 5432, la API arranca con Uvicorn
@@ -450,6 +458,8 @@ Comandos operativos recomendados en KERNELOS-PC:
 .\scripts\prod-local-health.ps1
 .\scripts\prod-local-status.ps1
 .\scripts\prod-local-logs.ps1
+.\scripts\prod-local-backup-db.ps1
+.\scripts\prod-local-backup-list.ps1
 .\scripts\prod-local-stop.ps1
 ```
 
@@ -457,7 +467,8 @@ Para una actualizacion aprobada, crear y comprobar primero un backup y usar
 `prod-local-rebuild.ps1`. Ejecutar `prod-local-migrate.ps1` solo cuando la
 actualizacion incluya migraciones revisadas. Los scripts `.sh` siguen siendo
 utiles en macOS/Linux, pero no son necesarios en Windows. La guia completa es
-`docs/27-scripts-powershell-servidor-local.md`.
+`docs/27-scripts-powershell-servidor-local.md`; el procedimiento de backup y
+tarea diaria está en `docs/28-backups-postgresql-windows.md`.
 
 El arranque productivo no reconstruye por defecto ni ejecuta migraciones o
 seeds. Los Bloques 55B-2 y

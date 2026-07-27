@@ -15,6 +15,9 @@ docker-compose.prod.yml
 Ningún script imprime el contenido de `.env.production.local`. El apagado no
 elimina volúmenes y el inicio normal no reconstruye imágenes.
 
+El Bloque 56A amplía esta operación con backup PostgreSQL manual y preparación
+de la tarea diaria. La restauración sigue separada y pendiente.
+
 ## Requisitos
 
 - Windows con PowerShell 5.1 o posterior.
@@ -43,6 +46,11 @@ partir de su propia carpeta.
 | `prod-local-status.ps1` | Muestra `docker compose ps` y las URL | No |
 | `prod-local-rebuild.ps1` | Reconstruye imágenes después de una actualización | Reconstruye/recrea contenedores; conserva volúmenes |
 | `prod-local-migrate.ps1` | Aplica `alembic upgrade head` de forma explícita | Sí, modifica el esquema |
+| `prod-local-backup-db.ps1` | Crea, valida y documenta un backup PostgreSQL | Crea archivos en `backups/postgres`; no modifica la base |
+| `prod-local-backup-list.ps1` | Lista backups del más reciente al más antiguo | No |
+| `prod-local-backup-register-task.ps1` | Registra una tarea diaria; admite `-WhatIf` | Solo al ejecutarlo sin `-WhatIf` |
+| `prod-local-backup-check-task.ps1` | Consulta estado y ejecuciones de la tarea | No |
+| `prod-local-backup-unregister-task.ps1` | Quita la tarea con confirmación o `-Force` | Quita la tarea; conserva backups |
 
 `prod-local-common.ps1` contiene validaciones compartidas y no se ejecuta
 directamente.
@@ -119,6 +127,35 @@ y su valor predeterminado es 100. El script no lee ni muestra el archivo de
 entorno; los propios logs de la aplicación deben revisarse periódicamente para
 confirmar que no registran tokens, contraseñas o datos personales completos.
 
+## Backup PostgreSQL
+
+Crear y validar un backup manual:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-db.ps1
+```
+
+Listar los backups existentes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-list.ps1
+```
+
+Los archivos quedan en `backups/postgres`, ignorados por Git. El script crea un
+dump custom, SHA256 y metadata sin secretos, y exige que `pg_restore --list`
+apruebe. No restaura, no borra backups anteriores y no modifica la base.
+
+Preparar el registro de la tarea diaria sin modificar Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-register-task.ps1 -WhatIf
+```
+
+El registro real requiere aprobación explícita. La guía completa, las
+advertencias de Docker Desktop y los comandos para consultar o quitar la tarea
+están en
+[`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
+
 ## Apagar sin borrar datos
 
 ```powershell
@@ -145,9 +182,8 @@ continua.
 
 1. Confirmar que el cambio a instalar está aprobado.
 2. Ejecutar `git pull` por el procedimiento autorizado.
-3. Crear y comprobar un backup antes de actualizar. El backup automático y su
-   restauración demostrada siguen pendientes y no forman parte de estos
-   scripts.
+3. Crear y comprobar un backup con `prod-local-backup-db.ps1` antes de
+   actualizar. La restauración demostrada sigue pendiente para el Bloque 56B.
 4. Reconstruir:
 
    ```powershell
@@ -251,14 +287,15 @@ También está prohibido:
 - compartir la cuenta administradora;
 - ejecutar seeds como reparación o en operación diaria;
 - restaurar datos sin el procedimiento y backup aprobados;
+- subir a Git cualquier archivo de `backups/`;
 - abrir router, habilitar Funnel o ampliar firewall como parte de este bloque.
 
 ## Pendientes
 
 - Reserva DHCP para la IP LAN.
-- Backup automático, retención y copia externa.
+- Ejecución real comprobada de la tarea diaria, retención y copia externa.
 - Restauración demostrada en un entorno aislado.
 - Rotar contraseñas antes del piloto.
 - Piloto paralelo controlado.
-- Programador de tareas, servicio de Windows, watchdog y monitoreo externo,
-  todos fuera del Bloque 55C.
+- Activación del Programador de tareas bajo aprobación, servicio de Windows,
+  watchdog y monitoreo externo.

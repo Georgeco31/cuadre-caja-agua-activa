@@ -6,8 +6,10 @@ actual. Los Bloques 55B-2 y 55B-2A dejaron instalado y endurecido Tailscale, y
 George confirmó Web, API, login, dashboard, panel gerencial y exportaciones
 desde su iPhone con datos móviles. También confirmó login, dashboard y una
 pantalla operativa por Wi-Fi/LAN con Tailscale apagado. La reserva DHCP sigue
-pendiente y es obligatoria antes del piloto. Este checklist no autoriza una
-restauración oficial ni el piloto. Las evidencias están en
+  pendiente y es obligatoria antes del piloto. El Bloque 56A implementa backup
+  manual y prepara la tarea diaria, pero no demuestra restauración ni registra
+  automáticamente la tarea. Este checklist no autoriza una restauración oficial
+  ni el piloto. Las evidencias están en
 [`24-prueba-docker-produccion-pc.md`](24-prueba-docker-produccion-pc.md) y
 [`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md), y el avance
 Tailscale en
@@ -117,8 +119,11 @@ docker compose down -v
   requeridos en Windows.
 - [x] Los accesos directos y comandos prohibidos están documentados en
   [`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
-- [ ] Backup automático y restauración demostrada; no forman parte del Bloque
-  55C.
+- [x] Backup manual con SHA256, metadata y `pg_restore --list` implementado en
+  el Bloque 56A.
+- [x] Registro, consulta y desregistro de tarea diaria preparados; el registro
+  real requiere aprobación.
+- [ ] Restauración demostrada; queda para el Bloque 56B.
 - [ ] Piloto controlado; no se inicia con estos scripts.
 
 ## 5. Red local
@@ -211,11 +216,15 @@ docker compose down -v
 
 ## 10. Backups
 
+- [x] Script de backup manual PostgreSQL implementado.
+- [x] Destino `backups/postgres` ignorado por Git.
+- [x] Archivo manual con timestamp, checksum, metadata y tamaño mayor que cero.
+- [x] Formato custom validado con `pg_restore --list`.
+- [x] Preparación de tarea diaria implementada con modo `-WhatIf`.
 - [ ] Backup PostgreSQL automático cada día.
 - [ ] Hora del backup no interrumpe el cierre operativo.
 - [ ] Fallo de backup genera alerta.
-- [ ] Archivo tiene timestamp, checksum y tamaño mayor que cero.
-- [ ] Backup se comprime.
+- [x] Backup manual usa formato custom comprimido de PostgreSQL.
 - [ ] Backup se cifra antes de salir del servidor.
 - [ ] Retención definida; recomendación inicial:
   - [ ] 7 diarios.
@@ -224,7 +233,7 @@ docker compose down -v
 - [ ] Existe al menos una copia en medio externo.
 - [ ] La copia externa no está permanentemente expuesta a ransomware.
 - [ ] `.env` y manual de reconstrucción se respaldan por canal seguro.
-- [ ] Backups nunca entran a Git.
+- [x] Backups nunca entran a Git por las reglas actuales de `.gitignore`.
 - [ ] Espacio de backups se monitorea.
 
 ## 11. Restauración

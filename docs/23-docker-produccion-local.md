@@ -7,10 +7,12 @@ el Bloque 55A-2 la probó en KERNELOS-PC. El Bloque 55C añade operación nativa
 con PowerShell. Esta evidencia permite la prueba controlada, pero **no convierte
 todavía el equipo en servidor oficial** ni autoriza el piloto.
 
-Los bloques posteriores documentaron LAN y Tailscale privado sin Funnel. Siguen
-pendientes la reserva DHCP, backups automáticos, restauración demostrada y
-piloto. Ninguno de estos bloques mueve o restaura una base oficial, crea
-migraciones, ejecuta seeds o cambia reglas de negocio.
+Los bloques posteriores documentaron LAN y Tailscale privado sin Funnel. El
+Bloque 56A incorpora backup manual seguro y prepara la tarea diaria de Windows
+sin registrarla automáticamente. Siguen pendientes la reserva DHCP, la
+ejecución automática comprobada, restauración demostrada y piloto. Ninguno de
+estos bloques mueve o restaura una base oficial, crea migraciones, ejecuta seeds
+o cambia reglas de negocio.
 
 ## Desarrollo frente a producción local
 
@@ -46,10 +48,14 @@ base de desarrollo.
 - `scripts/prod-local-stop.sh`: apaga sin eliminar volúmenes.
 - `scripts/prod-local-*.ps1`: operación equivalente y ampliada para Windows,
   con inicio sin build por defecto, estado, rebuild y migración consciente.
+- `scripts/prod-local-backup-*.ps1`: backup PostgreSQL, listado y preparación
+  segura de la tarea diaria de Windows del Bloque 56A.
 
 Los `.sh` son útiles en macOS/Linux. En KERNELOS-PC se usan los `.ps1` del
 Bloque 55C, documentados en
-[`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
+  [`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
+El backup del Bloque 56A está en
+[`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
 
 ## Aislamiento de PostgreSQL
 
@@ -403,7 +409,9 @@ prueba controlada**, sin que esto autorice el piloto. Continúan pendientes:
   Wi-Fi/LAN comprobados desde el iPhone de George, sin Funnel; acceso dual listo
   para prueba controlada.
 - Contraseña PostgreSQL y secretos productivos creados en la PC.
-- Backups automáticos, retención, checksum, cifrado y copia externa.
+- Ejecución comprobada de la tarea diaria; el backup manual con checksum y su
+  preparación automática ya están implementados en el Bloque 56A.
+- Retención, cifrado avanzado, alertas y copia externa.
 - Restauración demostrada en un entorno aislado.
 - Reserva DHCP para conservar estable la IP LAN usada en configuración,
   documentos y scripts.

@@ -95,6 +95,20 @@ El procedimiento, los accesos directos y los comandos prohibidos están en
 Este bloque no implementa backups, restauración, tareas programadas, watchdog,
 monitoreo externo ni piloto.
 
+## Estado del Bloque 56A
+
+El backup manual de PostgreSQL queda implementado en Windows con formato custom,
+timestamp, tamaño, SHA256, metadata sin secretos y validación mediante
+`pg_restore --list`. El dump se crea dentro de `db` y se copia al host sin
+streaming binario de PowerShell.
+
+También quedan preparados los scripts para registrar, consultar y quitar una
+tarea diaria de Windows. El modo `-WhatIf` permite revisar el registro sin
+modificar Task Scheduler; la tarea real no se registra sin aprobación. No se
+implementan retención, copia externa automática, alertas, cifrado avanzado ni
+restauración. El procedimiento está en
+[`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -108,8 +122,8 @@ monitoreo externo ni piloto.
 | P0-07 | 55A | Rotar contraseña PostgreSQL y secretos productivos | George + infraestructura | Crítica | No hay defaults; health/login pasan; secretos no se publican |
 | P0-08 | 55B-1 | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente antes del piloto) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
-| P0-10 | 55B | Backup automático, retención, checksum, cifrado y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada y alerta de fallo |
-| P0-11 | 55B | Restauración real en ambiente aislado | Infraestructura + George | Crítica | Restore aprobado; conteos, Alembic, health, login y muestras coinciden |
+| P0-10 | 56A y posteriores | Backup manual comprobado y tarea diaria preparada; faltan ejecución automática comprobada, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada y alerta de fallo |
+| P0-11 | 56B | Restauración real en ambiente aislado | Infraestructura + George | Crítica | Restore aprobado; conteos, Alembic, health, login y muestras coinciden |
 | P0-12 | 55B | Manual de recuperación y responsables | George + infraestructura | Alta | Documento puede seguirse de principio a fin y registra RPO/RTO |
 
 ## Correcciones recomendadas antes del piloto
@@ -156,10 +170,13 @@ Bloque 54B: reconciliación Alembic controlada
 Bloque 55A: servidor, red, zona horaria y seguridad Docker
   |
   v
-Bloque 55B: backup, retención, copia externa y restore
+Bloque 56A: backup manual y preparación de tarea diaria
   |
   v
-Bloque 56: piloto controlado
+Bloque 56B: restore aislado; después, retención y copia externa
+  |
+  v
+Piloto controlado, solo después de aprobar 56B
 ```
 
 ## Guardas obligatorias para el Bloque 54
