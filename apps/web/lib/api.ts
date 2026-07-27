@@ -211,7 +211,37 @@ import type {
   UserUpdatePayload,
 } from "@/types/user";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1";
+const FALLBACK_API_URL = (
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1"
+).replace(/\/+$/, "");
+
+type ApiLocation = {
+  hostname: string;
+  protocol: string;
+};
+
+export function resolveApiBaseUrl(location?: ApiLocation): string {
+  if (!location) {
+    return FALLBACK_API_URL;
+  }
+
+  const { hostname, protocol } = location;
+  if (
+    hostname === "localhost" ||
+    hostname === "127.0.0.1" ||
+    hostname === "::1"
+  ) {
+    return FALLBACK_API_URL;
+  }
+
+  return `${protocol}//${hostname}:8010/api/v1`;
+}
+
+export function getApiBaseUrl(): string {
+  return resolveApiBaseUrl(
+    typeof window === "undefined" ? undefined : window.location,
+  );
+}
 
 export class ApiError extends Error {
   status: number;
@@ -564,7 +594,7 @@ export async function downloadFile(
   endpoint: string,
   filename: string,
 ): Promise<void> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
     headers: authHeaders(token),
   });
   if (!response.ok) {
@@ -2819,7 +2849,7 @@ async function request<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

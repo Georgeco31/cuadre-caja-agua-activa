@@ -354,7 +354,9 @@ pero abierto hasta probarse en la PC**. Continúan pendientes:
 - Firewall restrictivo.
 - CORS con la dirección LAN real.
 - HTTPS local o acceso cifrado equivalente.
-- Tailscale privado, sin Funnel, en el Bloque 55B-2.
+- Tailscale privado de los Bloques 55B-2 y 55B-2A: acceso remoto y acceso
+  Wi-Fi/LAN comprobados desde el iPhone de George, sin Funnel; acceso dual listo
+  para prueba controlada.
 - Contraseña PostgreSQL y secretos productivos creados en la PC.
 - Backups automáticos, retención, checksum, cifrado y copia externa.
 - Restauración demostrada en un entorno aislado.
