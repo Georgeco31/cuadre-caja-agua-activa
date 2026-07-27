@@ -294,7 +294,13 @@ cuadre-caja-agua-activa/
   navegacion frontend segun rol.
 - Bloque 55A: configuracion Docker de produccion local separada, imagenes
   productivas, secretos por entorno, healthchecks y scripts operativos seguros.
-  Queda preparada en el repositorio, pero no cerrada hasta probarse en la PC.
+  La configuracion fue probada en KERNELOS-PC.
+- Bloques 55B-1, 55B-2 y 55B-2A: acceso LAN y Tailscale privado comprobados,
+  con acceso dual y sin publicar PostgreSQL 5432. La reserva DHCP sigue
+  pendiente.
+- Bloque 55C: scripts PowerShell de inicio, apagado seguro, health, logs,
+  estado, reconstruccion y migracion consciente para operar desde Windows sin
+  WSL. Backups, restauracion automatizada y piloto siguen pendientes.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -351,6 +357,8 @@ de gastos, cookies ni refresh tokens.
 - `docs/26-tailscale-acceso-remoto-privado.md`: instalación, endurecimiento,
   acceso remoto privado y evidencia de acceso dual de los Bloques 55B-2 y
   55B-2A.
+- `docs/27-scripts-powershell-servidor-local.md`: operacion segura en Windows,
+  accesos directos, actualizaciones y comandos prohibidos del Bloque 55C.
 
 ## Antes de usar datos reales
 
@@ -366,8 +374,9 @@ iniciar el piloto**. Leer en este orden:
 6. `docs/24-prueba-docker-produccion-pc.md`.
 7. `docs/25-red-local-firewall-pc.md`.
 8. `docs/26-tailscale-acceso-remoto-privado.md`.
-9. `docs/20-checklist-preparacion-servidor-local.md`.
-10. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
+9. `docs/27-scripts-powershell-servidor-local.md`.
+10. `docs/20-checklist-preparacion-servidor-local.md`.
+11. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
    esten cerrados.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
@@ -415,7 +424,7 @@ Los datos de PostgreSQL se conservan en el volumen Docker `postgres_data`. Los b
 No usar `docker compose down -v` con datos reales. Para apagar sin borrar datos,
 usar siempre `./scripts/local-stop.sh`.
 
-## Produccion local preparada (Bloque 55A)
+## Produccion local en Windows (Bloques 55A a 55C)
 
 La configuracion separada usa `docker-compose.prod.yml` y
 `.env.production.local`. PostgreSQL no publica 5432, la API arranca con Uvicorn
@@ -434,16 +443,24 @@ Reemplazar todos los marcadores y seguir la guia completa antes de construir:
 docs/23-docker-produccion-local.md
 ```
 
-Comandos operativos:
+Comandos operativos recomendados en KERNELOS-PC:
 
-```bash
-./scripts/prod-local-start.sh
-./scripts/prod-local-health.sh
-./scripts/prod-local-logs.sh
-./scripts/prod-local-stop.sh
+```powershell
+.\scripts\prod-local-start.ps1
+.\scripts\prod-local-health.ps1
+.\scripts\prod-local-status.ps1
+.\scripts\prod-local-logs.ps1
+.\scripts\prod-local-stop.ps1
 ```
 
-El arranque productivo no ejecuta migraciones ni seeds. Los Bloques 55B-2 y
+Para una actualizacion aprobada, crear y comprobar primero un backup y usar
+`prod-local-rebuild.ps1`. Ejecutar `prod-local-migrate.ps1` solo cuando la
+actualizacion incluya migraciones revisadas. Los scripts `.sh` siguen siendo
+utiles en macOS/Linux, pero no son necesarios en Windows. La guia completa es
+`docs/27-scripts-powershell-servidor-local.md`.
+
+El arranque productivo no reconstruye por defecto ni ejecuta migraciones o
+seeds. Los Bloques 55B-2 y
 55B-2A configuran Tailscale privado en KERNELOS-PC y documentan la prueba final
 desde el iPhone de George: login, dashboard y pantalla operativa por Wi-Fi/LAN
 sin Tailscale; login, dashboard, panel gerencial y exportaciones por datos

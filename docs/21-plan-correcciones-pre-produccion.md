@@ -82,6 +82,19 @@ una pantalla operativa por LAN. El acceso dual LAN + Tailscale queda listo para
 prueba controlada. La evidencia está en
 [`26-tailscale-acceso-remoto-privado.md`](26-tailscale-acceso-remoto-privado.md).
 
+## Estado del Bloque 55C
+
+KERNELOS-PC dispone de scripts PowerShell nativos para iniciar, apagar sin
+borrar datos, consultar health, logs y estado, y reconstruir después de una
+actualización. La migración queda en un script separado que advierte sobre el
+backup y no ejecuta seeds. Los scripts `.sh` continúan para macOS/Linux, pero
+Windows ya no depende de WSL para la operación diaria.
+
+El procedimiento, los accesos directos y los comandos prohibidos están en
+[`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
+Este bloque no implementa backups, restauración, tareas programadas, watchdog,
+monitoreo externo ni piloto.
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |

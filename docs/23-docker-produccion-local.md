@@ -2,14 +2,15 @@
 
 ## Estado y objetivo
 
-El Bloque 55A prepara una configuración Docker separada para ejecutar Agua
-Activa ERP en una futura PC de escritorio dentro de la red local. La
-configuración queda lista para construir y probar, pero **no convierte todavía
-ningún equipo en servidor oficial** y no autoriza usar datos reales.
+El Bloque 55A preparó una configuración Docker separada para Agua Activa ERP y
+el Bloque 55A-2 la probó en KERNELOS-PC. El Bloque 55C añade operación nativa
+con PowerShell. Esta evidencia permite la prueba controlada, pero **no convierte
+todavía el equipo en servidor oficial** ni autoriza el piloto.
 
-Este bloque no configura IP fija, firewall, router, Tailscale, HTTPS, backups
-automáticos, restauración oficial ni piloto. Tampoco mueve una base oficial,
-crea migraciones, ejecuta seeds o cambia reglas de negocio.
+Los bloques posteriores documentaron LAN y Tailscale privado sin Funnel. Siguen
+pendientes la reserva DHCP, backups automáticos, restauración demostrada y
+piloto. Ninguno de estos bloques mueve o restaura una base oficial, crea
+migraciones, ejecuta seeds o cambia reglas de negocio.
 
 ## Desarrollo frente a producción local
 
@@ -43,6 +44,12 @@ base de desarrollo.
 - `scripts/prod-local-health.sh`: revisa contenedores, API, Web y Alembic.
 - `scripts/prod-local-logs.sh`: muestra los últimos 200 registros.
 - `scripts/prod-local-stop.sh`: apaga sin eliminar volúmenes.
+- `scripts/prod-local-*.ps1`: operación equivalente y ampliada para Windows,
+  con inicio sin build por defecto, estado, rebuild y migración consciente.
+
+Los `.sh` son útiles en macOS/Linux. En KERNELOS-PC se usan los `.ps1` del
+Bloque 55C, documentados en
+[`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
 
 ## Aislamiento de PostgreSQL
 
@@ -148,6 +155,18 @@ docker compose \
 
 ## Iniciar
 
+En Windows:
+
+```powershell
+.\scripts\prod-local-start.ps1
+```
+
+Este inicio usa `up -d` sin `--build`. Para reconstruir después de una
+actualización aprobada se usa `prod-local-rebuild.ps1`, siempre después de un
+backup comprobado.
+
+En macOS/Linux:
+
 ```bash
 ./scripts/prod-local-start.sh
 ```
@@ -158,10 +177,12 @@ El script:
 2. rechaza variables obligatorias vacías, marcadores de ejemplo, CORS `*` y
    secretos con longitud insuficiente;
 3. valida Compose;
-4. construye e inicia `db`, `api` y `web`;
+4. inicia `db`, `api` y `web`; el `.ps1` no construye por defecto;
 5. no aplica migraciones y no ejecuta seeds.
 
-El inicio puede tardar durante el primer build. Las URL locales por defecto son:
+El `.ps1` requiere imágenes ya construidas. La primera reconstrucción con
+`prod-local-rebuild.ps1` puede tardar; los inicios diarios reutilizan esas
+imágenes. Las URL locales por defecto son:
 
 ```text
 http://localhost:3000/login
@@ -218,6 +239,12 @@ de cambio de contraseña.
 
 Después de migrar:
 
+```powershell
+.\scripts\prod-local-health.ps1
+```
+
+En macOS/Linux también permanece disponible:
+
 ```bash
 ./scripts/prod-local-health.sh
 ```
@@ -227,14 +254,24 @@ La verificación confirma:
 - los contenedores `db`, `api` y `web` están activos;
 - `/api/v1/health` devuelve `status=ok`;
 - `/login` responde;
-- `alembic current` contiene `0026_user_roles`.
+- Alembic contiene `0026_user_roles`;
+- PostgreSQL 5432 no está publicado;
+- `.env.production.local` no está versionado.
 
 El healthcheck no crea ni cambia datos. Si la base todavía no fue migrada, la
 consulta de Alembic fallará de forma intencional.
 
 ## Logs
 
-Mostrar los últimos 200 registros de todos los servicios:
+En Windows, mostrar los últimos 100 registros de todos los servicios o filtrar:
+
+```powershell
+.\scripts\prod-local-logs.ps1
+.\scripts\prod-local-logs.ps1 -Service api
+.\scripts\prod-local-logs.ps1 -Service web -Tail 200
+```
+
+En macOS/Linux, mostrar los últimos 200 registros de todos los servicios:
 
 ```bash
 ./scripts/prod-local-logs.sh
@@ -252,6 +289,14 @@ Aun así, se debe revisar que la aplicación no registre contraseñas, tokens o
 datos personales completos.
 
 ## Apagar sin borrar datos
+
+En Windows:
+
+```powershell
+.\scripts\prod-local-stop.ps1
+```
+
+En macOS/Linux:
 
 ```bash
 ./scripts/prod-local-stop.sh
@@ -347,8 +392,8 @@ pendiente en la PC ni autoriza datos reales.
 
 ## Riesgos y bloques pendientes
 
-El bloqueador “Docker producción local” queda **preparado en el repositorio,
-pero abierto hasta probarse en la PC**. Continúan pendientes:
+Docker de producción local queda **preparado y probado en KERNELOS-PC para la
+prueba controlada**, sin que esto autorice el piloto. Continúan pendientes:
 
 - IP fija o reserva DHCP y nombre LAN.
 - Firewall restrictivo.
@@ -360,6 +405,8 @@ pero abierto hasta probarse en la PC**. Continúan pendientes:
 - Contraseña PostgreSQL y secretos productivos creados en la PC.
 - Backups automáticos, retención, checksum, cifrado y copia externa.
 - Restauración demostrada en un entorno aislado.
+- Reserva DHCP para conservar estable la IP LAN usada en configuración,
+  documentos y scripts.
 - Monitoreo, alertas, revisión de disco y prueba de UPS.
 - Restricción de OpenAPI y rate limiting del login.
 - Auditoría y remediación controlada de dependencias: durante el build,

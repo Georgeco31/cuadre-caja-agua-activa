@@ -103,6 +103,24 @@ Nunca:
 docker compose down -v
 ```
 
+### Scripts PowerShell de Windows (Bloque 55C)
+
+- [x] `prod-local-start.ps1` inicia sin `--build` y sin migraciones/seeds.
+- [x] `prod-local-stop.ps1` apaga con `down` y conserva los volúmenes.
+- [x] `prod-local-health.ps1` verifica Compose, contenedores, API, Web,
+  Alembic, PostgreSQL 5432 y estado Git del archivo de entorno.
+- [x] `prod-local-logs.ps1` filtra `api`, `web`, `db` o todos los servicios.
+- [x] `prod-local-status.ps1` muestra estado y URL sin modificar nada.
+- [x] `prod-local-rebuild.ps1` reconstruye sin borrar volúmenes.
+- [x] `prod-local-migrate.ps1` queda separado, advertido y nunca ejecuta seeds.
+- [x] Los scripts `.sh` permanecen disponibles para macOS/Linux y no son
+  requeridos en Windows.
+- [x] Los accesos directos y comandos prohibidos están documentados en
+  [`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
+- [ ] Backup automático y restauración demostrada; no forman parte del Bloque
+  55C.
+- [ ] Piloto controlado; no se inicia con estos scripts.
+
 ## 5. Red local
 
 - [x] PC servidor conectado por cable cuando sea posible.
