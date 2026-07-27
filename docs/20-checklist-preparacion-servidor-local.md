@@ -2,11 +2,16 @@
 
 La configuración del Bloque 55A fue probada en KERNELOS-PC. El acceso del
 Bloque 55B-1 también fue confirmado desde otro dispositivo LAN usando la IP
-actual; la reserva DHCP sigue pendiente y es obligatoria antes del piloto. Este
-checklist no autoriza todavía Tailscale, una restauración oficial ni el piloto.
-Las evidencias están en
+actual. Los Bloques 55B-2 y 55B-2A dejaron instalado y endurecido Tailscale, y
+George confirmó Web, API, login, dashboard, panel gerencial y exportaciones
+desde su iPhone con datos móviles. También confirmó login, dashboard y una
+pantalla operativa por Wi-Fi/LAN con Tailscale apagado. La reserva DHCP sigue
+pendiente y es obligatoria antes del piloto. Este checklist no autoriza una
+restauración oficial ni el piloto. Las evidencias están en
 [`24-prueba-docker-produccion-pc.md`](24-prueba-docker-produccion-pc.md) y
-[`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md).
+[`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md), y el avance
+Tailscale en
+[`26-tailscale-acceso-remoto-privado.md`](26-tailscale-acceso-remoto-privado.md).
 
 ## 1. Antes de mover a la PC
 
@@ -119,32 +124,40 @@ docker compose down -v
 - [ ] Política de entrada por defecto restrictiva.
 - [x] Puerto PostgreSQL `5432` sin listener ni publicación en el host.
 - [x] Puertos web/API permitidos solo desde la subred local aprobada.
-- [ ] Acceso Tailscale permitido solo por la interfaz/ACL correspondiente.
+- [x] Acceso Tailscale permitido solo por la interfaz y puertos 3000/8010
+  correspondientes.
 - [ ] Administración remota del sistema limitada a George.
-- [ ] No hay reglas públicas `0.0.0.0/0`.
+- [x] No hay reglas ERP en el perfil `Public` ni reglas entrantes genéricas
+  habilitadas para las direcciones Tailscale del nodo.
 - [x] Reglas probadas desde un equipo permitido.
 - [ ] Reglas probadas desde un equipo/red no permitidos.
 - [x] Resultado de configuración guardado sin secretos.
 
 ## 7. Tailscale privado
 
-- [ ] Configurar solo después de que LAN, firewall y roles estén aprobados.
-- [ ] Cuenta Tailscale bajo control de George.
+- [x] Configurar solo después de que LAN, firewall y roles estén aprobados.
+- [x] Cuenta Tailscale bajo control de George.
 - [ ] MFA habilitado.
-- [ ] PC servidor identificado con nombre claro.
+- [x] PC servidor identificado como `kernelos-pc`.
 - [ ] ACL permite solo a George y dispositivos autorizados.
-- [ ] No habilitar Funnel ni exposición pública.
-- [ ] PostgreSQL no se publica por Tailscale.
-- [ ] Acceso remoto usa web/API, no la base directamente.
+- [x] No habilitar Funnel ni exposición pública.
+- [x] PostgreSQL no se publica por Tailscale.
+- [x] Acceso remoto usa web/API, no la base directamente.
 - [ ] Dispositivo perdido puede revocarse de inmediato.
 - [ ] Claves/dispositivos expirados se revisan periódicamente.
-- [ ] Prueba remota realizada desde una red externa.
+- [x] Prueba remota realizada desde datos móviles en el iPhone de George.
 - [ ] Prueba confirma que un usuario no autorizado no accede.
 
 ## 8. Pruebas de acceso
 
 - [x] `GET /api/v1/health` devuelve `status=ok` desde la LAN.
 - [x] `/login` carga sin error desde la LAN.
+- [x] `GET /api/v1/health` y `/login` responden por la IPv4 Tailscale desde
+  KERNELOS-PC.
+- [x] Login, dashboard, panel gerencial y exportaciones comprobados desde el
+  iPhone de George conectado a Tailscale.
+- [x] Login, dashboard y pantalla operativa comprobados por LAN desde el iPhone
+  conectado por Wi-Fi y con Tailscale apagado.
 - [ ] Login operator válido.
 - [x] Login `admin_auditor` válido por la IP LAN.
 - [ ] Credenciales inválidas son rechazadas.

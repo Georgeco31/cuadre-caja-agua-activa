@@ -49,9 +49,38 @@ La prueba desde otro dispositivo LAN fue confirmada como exitosa usando
 La reserva DHCP está pendiente porque no se tienen las credenciales del router
 y debe configurarse antes del piloto, directamente o mediante el
 proveedor/técnico. También queda pendiente confirmar desde otro equipo que
-`5432` no es accesible. No se configuraron Tailscale, port forwarding, backups,
-restauración ni piloto. La evidencia está en
+`5432` no es accesible. En este bloque no se configuraron Tailscale, port
+forwarding, backups, restauración ni piloto. La evidencia está en
 [`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md).
+
+## Estado de los Bloques 55B-2 y 55B-2A
+
+Tailscale 1.98.9 fue instalado en KERNELOS-PC desde el paquete estable oficial,
+con checksum y firma digital comprobados. El nodo `kernelos-pc` está conectado
+bajo la cuenta controlada por George y recibió una IPv4 privada Tailscale. Web y
+API responden por esa dirección, el origen CORS exacto está permitido y Web fue
+reconstruida con la nueva `NEXT_PUBLIC_API_URL`.
+
+Las reglas entrantes generales que el instalador creó para las direcciones
+Tailscale fueron deshabilitadas. El ERP solo permite TCP 3000 y 8010 por la
+interfaz `Tailscale`, perfil `Private` y rango privado `100.64.0.0/10`.
+PostgreSQL no publica 5432 y ese puerto no respondió por Tailscale. Funnel y
+Serve no tienen configuración; no se tocaron router, port forwarding, subnet
+router ni exit node.
+
+George confirmó desde su iPhone con datos móviles el health, login
+`admin_auditor`, dashboard, panel gerencial y exportaciones por Tailscale. Al
+apagar Tailscale, el ERP dejó de responder.
+
+La primera configuración reveló que una única `NEXT_PUBLIC_API_URL` compilada
+rompía el acceso LAN sin Tailscale. El frontend ahora resuelve la API por el
+hostname actual: LAN usa `192.168.100.220:8010` y Tailscale usa
+`100.121.163.126:8010`, incluido el flujo de exportaciones. Typecheck, build,
+Compose, CORS y pruebas de formulario por ambos hostnames aprobaron. George
+confirmó desde el iPhone por Wi-Fi, con Tailscale apagado, el login, dashboard y
+una pantalla operativa por LAN. El acceso dual LAN + Tailscale queda listo para
+prueba controlada. La evidencia está en
+[`26-tailscale-acceso-remoto-privado.md`](26-tailscale-acceso-remoto-privado.md).
 
 ## Correcciones obligatorias antes de producción
 

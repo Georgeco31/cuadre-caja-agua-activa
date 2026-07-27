@@ -344,6 +344,13 @@ de gastos, cookies ni refresh tokens.
   `admin_auditor` por accion.
 - `docs/23-docker-produccion-local.md`: preparacion, seguridad y operacion del
   Compose de produccion local del Bloque 55A.
+- `docs/24-prueba-docker-produccion-pc.md`: evidencia de la prueba del Compose
+  productivo en KERNELOS-PC.
+- `docs/25-red-local-firewall-pc.md`: evidencia de red LAN y Windows Firewall
+  del Bloque 55B-1.
+- `docs/26-tailscale-acceso-remoto-privado.md`: instalación, endurecimiento,
+  acceso remoto privado y evidencia de acceso dual de los Bloques 55B-2 y
+  55B-2A.
 
 ## Antes de usar datos reales
 
@@ -356,8 +363,11 @@ iniciar el piloto**. Leer en este orden:
 3. `docs/21-plan-correcciones-pre-produccion.md`.
 4. `docs/22-matriz-permisos-roles.md`.
 5. `docs/23-docker-produccion-local.md`.
-6. `docs/20-checklist-preparacion-servidor-local.md`.
-7. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
+6. `docs/24-prueba-docker-produccion-pc.md`.
+7. `docs/25-red-local-firewall-pc.md`.
+8. `docs/26-tailscale-acceso-remoto-privado.md`.
+9. `docs/20-checklist-preparacion-servidor-local.md`.
+10. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
    esten cerrados.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
@@ -433,9 +443,13 @@ Comandos operativos:
 ./scripts/prod-local-stop.sh
 ```
 
-El arranque productivo no ejecuta migraciones ni seeds. Esta configuracion
-todavia no autoriza usar la PC como servidor oficial, mover datos, abrir
-puertos, configurar Tailscale ni iniciar el piloto.
+El arranque productivo no ejecuta migraciones ni seeds. Los Bloques 55B-2 y
+55B-2A configuran Tailscale privado en KERNELOS-PC y documentan la prueba final
+desde el iPhone de George: login, dashboard y pantalla operativa por Wi-Fi/LAN
+sin Tailscale; login, dashboard, panel gerencial y exportaciones por datos
+móviles con Tailscale. El acceso dual LAN + Tailscale está listo para prueba
+controlada. Esto todavía no autoriza usar la PC como servidor oficial, mover
+datos, abrir puertos públicos ni iniciar el piloto.
 
 ## Frontend
 

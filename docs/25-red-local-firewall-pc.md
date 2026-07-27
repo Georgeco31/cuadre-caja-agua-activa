@@ -143,10 +143,18 @@ la prueba.
 - Si la IP cambia antes de crear la reserva, actualizar CORS y
   `NEXT_PUBLIC_API_URL`, reconstruir Web y repetir las pruebas LAN.
 
-### Para 55B-2
+### Para 55B-2 y 55B-2A
 
-- Configurar Tailscale solo después de cerrar y aprobar la prueba LAN.
-- No habilitar Funnel ni ninguna exposición pública.
+- La configuración técnica de Tailscale se realizó después de aprobar esta
+  prueba LAN y está documentada en
+  [`26-tailscale-acceso-remoto-privado.md`](26-tailscale-acceso-remoto-privado.md).
+- No se habilitó Funnel ni ninguna exposición pública.
+- George confirmó desde su iPhone con datos móviles el health, login,
+  dashboard, panel gerencial y exportaciones por Tailscale. Al apagar Tailscale,
+  el ERP dejó de responder.
+- El frontend ahora resuelve la API por el hostname actual para conservar LAN y
+  Tailscale. Desde el iPhone por Wi-Fi, con Tailscale apagado, aprobaron login,
+  dashboard y una pantalla operativa por LAN.
 
 ### Para el Bloque 56
 
@@ -156,8 +164,8 @@ la prueba.
 
 ## Conclusión
 
-**Acceso LAN listo para prueba controlada, con reserva DHCP pendiente antes del
-piloto.**
+**Acceso dual LAN + Tailscale listo para prueba controlada, con reserva DHCP
+pendiente antes del piloto.**
 
 Web, API, CORS, login por IP y firewall fueron verificados en el servidor, y el
 acceso fue confirmado desde otro dispositivo LAN usando `192.168.100.220`.
