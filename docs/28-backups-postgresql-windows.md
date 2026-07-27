@@ -6,6 +6,10 @@ El Bloque 56A incorpora un procedimiento seguro para crear backups manuales de
 la base PostgreSQL de Agua Activa ERP en KERNELOS-PC y deja preparada, sin
 registrarla automáticamente, una tarea diaria de Windows.
 
+El Bloque 56C registra posteriormente esa tarea a las 23:30 y comprueba su
+operación mediante un inicio manual controlado. La evidencia está en
+[`30-backup-diario-programado-windows.md`](30-backup-diario-programado-windows.md).
+
 Un backup comprobado es obligatorio antes del piloto porque un error operativo,
 una actualización fallida o una avería pueden dejar la información del ERP
 inutilizable. Este bloque reduce el riesgo de pérdida, pero no demuestra aún que
@@ -148,7 +152,8 @@ dependencias de la sesión sin solicitar secretos.
 
 Crear el archivo del script no registra ni ejecuta la tarea. Durante el Bloque
 56A solo se valida el modo `-WhatIf`; la activación real queda bajo aprobación
-manual.
+manual. Esa aprobación se otorgó para el Bloque 56C y la tarea quedó registrada
+y probada.
 
 ## Consultar la tarea
 
@@ -205,6 +210,8 @@ cifrado avanzado siguen pendientes.
 - Preparación de backup automático: implementada mediante scripts de registro,
   consulta y desregistro; la tarea real no se registra sin aprobación.
 - Restauración demostrada: implementada y comprobada en el Bloque 56B.
+- Backup diario programado: registrado y validado por inicio manual controlado
+  en el Bloque 56C.
 - Piloto: pendiente.
 
 ## Evidencia de la prueba en KERNELOS-PC
@@ -233,5 +240,10 @@ no se borraron volúmenes y no se registró la tarea diaria.
 
 Posteriormente, el Bloque 56B restauró el backup final en un contenedor temporal
 aislado y aprobó SHA256, `pg_restore --list`, restore, Alembic, tablas, conteos,
-health productivo y cleanup. Esa prueba no cambió la base productiva. La tarea
-diaria continúa sin registrarse y el piloto continúa pendiente.
+health productivo y cleanup. Esa prueba no cambió la base productiva.
+
+Después, el Bloque 56C registró la tarea diaria y comprobó su ejecución mediante
+inicio manual. Generó
+`agua-activa-postgres-20260727-140219.dump`, `.sha256` y `.json`; el resultado de
+la tarea fue `0`, el hash coincidió, `pg_restore --list` aprobó y producción
+continuó saludable. El piloto continúa pendiente.

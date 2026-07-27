@@ -122,8 +122,28 @@ healthy, PostgreSQL 5432 siguió sin publicarse y el contenedor temporal fue
 eliminado. La evidencia segura está ignorada por Git y el procedimiento está en
 [`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
 
-Esto cierra la restauración demostrada del alcance 56B. La tarea diaria de
-backup, pruebas integrales y piloto continúan pendientes.
+Esto cierra la restauración demostrada del alcance 56B. Al cierre específico de
+ese bloque, la tarea diaria de backup, las pruebas integrales y el piloto
+continuaban pendientes.
+
+## Estado del Bloque 56C
+
+La tarea de Windows `AguaActivaERP-BackupDiario` quedó registrada en
+KERNELOS-PC con disparador diario a las 23:30 y acción absoluta sobre
+`scripts/prod-local-backup-db.ps1`. Usa el usuario interactivo con nivel
+limitado y no almacena contraseñas.
+
+El inicio manual controlado de la tarea terminó con resultado `0` y generó
+`agua-activa-postgres-20260727-140219.dump`, su SHA256 y su metadata segura.
+El hash coincidió, `pg_restore --list` aprobó tanto en la ejecución como en una
+validación independiente, Alembic siguió en `0026_user_roles` y producción
+permaneció saludable por LAN y Tailscale, sin publicar PostgreSQL 5432. La
+evidencia está en
+[`30-backup-diario-programado-windows.md`](30-backup-diario-programado-windows.md).
+
+Esto activa y verifica operativamente la tarea diaria. Continúan pendientes la
+copia externa periódica, retención, alertas, monitoreo, pruebas integrales y el
+piloto.
 
 ## Correcciones obligatorias antes de producción
 
@@ -138,7 +158,7 @@ backup, pruebas integrales y piloto continúan pendientes.
 | P0-07 | 55A | Rotar contraseña PostgreSQL y secretos productivos | George + infraestructura | Crítica | No hay defaults; health/login pasan; secretos no se publican |
 | P0-08 | 55B-1 | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente antes del piloto) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
-| P0-10 | 56A y posteriores | Backup manual comprobado y tarea diaria preparada; faltan ejecución automática comprobada, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada y alerta de fallo |
+| P0-10 | 56A/56C y posteriores | Backup manual comprobado y tarea diaria registrada con inicio manual exitoso; faltan seguimiento de ejecuciones desatendidas, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada de forma sostenida y alerta de fallo |
 | P0-11 | 56B | Restauración real en ambiente aislado (demostrada; faltan pruebas integrales de login y muestras) | Infraestructura + George | Crítica | Restore, tablas, conteos, Alembic, health y cleanup aprobados; login y muestras pasan en pruebas integrales |
 | P0-12 | 55B | Manual de recuperación y responsables | George + infraestructura | Alta | Documento puede seguirse de principio a fin y registra RPO/RTO |
 
@@ -192,7 +212,10 @@ Bloque 56A: backup manual y preparación de tarea diaria
 Bloque 56B aprobado: restore aislado demostrado
   |
   v
-Pruebas integrales, retención, copia externa y backup diario registrado
+Bloque 56C aprobado: backup diario registrado y prueba manual exitosa
+  |
+  v
+Pruebas integrales, retención, copia externa y monitoreo
   |
   v
 Piloto controlado, solo después de cerrar los pendientes

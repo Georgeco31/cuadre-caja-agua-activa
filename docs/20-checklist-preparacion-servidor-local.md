@@ -8,8 +8,9 @@ desde su iPhone con datos móviles. También confirmó login, dashboard y una
 pantalla operativa por Wi-Fi/LAN con Tailscale apagado. La reserva DHCP sigue
 pendiente y es obligatoria antes del piloto. El Bloque 56A implementa backup
 manual y prepara la tarea diaria, y el Bloque 56B demuestra una restauración
-real en un contenedor temporal aislado. La tarea diaria no fue registrada. Este
-checklist no autoriza una restauración sobre producción ni el piloto. Las
+real en un contenedor temporal aislado. El Bloque 56C registra la tarea diaria a
+las 23:30 y valida su inicio manual controlado. Este checklist no autoriza una
+restauración sobre producción ni el piloto. Las
 evidencias están en
 [`24-prueba-docker-produccion-pc.md`](24-prueba-docker-produccion-pc.md) y
 [`25-red-local-firewall-pc.md`](25-red-local-firewall-pc.md), y el avance
@@ -17,6 +18,8 @@ Tailscale en
 [`26-tailscale-acceso-remoto-privado.md`](26-tailscale-acceso-remoto-privado.md).
 La restauración controlada está documentada en
 [`29-restauracion-controlada-postgresql.md`](29-restauracion-controlada-postgresql.md).
+La activación del backup diario está documentada en
+[`30-backup-diario-programado-windows.md`](30-backup-diario-programado-windows.md).
 
 ## 1. Antes de mover a la PC
 
@@ -125,8 +128,9 @@ docker compose down -v
   [`27-scripts-powershell-servidor-local.md`](27-scripts-powershell-servidor-local.md).
 - [x] Backup manual con SHA256, metadata y `pg_restore --list` implementado en
   el Bloque 56A.
-- [x] Registro, consulta y desregistro de tarea diaria preparados; el registro
-  real requiere aprobación.
+- [x] Registro, consulta y desregistro de tarea diaria preparados.
+- [x] Tarea `AguaActivaERP-BackupDiario` registrada a las 23:30 y validada
+  mediante inicio manual controlado en el Bloque 56C.
 - [x] Restauración demostrada en contenedor temporal aislado por el Bloque 56B.
 - [ ] Piloto controlado; no se inicia con estos scripts.
 
@@ -226,7 +230,9 @@ docker compose down -v
 - [x] Archivo manual con timestamp, checksum, metadata y tamaño mayor que cero.
 - [x] Formato custom validado con `pg_restore --list`.
 - [x] Preparación de tarea diaria implementada con modo `-WhatIf`.
-- [ ] Backup PostgreSQL automático cada día.
+- [x] Tarea de backup PostgreSQL diario registrada a las 23:30.
+- [x] Inicio manual de la tarea generó `.dump`, `.sha256` y `.json`, con
+  resultado `0`, SHA256 coincidente y `pg_restore --list` aprobado.
 - [ ] Hora del backup no interrumpe el cierre operativo.
 - [ ] Fallo de backup genera alerta.
 - [x] Backup manual usa formato custom comprimido de PostgreSQL.

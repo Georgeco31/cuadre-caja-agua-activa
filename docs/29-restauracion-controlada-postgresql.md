@@ -196,7 +196,9 @@ apagaron sus contenedores.
 ## Estado y pendientes antes del piloto
 
 - Restauracion demostrada: implementada y comprobada.
-- Backup automatico registrado: pendiente; la tarea diaria no fue activada.
+- Backup diario programado: tarea registrada a las 23:30 y validada por inicio
+  manual controlado en el Bloque 56C; consultar
+  [`30-backup-diario-programado-windows.md`](30-backup-diario-programado-windows.md).
 - Reserva DHCP: pendiente.
 - Rotacion de passwords definitivos: pendiente.
 - Copia periodica de backups a disco externo: pendiente.

@@ -17,7 +17,9 @@ elimina volúmenes y el inicio normal no reconstruye imágenes.
 
 El Bloque 56A amplía esta operación con backup PostgreSQL manual y preparación
 de la tarea diaria. El Bloque 56B añade una restauración demostrada en un
-contenedor PostgreSQL temporal, aislado y desechable.
+contenedor PostgreSQL temporal, aislado y desechable. El Bloque 56C registra la
+tarea diaria a las 23:30 y valida su ejecución mediante un inicio manual
+controlado.
 
 ## Requisitos
 
@@ -154,10 +156,24 @@ Preparar el registro de la tarea diaria sin modificar Windows:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-register-task.ps1 -WhatIf
 ```
 
-El registro real requiere aprobación explícita. La guía completa, las
-advertencias de Docker Desktop y los comandos para consultar o quitar la tarea
-están en
-[`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md).
+Registrar la tarea diaria aprobada a las 23:30:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-register-task.ps1 -Time "23:30"
+```
+
+Consultar su estado y último resultado:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-check-task.ps1
+```
+
+Un resultado `0` significa éxito. El registro real requiere aprobación
+explícita y una ruta estable del repositorio. Las advertencias de Docker
+Desktop y los comandos para consultar o quitar la tarea están en
+[`28-backups-postgresql-windows.md`](28-backups-postgresql-windows.md). La
+activación y prueba del Bloque 56C están en
+[`30-backup-diario-programado-windows.md`](30-backup-diario-programado-windows.md).
 
 ## Restauración controlada
 
@@ -206,7 +222,9 @@ El apagado usa exactamente `down`, sin `-v`. Conserva el volumen
 3. Usar el sistema por LAN o Tailscale privado.
 4. Si hay un problema, consultar `prod-local-status.ps1` y
    `prod-local-logs.ps1`.
-5. Apagar con `prod-local-stop.ps1` únicamente cuando sea necesario.
+5. Comprobar periódicamente la tarea con `prod-local-backup-check-task.ps1` y
+   confirmar el backup más reciente con `prod-local-backup-list.ps1`.
+6. Apagar con `prod-local-stop.ps1` únicamente cuando sea necesario.
 
 No es obligatorio apagar el ERP al final de cada jornada si KERNELOS-PC debe
 permanecer como servidor y Docker Desktop está configurado para operar de forma
@@ -328,9 +346,8 @@ También está prohibido:
 ## Pendientes
 
 - Reserva DHCP para la IP LAN.
-- Ejecución real comprobada de la tarea diaria, retención y copia externa.
+- Seguimiento de ejecuciones desatendidas, política de retención y copia externa.
 - Pruebas integrales finales sobre un entorno restaurado cuando se autoricen.
 - Rotar contraseñas antes del piloto.
 - Piloto paralelo controlado.
-- Activación del Programador de tareas bajo aprobación, servicio de Windows,
-  watchdog y monitoreo externo.
+- Servicio de Windows, watchdog, alertas y monitoreo externo.
