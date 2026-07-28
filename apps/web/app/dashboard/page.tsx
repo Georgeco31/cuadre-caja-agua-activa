@@ -182,8 +182,12 @@ export default function DashboardPage() {
       <div className="mx-auto flex w-full min-w-0 max-w-screen-2xl flex-col gap-8 px-4 py-7 sm:px-6 sm:py-9 xl:gap-10 xl:px-8">
         <PageHeader
           actions={<LogoutButton />}
-          description="Revisa el cuadre de hoy, atiende avisos reales y entra a cada área del ERP desde un solo lugar."
-          eyebrow="Panel operativo"
+          description={
+            user?.role === "admin_auditor"
+              ? "Gestiona caja, ventas, rutas, producción y reportes desde un solo lugar."
+              : "Gestiona las tareas operativas asignadas del día."
+          }
+          eyebrow="Agua Activa ERP"
           meta={
             <div className="flex flex-wrap items-center gap-2">
               {user ? (
@@ -201,7 +205,7 @@ export default function DashboardPage() {
               </span>
             </div>
           }
-          title={`Buen día, ${user?.username ?? "equipo"}`}
+          title="Panel operativo"
         />
 
         {error ? (

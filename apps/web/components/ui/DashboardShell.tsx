@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { BrandLogo } from "@/components/ui/BrandLogo";
+
 type DashboardShellProps = {
   activeHref: string;
   alertsHref?: string;
@@ -34,11 +36,8 @@ export function DashboardShell({
           className="flex items-center gap-3 rounded-2xl px-2 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
           href="/dashboard"
         >
-          <span
-            aria-hidden="true"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sm font-black tracking-tight text-water-800 shadow-sm"
-          >
-            AA
+          <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-1 shadow-sm">
+            <BrandLogo className="h-full w-full" variant="icon" />
           </span>
           <span>
             <span className="block text-base font-semibold">Agua Activa</span>
@@ -109,10 +108,10 @@ export function DashboardShell({
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6 xl:px-8">
             <Link
               aria-label="Ir al inicio"
-              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-water-800 text-xs font-black text-white lg:hidden"
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-sm lg:hidden"
               href="/dashboard"
             >
-              AA
+              <BrandLogo className="h-full w-full" variant="icon" />
             </Link>
             <Link
               className="hidden h-10 min-w-0 max-w-md flex-1 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-500 transition hover:border-water-200 hover:bg-white hover:text-water-700 sm:flex"

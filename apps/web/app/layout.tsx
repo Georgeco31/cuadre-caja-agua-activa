@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Cuadre de Caja Agua Activa",
-  description: "Cuadre diario de caja para Agua Activa",
+  title: "Agua Activa ERP",
+  description: "Gestión operativa de Agua Activa",
+  icons: {
+    icon: "/brand/logo-icon.png",
+    apple: "/brand/logo-icon.png",
+  },
 };
 
 export default function RootLayout({
