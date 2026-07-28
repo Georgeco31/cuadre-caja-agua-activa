@@ -152,8 +152,16 @@ código, datos, autenticación ni permisos efectivos. El inventario separa
 guardas frontend, autorización backend y capacidades que hoy continúan abiertas
 para ambos roles.
 
-Las decisiones sensibles permanecen pendientes de George y deben cerrarse antes
-de implementar 58B. La propuesta, los riesgos y la secuencia 58B a 58E están en
+George resolvió las diez decisiones principales. El operador podrá cerrar caja,
+registrar producción diaria y crear movimientos operativos `entry`/`exit` con
+trazabilidad. Correcciones, anulaciones, precios, descargas, gerencia,
+configuración crítica e inventario de ajuste quedan en administrador. La
+gestión de empleados, anticipos, préstamos y nómina también será exclusiva de
+`admin_auditor`.
+
+Los asuntos no respondidos se clasifican como pendientes futuros y deben
+denegarse a `operator` en 58B. La política, los riesgos y la secuencia 58B a 58E
+están en
 [`38-matriz-permisos-operador.md`](38-matriz-permisos-operador.md).
 
 ## Correcciones obligatorias antes de producción
@@ -245,24 +253,28 @@ Piloto controlado, solo después de cerrar los pendientes
 7. Probar roles contra PostgreSQL.
 8. Volver a ejecutar las 917 pruebas, typecheck y build.
 
-## Matriz mínima de permisos por decidir
+## Matriz mínima aprobada para preparar 58B
 
-La tabla quedó implementada como matriz base. El detalle operativo está en el
-documento 22:
+El detalle de decisiones oficiales, trazabilidad y pendientes futuros está en
+el documento 38:
 
 | Capacidad | Operator | Admin-auditor |
 | --- | --- | --- |
 | Login y dashboard operativo | Sí | Sí |
-| Caja abierta: conteo/gastos/cierre | Sí | Sí |
+| Caja abierta: conteo y gastos | Sí, con trazabilidad | Sí |
+| Cierre de cuadre diario | Sí, con trazabilidad | Sí |
 | Historial de caja | Lectura | Lectura |
 | Correcciones de cuadre cerrado | No | Sí |
-| Catálogos operativos | Según módulo | Sí |
-| Ventas/cobros/rutas | Sí | Sí |
-| Inventario/producción | Operación normal | Sí |
-| Anulaciones sensibles | No | Sí |
-| Gastos/compras/nómina | Según puesto | Sí |
+| Venta de contado | Sí, con trazabilidad | Sí |
+| Anular ventas o cobros | No | Sí |
+| Cambiar precios | No | Sí |
+| Inventario `entry`/`exit` | Sí, con trazabilidad y sin cambiar costos | Sí |
+| Ajustar o anular inventario | No | Sí |
+| Registrar producción diaria | Sí, con trazabilidad | Sí |
+| Aplicar producción o consumir insumos | Pendiente futuro; denegado en 58B | Sí |
+| Gestionar empleados, anticipos, préstamos o nómina | No | Sí |
 | Panel gerencial | No | Sí |
-| Excel/PDF gerencial | No | Sí |
+| Excel/PDF | No | Sí |
 | Usuarios, roles y configuración | No | Sí |
 
 ## Criterio final de preproducción

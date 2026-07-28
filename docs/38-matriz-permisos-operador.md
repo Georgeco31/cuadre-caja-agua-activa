@@ -3,7 +3,8 @@
 ## Estado y alcance
 
 - Bloque: **58A**.
-- Estado: **propuesta documental pendiente de aprobación de George**.
+- Estado: **10 decisiones principales resueltas por George; base documental
+  lista para 58B**.
 - Fecha de corte: **2026-07-28**.
 - Alcance: inventario de pantallas, endpoints y permisos existentes; propuesta
   de permisos granulares para `operator`; riesgos y estrategia futura.
@@ -14,8 +15,9 @@
 Este documento no concede ni revoca permisos. La matriz efectiva que refleja
 el Bloque 54 continúa en
 [`22-matriz-permisos-roles.md`](22-matriz-permisos-roles.md) hasta que George
-apruebe las decisiones pendientes y los bloques 58B a 58D implementen y prueben
-la nueva política.
+apruebe una implementación y los bloques 58B a 58D apliquen y prueben la nueva
+política. Los asuntos no cubiertos por las decisiones oficiales quedan como
+pendientes futuros y deben denegarse a `operator` por defecto.
 
 ## Objetivo
 
@@ -48,13 +50,14 @@ la política aprobada.
 
 ## Leyenda de la propuesta
 
-La matriz de este documento usa cuatro clasificaciones:
+La matriz de este documento usa cinco clasificaciones:
 
 | Código | Clasificación |
 | --- | --- |
 | **O** | Permitido para `operator`. |
+| **T** | Permitido para `operator` con trazabilidad obligatoria. |
 | **A** | Restringido a `admin_auditor`. |
-| **G** | Pendiente de decisión de George. Mientras no se decida e implemente, debe mantenerse el comportamiento actual; para el despliegue de la matriz nueva se recomienda denegar por defecto al operador. |
+| **F** | Pendiente futuro. Para 58B se deniega a `operator` y continúa disponible para `admin_auditor`. |
 | **N/A** | No aplica o la acción no existe en el módulo actual. |
 
 Categorías usadas:
@@ -70,8 +73,13 @@ Categorías usadas:
 - **Administrar configuración:** cambiar roles, precios, fórmulas, catálogos u
   otros parámetros que gobiernan operaciones posteriores.
 
-`admin_auditor` conserva todas las capacidades marcadas **O**, **A** o **G**.
-Las celdas **G** solo mantienen pendiente el acceso de `operator`.
+`admin_auditor` conserva todas las capacidades marcadas **O**, **T**, **A** o
+**F**. Las celdas **F** solo mantienen pendiente el acceso de `operator`.
+
+Una acción **T** debe conservar como mínimo usuario autenticado, fecha y hora,
+entidad afectada y datos operativos suficientes para reconstruir lo ocurrido.
+Cuando corresponda también debe exigir motivo, referencia y valores
+anteriores/nuevos.
 
 ## Resumen ejecutivo
 
@@ -94,11 +102,17 @@ Hallazgos principales del corte:
   los ajustes directos de inventario;
 - el backend ya devuelve `403` para usuarios inactivos y para operaciones con
   `require_admin_auditor`;
-- el cierre de cuadre continúa permitido a `operator`;
-- el operador también conserva hoy acceso backend a varios flujos que la
-  política nueva debe decidir: nómina, fórmulas, datos maestros, compras,
-  producción, consumo de insumos, movimientos normales de inventario y
-  operaciones de ruta;
+- George resolvió diez decisiones principales: cierre de caja, correcciones,
+  anulaciones de ventas/cobros, precios, descargas, panel gerencial, producción
+  diaria, inventario operativo y gestión de empleados;
+- cierre de caja, registro de producción diaria y movimientos operativos
+  `entry`/`exit` quedan permitidos con trazabilidad;
+- correcciones cerradas, anulaciones, precios, Excel/PDF, panel gerencial,
+  gestión de empleados, anticipos, préstamos y nómina quedan en
+  `admin_auditor`;
+- aplicar producción al inventario, consumir insumos, registrar compras y otros
+  asuntos no respondidos permanecen pendientes futuros y deben denegarse a
+  `operator` en 58B;
 - las mutaciones críticas que la interfaz oculta por rol tienen respaldo
   backend, pero hay diferencias de **lectura** protegidas solo visualmente:
   `operator` no entra a la pantalla de precios aunque puede consultar listas
@@ -274,9 +288,10 @@ Sin embargo:
   actualmente a `operator`; las mutaciones sí son de administrador;
 - el rol guardado en `localStorage` o leído del JWT solo sirve para presentación;
 - varias capacidades que la propuesta considera sensibles no están restringidas
-  ni en frontend ni en backend. Entre ellas están cerrar caja, crear nómina,
-  editar fórmulas, administrar varios datos maestros y ejecutar operaciones
-  financieras u operativas aún pendientes de George.
+  ni en frontend ni en backend. Entre ellas están crear nómina, editar fórmulas,
+  administrar empleados y ejecutar operaciones financieras u operativas que
+  ahora son **A** o **F**. El cierre de caja sigue permitido, pero 58B debe
+  completar su trazabilidad.
 
 ## Matriz propuesta por módulo y categoría
 
@@ -286,59 +301,56 @@ comportamiento efectivo actual.
 | Módulo o capacidad | Ver | Crear | Editar abierto | Cerrar | Corregir cerrado | Anular | Descargar | Administrar configuración |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Dashboard operativo | **O** | N/A | N/A | N/A | N/A | N/A | N/A | N/A |
-| Caja / cash sessions | **O** | **O** | **O** | **G** | **A** | N/A | **A** | **A** |
-| Conteo de denominaciones | **O** | N/A | **O** mientras caja esté abierta | N/A | **A** | N/A | **A** | N/A |
-| Gastos de caja | **O** | **O** mientras caja esté abierta | N/A en el modelo actual | N/A | **A** mediante gasto correctivo | N/A en el modelo actual | **A** | N/A |
+| Caja / cash sessions | **O** | **T** | **T** | **T** | **A** | N/A | **A** | **A** |
+| Conteo de denominaciones | **O** | N/A | **T** mientras caja esté abierta | N/A | **A** | N/A | **A** | N/A |
+| Gastos de caja | **O** | **T** mientras caja esté abierta | N/A en el modelo actual | N/A | **A** mediante gasto correctivo | N/A en el modelo actual | **A** | N/A |
 | Historial básico de cuadres | **O** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
 | Correcciones y logs de cuadre | **A** | **A** | N/A | N/A | **A** | N/A | **A** | **A** |
-| Clientes | **O** | **O** | **G** para datos básicos sin saldos | N/A | N/A | **A** para desactivar | **A** | **A** para reglas crediticias |
+| Clientes | **O** | **T** | **F** para editar datos básicos | N/A | N/A | **A** para desactivar | **A** | **A** para reglas crediticias |
 | Productos | **O** | **A** | **A** | N/A | N/A | **A** para desactivar | **A** | **A** |
 | Precio resuelto durante venta | **O** | N/A | N/A | N/A | N/A | N/A | N/A | **A** |
 | Listas e ítems de precios | **A** | **A** | **A** | N/A | N/A | **A** para activar/desactivar | **A** | **A** |
-| Ventas de contado | **O** | **O** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
-| Ventas a crédito | **O** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** para límites y excepciones |
-| Cobros / pagos de crédito | **O** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
+| Ventas de contado | **O** | **T** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
+| Ventas a crédito | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** para límites y excepciones |
+| Cobros / pagos de crédito | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
 | Cartera operativa | **O** | N/A | N/A | N/A | N/A | N/A | **A** | **A** para políticas de crédito |
 | Rutas de entrega | **O** | **A** | **A** | N/A | N/A | **A** para desactivar | **A** | **A** |
 | Vehículos | **O** | **A** | **A** | N/A | N/A | **A** para desactivar | **A** | **A** |
-| Carga de camión | **O** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
-| Retorno de ruta | **O** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
+| Carga de camión | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
+| Retorno de ruta | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
 | Actividad comercial de ruta | **O** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
-| Cierre financiero de ruta | **O** | N/A | N/A | **G** | N/A | **A** | **A** | N/A |
-| Recepción de efectivo de ruta | **O** | **G** en caja abierta | N/A | N/A | N/A | **A** | **A** | N/A |
+| Cierre financiero de ruta | **O** | N/A | N/A | **F** | N/A | **A** | **A** | N/A |
+| Recepción de efectivo de ruta | **O** | **F** en caja abierta | N/A | N/A | N/A | **A** | **A** | N/A |
 | Comparación ruta vs caja | **O** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
-| Inventario y stock básico | **O** | **G** para movimiento normal | N/A | N/A | N/A | **A** | **A** | **A** para ubicaciones y ajustes directos |
-| Producción diaria | **O** | **G** | N/A en el modelo actual | **G** para aplicar a inventario | N/A | **A** | **A** | N/A |
+| Inventario y stock básico | **O** | **T** solo `entry`/`exit` | N/A | N/A | N/A | **A** | **A** | **A** para ubicaciones, `adjustment_in`/`adjustment_out` y costos |
+| Producción diaria | **O** | **T** | N/A en el modelo actual | **F** para aplicar a inventario | N/A | **A** | **A** | N/A |
 | Fórmulas de producción | **O** | **A** | **A** | N/A | N/A | **A** | **A** | **A** |
-| Consumo de insumos | **O** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** |
-| Proveedores | **O** | **G** | **G** | N/A | N/A | **A** para desactivar | **A** | **A** |
-| Compras | **O** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
-| Gastos operativos | **O** | **G** | **G** mientras estén activos | N/A | N/A | **A** | **A** | N/A |
+| Consumo de insumos | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** |
+| Proveedores | **O** | **F** | **F** | N/A | N/A | **A** para desactivar | **A** | **A** |
+| Compras | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
+| Gastos operativos | **O** | **F** | **F** mientras estén activos | N/A | N/A | **A** | **A** | N/A |
 | Categorías y plantillas de gastos | **O** para usar opciones activas | **A** | **A** | N/A | N/A | **A** para activar/desactivar | **A** | **A** |
-| Empleados | **G** | **G** | **G** | N/A | N/A | **A** para desactivar | **A** | **A** |
-| Asistencia y control diario | **O** | **G** | **G** | N/A | N/A | N/A en el modelo actual | **A** | **A** |
-| Anticipos, préstamos y abonos | **G** | **G** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** |
+| Empleados | **A** | **A** | **A** | N/A | N/A | **A** para desactivar | **A** | **A** |
+| Asistencia y control diario | **A** | **A** | **A** | N/A | N/A | N/A en el modelo actual | **A** | **A** |
+| Anticipos, préstamos y abonos | **A** | **A** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** |
 | Nómina / roles de pago | **A** | **A** | N/A en el modelo actual | N/A en el modelo actual | N/A | **A** | **A** | **A** |
 | Resumen diario operativo | **O** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
-| Resumen mensual | **G** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
-| Reporte acumulado de caja | **G** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
+| Resumen mensual | **F** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
+| Reporte acumulado de caja | **F** | N/A | N/A | N/A | N/A | N/A | **A** | N/A |
 | Panel gerencial | **A** | N/A | N/A | N/A | N/A | N/A | **A** | **A** |
 | Exportaciones Excel/PDF | **A** | N/A | N/A | N/A | N/A | N/A | **A** | **A** |
 | Usuarios, contraseñas y roles | **A** | **A** | **A** | N/A | N/A | **A** para activar/desactivar | **A** | **A** |
 
-## Permisos propuestos como permitidos para `operator`
+## Permitido para `operator`
 
-No requieren una decisión adicional si George acepta la matriz como conjunto:
+Las capacidades **O** son de consulta o uso operativo básico:
 
 - iniciar sesión con cuenta personal y ver el dashboard operativo;
-- ver, abrir y trabajar el cuadre del día;
-- registrar o reemplazar cantidades del conteo mientras el cuadre esté abierto;
-- registrar gastos de caja mientras el cuadre esté abierto;
+- ver el cuadre del día;
 - ver historial y resumen básico de cuadres, sin logs ni herramientas de
   corrección;
-- crear clientes;
 - ver productos y resolver el precio aplicable durante una venta;
-- crear y consultar ventas de contado;
+- consultar ventas de contado;
 - ver cartera y estados de cuenta operativos;
 - consultar actividad de ruta, cierres, recibos y comparación ruta vs caja;
 - ver stock e inventario básico;
@@ -346,88 +358,179 @@ No requieren una decisión adicional si George acepta la matriz como conjunto:
   reservada;
 - ver proveedores, compras y gastos operativos necesarios para el trabajo
   asignado;
-- ver y registrar la operación diaria únicamente en las capacidades que George
-  apruebe en la sección pendiente;
 - ver el resumen diario operativo.
 
-Todos los permisos deben continuar sujetos a reglas de estado, validaciones de
-negocio y registro del usuario autenticado.
+## Permitido para `operator` con trazabilidad obligatoria
+
+Las capacidades **T** están aprobadas, pero 58B debe verificar que el backend
+identifique al usuario y conserve la evidencia necesaria:
+
+- abrir el cuadre del día;
+- registrar o reemplazar cantidades del conteo mientras el cuadre esté abierto;
+- registrar gastos de caja mientras el cuadre esté abierto;
+- cerrar el cuadre diario; no puede reabrirlo ni corregirlo después;
+- crear clientes y ventas de contado;
+- registrar producción diaria, sin que esta decisión autorice aplicar la
+  producción al inventario, consumir insumos, editar fórmulas o cambiar costos;
+- registrar movimientos manuales operativos de inventario:
+  - `entry`: entrada operativa;
+  - `exit`: salida operativa;
+- para inventario deben conservarse como mínimo usuario, fecha, producto,
+  ubicación, tipo, cantidad, motivo o referencia y timestamp;
+- `operator` no puede usar `adjustment_in` ni `adjustment_out`, anular
+  movimientos, eliminar registros, administrar ubicaciones, editar costos ni
+  alterar configuración.
+
+Todos los permisos **O** y **T** continúan sujetos a reglas de estado,
+validaciones de negocio y autenticación. “Con trazabilidad” no significa
+“permitido sin límites”; significa que el backend autoriza la acción concreta y
+registra quién la ejecutó.
 
 ## Permisos propuestos como exclusivos de `admin_auditor`
 
 - administrar usuarios, contraseñas, activación y roles;
 - acceder al panel gerencial;
-- descargar Excel/PDF hasta que exista una clasificación separada de
-  exportaciones operativas no sensibles;
+- descargar cualquier Excel/PDF;
 - crear, editar, activar o desactivar listas e ítems de precios;
 - corregir cuadres cerrados y consultar sus logs de corrección;
 - anular ventas, cobros, compras, gastos, movimientos, producciones, consumos,
   operaciones de ruta, anticipos, préstamos, abonos o roles de pago;
-- hacer ajustes directos de inventario;
-- administrar ubicaciones de inventario;
-- crear o modificar fórmulas y sus insumos;
+- registrar ajustes directos de inventario (`adjustment_in` y
+  `adjustment_out`);
+- anular o eliminar movimientos y administrar ubicaciones de inventario;
+- crear o modificar fórmulas, insumos y costos;
 - administrar categorías y plantillas de gastos;
 - crear, editar o desactivar productos, rutas y vehículos;
-- desactivar clientes, proveedores, empleados u otros datos maestros;
-- gestionar nómina y roles de pago;
+- desactivar clientes, proveedores u otros datos maestros;
+- acceder y gestionar empleados, asistencia, control laboral, anticipos,
+  préstamos, abonos, nómina y roles de pago;
 - cambiar políticas de crédito, límites o excepciones;
-- ejecutar una acción pendiente cuando George no la haya aprobado
-  expresamente para `operator`.
+- ejecutar una acción **F** mientras no exista aprobación posterior para
+  `operator`.
 
-## Decisiones pendientes de George
+## Pendiente futuro
 
-George debe responder estas preguntas antes de implementar 58B. La columna
-“recomendación inicial” aplica el principio de mínimo privilegio sin impedir la
-operación diaria.
+Las capacidades **F** no forman parte del permiso de `operator` para 58B. No
+deben quedar abiertas por conservar el comportamiento actual:
 
-| ID | Pregunta | Recomendación inicial |
+- editar datos básicos de clientes;
+- registrar ventas a crédito o cobros;
+- registrar carga, retorno, cierre o recepción de efectivo de ruta;
+- aplicar producción al inventario;
+- confirmar consumo de insumos;
+- crear o editar proveedores;
+- registrar compras;
+- crear o editar gastos operativos fuera de caja;
+- ver resumen mensual o reporte acumulado de caja;
+- definir un posible directorio mínimo de empleados, separado de su gestión
+  administrativa.
+
+Una decisión futura podrá mover una capacidad **F** a **O**, **T** o **A** sin
+reinterpretar las diez decisiones oficiales.
+
+## Decisiones oficiales de George
+
+Las diez decisiones principales están resueltas. “Sí” autoriza únicamente la
+acción descrita y no permisos relacionados por proximidad.
+
+| ID | Decisión oficial | Estado | Traducción para 58B |
+| --- | --- | --- | --- |
+| D-01 | El operador puede cerrar el cuadre diario. | **Resuelta: Sí** | Permiso **T** para cerrar. Sin reapertura ni corrección posterior. Registrar actor y timestamp. |
+| D-02 | El operador puede corregir un cuadre cerrado. | **Resuelta: No** | Corrección y logs exclusivos de `admin_auditor`; petición directa del operador debe devolver `403`. |
+| D-03 | El operador puede anular ventas. | **Resuelta: No** | Anulación exclusiva de `admin_auditor`; ocultar acción en frontend y proteger endpoint. |
+| D-04 | El operador puede anular cobros. | **Resuelta: No** | Anulación exclusiva de `admin_auditor`; ocultar acción en frontend y proteger endpoint. |
+| D-05 | El operador puede cambiar precios. | **Resuelta: No** | Listas, ítems, activación y cambios de precio son de administrador. El operador solo resuelve el precio vigente durante su flujo autorizado. |
+| D-06 | El operador puede descargar Excel/PDF. | **Resuelta: No** | Todos los endpoints de exportación y sus controles visuales son de administrador. |
+| D-07 | El operador puede ver el panel gerencial. | **Resuelta: No** | Página, navegación y endpoint gerencial exclusivos de administrador. |
+| D-08 | El operador puede registrar producción diaria. | **Resuelta: Sí** | Permiso **T** para crear la producción. No incluye aplicar a inventario, consumir insumos, anular, editar fórmulas ni cambiar costos. |
+| D-09 | El operador puede modificar inventario manualmente. | **Resuelta: Sí, con límite** | Permiso **T** solo para movimientos operativos `entry` y `exit`. Ajustes, anulaciones, eliminaciones, costos, fórmulas, ubicaciones y configuración permanecen en administrador. |
+| D-10 | El operador puede gestionar empleados, anticipos, préstamos o nómina. | **Resuelta: No** | Pantallas y endpoints de gestión de empleados, control laboral, anticipos, préstamos, abonos y nómina deben ser de `admin_auditor`. |
+
+## Decisiones no cubiertas y pendientes futuras
+
+Estas preguntas ya no bloquean la definición del núcleo de 58B porque su regla
+provisional es denegar a `operator`:
+
+| ID | Pendiente futuro | Regla para 58B |
 | --- | --- | --- |
-| G-01 | ¿El operador puede cerrar el cuadre diario? | **Sí**, si el cierre no puede reabrirse y toda corrección posterior sigue siendo de administrador. Confirmar si una diferencia de caja exige aprobación de George. |
-| G-02 | ¿El operador puede corregir un cuadre cerrado o ver sus logs? | **No**. Mantener en administrador. |
-| G-03 | ¿El operador puede anular ventas? | **No**. Mantener en administrador con motivo y usuario. |
-| G-04 | ¿El operador puede registrar ventas a crédito? | **Sí**, solo con cliente activo, límite vigente y sin capacidad de sobrepasar o cambiar el límite. |
-| G-05 | ¿El operador puede registrar cobros? | **Sí**, sin anularlos ni cambiar su aplicación después del registro. |
-| G-06 | ¿El operador puede cambiar precios o listas de precios? | **No**. Solo debe resolver y usar el precio vigente. |
-| G-07 | ¿El operador puede descargar algún Excel/PDF? | **No por ahora**. Si se necesita, definir una lista separada de exportaciones operativas, rango máximo y datos excluidos. |
-| G-08 | ¿El operador puede ver el resumen mensual o el reporte acumulado de caja? | Definir si son operativos o financieros. **Restringir inicialmente** hasta clasificar sus indicadores. |
-| G-09 | ¿El operador puede registrar compras? | **Pendiente**. Si se permite, no debe anular, cambiar costos cerrados ni recibir inventario implícitamente. |
-| G-10 | ¿El operador puede modificar inventario? | Permitir solo movimientos normales expresamente definidos; **nunca** ajustes directos ni anulaciones. George debe listar los tipos autorizados. |
-| G-11 | ¿El operador puede registrar producción y aplicarla a inventario? | **Pendiente**. Puede habilitarse si forma parte de su puesto, con actor, lote y ubicación obligatorios. |
-| G-12 | ¿El operador puede consumir insumos? | **Pendiente**. Separar vista previa de confirmación; la reversión debe seguir en administrador. |
-| G-13 | ¿El operador puede manejar anticipos, préstamos y abonos de empleados? | **No inicialmente**, por sensibilidad financiera y laboral. |
-| G-14 | ¿El operador puede registrar o modificar asistencia? | **Pendiente según puesto**; definir ventana de edición y quién corrige días anteriores. |
-| G-15 | ¿El operador puede crear o editar empleados, proveedores y datos básicos de clientes? | Clientes: permitir alta y decidir campos editables. Empleados/proveedores: **restringir inicialmente** hasta definir campos y responsable. |
-| G-16 | ¿El operador puede crear o editar gastos operativos fuera de caja? | **Pendiente**. Definir categorías, monto máximo, fecha editable y si requiere comprobante. |
-| G-17 | ¿Qué operaciones de ruta pertenecen al operador de oficina? | Marcar por separado carga, retorno, cierre y recepción de efectivo. No aprobarlas como un único permiso genérico. |
-| G-18 | ¿El operador puede crear movimientos normales de inventario? | Definir tipos, ubicaciones y motivos admitidos. Transferencia, entrada y salida pueden requerir políticas distintas. |
-| G-19 | ¿El operador puede editar datos básicos de un cliente? | Definir una lista de campos segura. Cupo, saldo, política de crédito y desactivación deben quedar fuera. |
-| G-20 | ¿Una diferencia de caja o ruta bloquea el cierre del operador? | Definir umbral, mensaje y escalamiento; no implementar una aprobación implícita. |
+| F-01 | ¿El operador puede registrar ventas a crédito? | No conceder hasta decisión posterior. |
+| F-02 | ¿El operador puede registrar cobros? | No conceder hasta decisión posterior; D-04 ya prohíbe anularlos. |
+| F-03 | ¿El operador puede ver resumen mensual o reporte acumulado de caja? | Mantener fuera del rol hasta clasificar la sensibilidad. |
+| F-04 | ¿El operador puede registrar compras? | No conceder hasta definir costos, documentos y responsable. |
+| F-05 | ¿El operador puede aplicar producción al inventario? | No conceder; D-08 solo autoriza registrar producción diaria. |
+| F-06 | ¿El operador puede confirmar consumo de insumos? | No conceder; vista previa/confirmación/reversión deben separarse. |
+| F-07 | ¿El operador puede crear o editar proveedores y datos básicos de clientes? | Alta de cliente permanece aprobada; otras ediciones quedan pendientes. |
+| F-08 | ¿El operador puede crear o editar gastos operativos fuera de caja? | No conceder hasta definir categorías, monto, fecha y comprobante. |
+| F-09 | ¿Qué operaciones de ruta pertenecen al operador de oficina? | No conceder carga, retorno, cierre ni recepción como permiso genérico. |
+| F-10 | ¿Una diferencia de caja bloquea el cierre del operador? | Mantener las reglas actuales hasta definir umbral y escalamiento; D-01 autoriza el cierre, no una corrección. |
+| F-11 | ¿El operador necesita un directorio mínimo de empleados para otro flujo? | La gestión completa sigue prohibida por D-10; cualquier lectura mínima deberá diseñarse aparte. |
 
 ## Diferencias entre el estado actual y la propuesta
 
 Estas diferencias son el insumo prioritario para 58B y 58C:
 
-| Capacidad | Estado actual de `operator` | Propuesta |
+| Capacidad | Estado actual de `operator` | Política documentada para 58B |
 | --- | --- | --- |
-| Cerrar cuadre | Permitido en backend y frontend | Pendiente G-01. |
-| Editar/desactivar clientes | Permitido | Edición básica pendiente; desactivación administrador. |
-| Crear/editar/desactivar productos | Permitido | Administrador; operador solo consulta. |
-| Crear/editar/desactivar rutas y vehículos | Permitido | Administrador; operador solo consulta. |
-| Crear/editar/desactivar proveedores | Permitido | Alta/edición pendiente; desactivación administrador. |
-| Crear/editar/desactivar empleados | Permitido | Pendiente; desactivación administrador. |
-| Crear/editar/activar fórmulas e ítems | Permitido | Administrador. |
-| Crear roles de pago y ver nómina | Permitido | Administrador. |
-| Registrar anticipos, préstamos y abonos | Permitido | Pendiente; recomendación inicial restrictiva. |
-| Registrar compras | Permitido | Pendiente. |
-| Crear/editar gastos operativos | Permitido | Pendiente. |
-| Registrar/aplicar producción | Permitido | Pendiente. |
-| Confirmar consumo de insumos | Permitido | Pendiente. |
-| Crear movimientos normales de inventario | Permitido | Pendiente por tipo; ajuste directo sigue restringido. |
-| Carga, retorno, cierre y recibo de ruta | Permitido | Decidir cada operación por separado. |
-| Ver resumen mensual y reporte acumulado | Permitido | Pendiente de clasificación operativa/financiera. |
+| Cerrar cuadre | Permitido en backend y frontend; falta confirmar trazabilidad del cierre | Permitido **T**; registrar actor y timestamp. |
+| Corregir cuadre cerrado | Backend y frontend ya restringidos | Mantener exclusivo de administrador. |
+| Anular ventas y cobros | Backend y frontend ya restringidos | Mantener exclusivo de administrador. |
+| Cambiar precios | Mutaciones backend y pantalla restringidas; lecturas API tienen diferencias visuales | Mantener administración exclusiva; revisar lecturas necesarias para resolver precios. |
+| Descargar Excel/PDF | Backend y frontend ya restringidos | Mantener todas las descargas en administrador. |
+| Ver panel gerencial | Backend y frontend ya restringidos | Mantener exclusivo de administrador. |
+| Registrar producción diaria | Permitido | Mantener permitido **T**; separar aplicación a inventario y consumo. |
+| Aplicar producción a inventario | Permitido | Denegar a `operator` como **F** hasta decisión futura. |
+| Crear movimientos `entry`/`exit` | Permitido y conserva `created_by` | Mantener permitido **T**; no admitir cambios de costo. |
+| Crear `adjustment_in`/`adjustment_out` | Backend y frontend ya restringidos | Mantener exclusivo de administrador. |
+| Anular movimientos de inventario | Backend y frontend ya restringidos | Mantener exclusivo de administrador. |
+| Gestionar empleados y asistencia | Permitido actualmente | Cerrar brecha: exclusivo de administrador. |
+| Registrar anticipos, préstamos y abonos | Permitido actualmente | Cerrar brecha: exclusivo de administrador. |
+| Crear roles de pago y ver nómina | Permitido actualmente | Cerrar brecha: exclusivo de administrador. |
+| Crear/editar/activar fórmulas e ítems | Permitido actualmente | Cerrar brecha: exclusivo de administrador. |
+| Editar/desactivar clientes | Permitido actualmente | Edición **F**; desactivación administrador. |
+| Crear/editar/desactivar productos | Permitido actualmente | Administrador; operador solo consulta. |
+| Crear/editar/desactivar rutas y vehículos | Permitido actualmente | Administrador; operador solo consulta. |
+| Crear/editar/desactivar proveedores | Permitido actualmente | Alta/edición **F**; desactivación administrador. |
+| Registrar compras | Permitido actualmente | **F**; denegar a operador hasta decisión futura. |
+| Crear/editar gastos operativos | Permitido actualmente | **F**; denegar a operador hasta decisión futura. |
+| Confirmar consumo de insumos | Permitido actualmente | **F**; denegar a operador hasta decisión futura. |
+| Carga, retorno, cierre y recibo de ruta | Permitido actualmente | **F**; decidir cada operación por separado. |
+| Ver resumen mensual y reporte acumulado | Permitido actualmente | **F** hasta clasificación operativa/financiera. |
 
 No se debe resolver esta brecha ocultando controles antes de proteger el
 backend.
+
+## Base de alcance para 58B
+
+58B debe auditar cada ruta exacta, pero puede partir de este mapa:
+
+| Grupo backend | Política objetivo |
+| --- | --- |
+| `POST /cash-sessions/{id}/close` | Permitir a `operator` con trazabilidad de actor y timestamp. |
+| Correcciones bajo `/cash-sessions/{id}/corrections` | Mantener `admin_auditor`; `operator` recibe `403`. |
+| `POST /sales/{id}/void` y `POST /credit-payments/{id}/void` | Mantener `admin_auditor`; `operator` recibe `403`. |
+| Mutaciones bajo `/pricing` | Mantener `admin_auditor`. |
+| Lecturas `/pricing/price-lists*` frente a `/pricing/resolve` | Restringir la administración/listado sensible; conservar al operador únicamente la resolución de precio necesaria para un flujo autorizado. |
+| `/reports/management-dashboard` y `/reports/exports/*` | Mantener `admin_auditor`. |
+| `POST /production/batches` | Permitir a `operator` con `created_by` y datos del lote. |
+| `/production/batches/{id}/apply-inventory` | Denegar a `operator` como pendiente **F**. |
+| Mutaciones de fórmulas e ítems bajo `/production/recipes` | Restringir a `admin_auditor`, no solo la anulación. |
+| Confirmación de consumo de insumos | Denegar a `operator` como pendiente **F**; la anulación sigue en administrador. |
+| `POST /inventory/movements` con `entry` o `exit` | Permitir a `operator` con `created_by`, motivo/referencia y sin aceptar cambios de costo. |
+| `POST /inventory/movements` con `adjustment_in` o `adjustment_out` | Mantener `admin_auditor`. |
+| Anulación de movimiento y mutaciones de ubicaciones | Restringir a `admin_auditor`. |
+| `/employees`, controles laborales y `/payroll` | Restringir gestión, datos sensibles y escrituras a `admin_auditor`; cualquier lectura mínima futura requerirá un diseño separado. |
+| Crear venta a crédito o cobro | Denegar a `operator` como pendiente **F**; las anulaciones ya son administrativas. |
+| Mutaciones de compras, gastos operativos y proveedores | Denegar a `operator` como pendiente **F**, salvo configuraciones que ya son administrativas. |
+| Mutaciones de carga, retorno, cierre y recibo de ruta | Denegar a `operator` como pendiente **F**; mantener consultas operativas aprobadas. |
+| Mutaciones de productos, rutas y vehículos | Restringir a `admin_auditor` según la matriz. |
+| Resumen mensual y reporte acumulado | Denegar a `operator` como pendiente **F**; mantener resumen diario operativo. |
+
+Orden obligatorio:
+
+1. proteger o permitir explícitamente el endpoint en backend;
+2. probar petición directa con ambos roles;
+3. ocultar o deshabilitar la acción en frontend;
+4. volver a probar que manipular la UI no evita el `403`.
 
 ## Riesgos
 
@@ -444,7 +547,7 @@ backend.
 | Cobros y cierres sin reversión del operador | Un error operativo requerirá a George | Mantener un procedimiento de escalamiento claro y corrección trazable. |
 | Cobertura de pruebas parcial | Una dependencia puede retirarse o una ruta nueva quedar abierta | Generar pruebas parametrizadas desde la matriz aprobada. |
 | Trazabilidad desigual | No todos los CRUD de datos maestros tienen necesariamente el mismo actor/motivo que las operaciones anulables | Auditar campos y logs en 58B antes de permitir edición al operador. |
-| Cambio de política sin aprobación | La implementación podría decidir por George | Bloquear 58B para toda celda **G** hasta registrar la respuesta. |
+| Cambio de política sin aprobación | La implementación podría ampliar el rol sin decisión de George | Denegar a `operator` toda celda **F** hasta registrar una decisión posterior. |
 
 ## Estrategia técnica para implementación futura
 
@@ -460,8 +563,11 @@ cash_session.correct_closed
 sale.cash.create
 sale.credit.create
 sale.void
-inventory.movement.create
+inventory.movement.operational.create
 inventory.adjust
+production.batch.create
+production.inventory.apply
+employee.manage
 report.management.view
 report.export
 user.manage
@@ -507,7 +613,7 @@ Desventajas:
 
 Empezar con la **Opción A**:
 
-1. aprobar esta matriz;
+1. tomar las diez decisiones oficiales como alcance aprobado;
 2. definir claves de permiso fijas por acción;
 3. aplicar primero la autorización en backend;
 4. ajustar después la interfaz;
@@ -534,7 +640,9 @@ La implementación debería:
 - aplicar dependencias o comprobaciones centrales;
 - cerrar primero las brechas actuales;
 - conservar control total de `admin_auditor`;
-- no cambiar celdas **G** sin decisión registrada.
+- implementar las capacidades **T** con actor y evidencia;
+- denegar a `operator` todas las celdas **F**;
+- proteger primero backend y solo después ajustar visibilidad frontend.
 
 ### 58C - Ajuste frontend por permisos
 
@@ -568,7 +676,8 @@ actuales.
 
 La implementación de 58B a 58D podrá considerarse cerrada cuando:
 
-1. George haya respondido todas las decisiones que afecten el alcance;
+1. las diez decisiones oficiales estén implementadas y toda capacidad **F**
+   permanezca denegada a `operator`;
 2. cada capacidad tenga una clave única y un dueño funcional;
 3. `admin_auditor` conserve acceso total;
 4. `operator` pueda ejecutar todas las tareas diarias aprobadas;
@@ -583,7 +692,15 @@ La implementación de 58B a 58D podrá considerarse cerrada cuando:
 13. las pruebas demuestren que una nueva ruta no queda permitida por omisión;
 14. no se requiera migración para la Opción A;
 15. la matriz efectiva y la guía operativa se actualicen después de aprobar las
-    pruebas.
+    pruebas;
+16. cierre de caja, producción diaria y movimientos operativos registren actor
+    y timestamp;
+17. `operator` solo pueda crear `entry`/`exit` y no pueda enviar costos,
+    `adjustment_in`, `adjustment_out` ni anular movimientos;
+18. gestión de empleados, control laboral, anticipos, préstamos, abonos y
+    nómina devuelvan `403` a `operator`;
+19. frontend oculte las acciones restringidas únicamente después de comprobar
+    su protección backend.
 
 ## Criterios de cierre del Bloque 58A
 
@@ -592,7 +709,11 @@ La implementación de 58B a 58D podrá considerarse cerrada cuando:
 - [x] Se distinguieron guardas frontend y autorización backend.
 - [x] Se documentaron acciones que hoy devuelven `403`.
 - [x] Se propuso una clasificación por módulo y categoría.
-- [x] Se identificaron decisiones pendientes de George.
+- [x] Se marcaron como resueltas las diez decisiones oficiales de George.
+- [x] Se documentó el límite de inventario manual a `entry`/`exit`, sin
+  ajustes, anulaciones, eliminaciones, costos, fórmulas ni configuración.
+- [x] Se separaron permitidos, permitidos con trazabilidad, restringidos y
+  pendientes futuros.
 - [x] Se compararon las opciones técnica A y B.
 - [x] Se recomienda empezar con permisos fijos por rol.
 - [x] Se definieron los bloques 58B a 58E y criterios de aceptación.
