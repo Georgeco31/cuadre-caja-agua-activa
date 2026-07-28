@@ -14,7 +14,7 @@ ser continuar, extender, corregir antes de seguir o detener.
 No comenzar el Día 1 hasta que George haya aprobado todas las condiciones de
 [`43-preparacion-piloto-interno.md`](43-preparacion-piloto-interno.md), incluidos:
 
-- primer backup diario realmente desatendido;
+- backup automático corregido, último resultado `0` y revisión diaria definida;
 - contraseñas definitivas;
 - usuarios reales e individuales;
 - reserva DHCP o aceptación temporal explícita de George con controles;
@@ -23,18 +23,25 @@ No comenzar el Día 1 hasta que George haya aprobado todas las condiciones de
 - acceso real de George por Tailscale;
 - prohibición de cuentas compartidas.
 
-## Estado al cierre del Bloque 59B
+## Estado actualizado al Bloque 59D
 
-El corte del 2026-07-28 concluyó **no listo**. Docker, Alembic, PostgreSQL, los
-endpoints y las cuentas activas aprobaron, pero la última tarea desatendida de
-backup terminó con resultado `1`. También faltan contraseñas definitivas,
-pruebas actuales desde los dispositivos reales, confirmaciones de titularidad y
-continuidad de KERNELOS-PC, y la decisión DHCP.
+El corte del 2026-07-28 queda **listo con reservas para piloto controlado**.
+Docker, Alembic, PostgreSQL, los endpoints y las cuentas activas aprobaron. El
+Bloque 59C corrigió el resultado
+`1` del backup y 59D reconfirmó que la tarea está `Ready`, con
+`LastTaskResult = 0` y próximo disparador natural a las 23:30:30.
 
-No se inicia el Día 1. Para continuar se deben cerrar
+59D cerró las credenciales definitivas, las pruebas desde los dispositivos
+reales, la continuidad de `KERNELOS-PC`, la disponibilidad de Docker, el método
+paralelo, las cuentas personales, los responsables operativos y la decisión
+temporal DHCP. La reserva DHCP continúa pendiente con riesgo aceptado.
+
+No se inicia el Día 1 en 59D. El bloque siguiente debe comprobar el corte y
+registrar el comienzo efectivo usando
 [`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md) y
-completar
-[`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
+[`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md),
+[`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md) y
+[`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
 
 ## Reglas para los cinco días
 
@@ -79,7 +86,9 @@ sin registrar operación real del piloto.
 - comprobar el inicio correcto de Docker Desktop;
 - probar el acceso de la secretaria con `operator` desde su equipo;
 - probar el acceso de George con `admin_auditor` por Tailscale;
-- confirmar la primera ejecución desatendida real del backup;
+- revisar que la tarea de backup conserva resultado `0` y asignar su control
+  diario; la siguiente ejecución natural de las 23:30 queda como control
+  rutinario;
 - preparar el método actual y la plantilla de incidencias;
 - decidir si ventas a crédito entran en el Día 2;
 - practicar el flujo básico sin crear, cerrar, corregir ni borrar datos reales;

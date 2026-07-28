@@ -30,7 +30,7 @@ Al cierre de los Bloques 55A a 58D-2:
 Estas evidencias demuestran preparación técnica, pero no reemplazan las
 confirmaciones del Día 0 ni autorizan todavía el uso piloto.
 
-## Corte operativo del Bloque 59B
+## Corte operativo de los Bloques 59B a 59D
 
 El 2026-07-28 se ejecutó el cierre de pendientes previo al piloto. El resultado
 detallado está en
@@ -38,23 +38,31 @@ detallado está en
 checklist práctico del Día 0 en
 [`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
 
+59C resolvió el fallo técnico del backup diario. 59D reconfirmó salud, cuentas,
+backup, servidor y red, y separó esas evidencias de las confirmaciones que deben
+hacerse con George y los dispositivos reales. La evidencia 59D está en
+[`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md) y su
+checklist de firma en
+[`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
+
 | Control | Resultado del corte |
 | --- | --- |
 | Cuentas | `admin`/`admin_auditor` y `estherdelgado31`/`operator`, activas |
-| Contraseñas definitivas | Sin rotación ni confirmación segura; bloqueador |
+| Contraseñas definitivas | Rotadas mediante entrada local oculta |
 | Docker | `db`, `api` y `web` saludables |
-| Red desde el servidor | API y Web por LAN y Tailscale, OK |
-| Dispositivos reales | Pruebas actuales de secretaria y George pendientes |
+| Red desde el servidor | API y Web por LAN y Tailscale, reconfirmadas OK en 59D |
+| Dispositivos reales | `operator` por LAN y `admin_auditor` por Tailscale, OK |
 | Alembic | `0026_user_roles` |
 | PostgreSQL | `5432` no publicado |
 | Backup existente | Dump, checksum, JSON y `pg_restore --list`, OK |
-| Tarea diaria | Corregida en 59C; está `Ready` y la última ejecución mediante la tarea terminó con resultado `0` |
-| DHCP | Pendiente y sin aceptación temporal de George |
-| Decisión | **No listo; no iniciar el piloto** |
+| Tarea diaria | Corregida en 59C y revisada en 59D; está `Ready` y `LastTaskResult = 0` |
+| PC servidor | `KERNELOS-PC`, Docker y continuidad confirmados; responsable George |
+| DHCP | Reserva pendiente; riesgo aceptado temporalmente por George |
+| Decisión | **Listo con reservas; el piloto todavía no inicia** |
 
-La disponibilidad técnica actual no cierra la titularidad de cuentas, el uso sin
-compartir, las contraseñas, los accesos desde dispositivos reales ni los
-compromisos de disponibilidad del servidor.
+George cerró la titularidad y uso individual de cuentas, los accesos posteriores
+a la rotación, la disponibilidad del servidor, el método paralelo y los
+responsables operativos.
 
 ## Qué ya está listo
 
@@ -77,21 +85,23 @@ y evidencia. El piloto no puede empezar con una casilla vacía.
 | Confirmación obligatoria | Responsable | Evidencia mínima | Estado |
 | --- | --- | --- | --- |
 | Ejecución mediante la tarea diaria terminada con resultado `0` | George | 2026-07-28 06:41; `.dump`, `.sha256`, `.json` y `pg_restore --list`, OK | [x] |
-| Contraseñas definitivas de `admin_auditor` y `operator` rotadas por canal seguro | George | Confirmación sin escribir ni adjuntar la contraseña | [ ] |
-| Usuarios reales activos, individuales y asociados a cada persona | George | Lista de nombres de usuario y rol, sin contraseñas | [ ] |
-| Reserva DHCP o dirección estable del servidor configurada | George / técnico de red | Dirección reservada y acceso LAN posterior aprobado | [ ] |
-| PC servidor disponible y encendida durante todo el horario de uso | George | Horario y responsable de encendido definidos | [ ] |
-| Docker Desktop inicia correctamente en la PC servidor | George | Reinicio controlado y estado saludable confirmado | [ ] |
-| Acceso desde la computadora o dispositivo real de la secretaria | Secretaria + George | Login `operator` y carga de un módulo permitido | [ ] |
-| Acceso de George por Tailscale | George | Login `admin_auditor` y carga de un módulo administrativo | [ ] |
-| Prohibición de cuentas compartidas comprendida y aceptada | Todos los participantes | Cada persona confirma su cuenta individual | [ ] |
+| Contraseñas definitivas de `admin_auditor` y `operator` rotadas por canal seguro | George | Confirmación sin escribir ni adjuntar la contraseña | [x] |
+| Usuarios reales activos con roles correctos | Técnico | `admin`/`admin_auditor` y `estherdelgado31`/`operator`, activos | [x] |
+| Cuentas individuales, no compartidas y asociadas a cada persona | George + operadora | Confirmación de titularidad y uso exclusivo | [x] |
+| Reserva DHCP o aceptación temporal del riesgo | George / técnico de red | Riesgo aceptado temporalmente; reserva pendiente | [x] |
+| PC servidor disponible y encendida durante todo el horario de uso | George | Compromiso de mantener `KERNELOS-PC` encendido | [x] |
+| Docker Desktop disponible en el corte 59D | Técnico | Health con `db`, `api` y `web` saludables | [x] |
+| Docker Desktop disponible durante todo el horario | George | Compromiso operativo confirmado | [x] |
+| Acceso desde la computadora o dispositivo real de la secretaria | Secretaria + George | Login `operator` y carga de un módulo permitido | [x] |
+| Acceso de George por Tailscale | George | Login `admin_auditor` y carga de un módulo administrativo | [x] |
+| Prohibición de cuentas compartidas comprendida y aceptada | Todos los participantes | Cada persona confirma su cuenta individual | [x] |
 
 También deben definirse antes de comenzar:
 
 - [ ] fecha y horario de cada jornada;
 - [ ] persona que cubre a la secretaria si se ausenta;
-- [ ] formularios o archivos del método actual disponibles para toda la jornada;
-- [ ] responsable de recibir incidencias y medio de contacto;
+- [x] formularios o archivos del método actual disponibles para toda la jornada;
+- [x] responsable de recibir incidencias y medio de contacto;
 - [ ] decisión explícita sobre incluir o no ventas a crédito;
 - [ ] breve práctica de la secretaria con la
   [guía de operador](44-guia-piloto-secretaria-operador.md);
@@ -102,7 +112,7 @@ También deben definirse antes de comenzar:
 | Riesgo | Efecto posible | Control del piloto |
 | --- | --- | --- |
 | Docker no disponible a la hora del backup | Jornada sin respaldo esperado | Tres reintentos cada cinco minutos, log seguro y revisión cada mañana |
-| Cambio de IP del servidor | Pérdida de acceso de la secretaria | Configurar reserva DHCP antes del Día 1 |
+| Cambio de IP del servidor | Pérdida de acceso de la secretaria | Verificar IP cada día; detener y actualizar si cambia; reserva DHCP pendiente |
 | PC apagada, suspendida o Docker detenido | ERP no disponible | Definir horario y responsable; mantener el método actual |
 | Cuenta compartida | Pérdida de trazabilidad | Usar cuentas personales; detener la sesión compartida |
 | Registro duplicado u omitido | Diferencia entre ERP y método actual | Registrar ambos en el momento y conciliar al cierre |
@@ -120,41 +130,41 @@ También deben definirse antes de comenzar:
 - [x] Alembic en `0026_user_roles`.
 - [x] Backend y frontend sincronizados tras 58D-2.
 - [x] Permisos integrales por rol validados.
-- [ ] Estado saludable confirmado el Día 0.
-- [ ] Espacio libre suficiente en servidor y destino de backups.
-- [ ] Fecha y hora de Ecuador correctas.
+- [x] Estado saludable confirmado el Día 0.
+- [x] Espacio libre suficiente en servidor y destino de backups.
+- [x] Fecha y hora local correctas.
 - [ ] Reinicio controlado confirma arranque correcto de Docker Desktop.
 - [ ] Navegador del puesto de la secretaria actualizado.
-- [ ] URL o acceso directo aprobado disponible en el puesto real.
+- [x] URL o acceso directo aprobado disponible en el puesto real.
 - [ ] Ningún cambio técnico pendiente se mezcla con las jornadas del piloto.
 
 ## Checklist operativa
 
 - [ ] Alcance de los módulos explicado a secretaria y George.
-- [ ] Método actual preparado y disponible en paralelo.
-- [ ] Regla para identificar el mismo movimiento en ambos registros acordada.
-- [ ] Hora de apertura, conciliación y cierre diario acordada.
-- [ ] Responsable de caja y responsable de revisión identificados.
+- [x] Método actual preparado y disponible en paralelo.
+- [x] Regla para conciliar el mismo período en ambos registros acordada.
+- [x] Hora de conciliación diaria acordada.
+- [x] Responsable de revisión identificado: George.
 - [ ] Productos, clientes y saldos iniciales necesarios revisados sin cambios
   masivos.
 - [ ] Ventas a crédito incluidas solo si el proceso operativo fue aprobado.
-- [ ] Plantilla de incidencias disponible.
-- [ ] Canal para avisar incidentes definido.
+- [x] Plantilla de incidencias disponible.
+- [x] Canal para avisar incidentes definido.
 - [ ] Criterios de pausa y detención comprendidos.
 - [ ] No se declara producción definitiva al terminar el Día 5.
 
 ## Checklist de usuarios
 
-- [ ] Existe una cuenta personal activa para cada participante.
-- [ ] Cada cuenta tiene el rol correcto.
-- [ ] Contraseñas definitivas rotadas y conocidas solo por su titular.
-- [ ] Login real de `operator` aprobado desde el puesto de la secretaria.
-- [ ] Login real de `admin_auditor` aprobado por Tailscale para George.
-- [ ] La secretaria reconoce el nombre o rol de su sesión.
-- [ ] La secretaria sabe cerrar sesión al terminar o alejarse.
-- [ ] Nadie utilizará la cuenta de otra persona.
-- [ ] Nadie guardará contraseñas en la plantilla de incidencias.
-- [ ] George sabe revisar un bloqueo sin prestar su cuenta.
+- [x] Existe una cuenta personal activa para cada participante.
+- [x] Cada cuenta tiene el rol correcto.
+- [x] Contraseñas definitivas rotadas y conocidas solo por su titular.
+- [x] Login real de `operator` aprobado desde el puesto de la secretaria.
+- [x] Login real de `admin_auditor` aprobado por Tailscale para George.
+- [x] La secretaria reconoce el nombre o rol de su sesión.
+- [x] La secretaria sabe cerrar sesión al terminar o alejarse.
+- [x] Nadie utilizará la cuenta de otra persona.
+- [x] Nadie guardará contraseñas en la plantilla de incidencias.
+- [x] George sabe revisar un bloqueo sin prestar su cuenta.
 
 ## Checklist de backups
 
@@ -167,8 +177,8 @@ También deben definirse antes de comenzar:
 - [ ] Primera ejecución por su disparador, sin intervención, aprobada.
 - [ ] Hora de las 23:30 confirmada como compatible con la operación.
 - [ ] Backup más reciente y resultado de tarea revisados antes del Día 1.
-- [ ] Responsable de revisión diaria definido.
-- [ ] Espacio disponible revisado.
+- [x] Responsable de revisión diaria definido.
+- [x] Espacio disponible revisado.
 - [ ] Copia externa periódica acordada o riesgo aceptado expresamente por
   George.
 - [ ] Se entiende que un fallo de backup no autoriza un restore.
@@ -193,11 +203,11 @@ disparador natural continúa como control operativo antes del Día 1. Ver
 - [x] Tailscale sin Funnel ni exposición pública.
 - [x] PostgreSQL no publicado por LAN ni Tailscale.
 - [ ] Reserva DHCP o dirección estable configurada.
-- [ ] Acceso LAN reconfirmado después de la reserva.
-- [ ] Puesto real de la secretaria probado con su cuenta.
-- [ ] Dispositivo real de George probado por Tailscale.
-- [ ] PC servidor no entrará en suspensión durante el horario acordado.
-- [ ] Persona de contacto definida si falla LAN, Wi-Fi o Tailscale.
+- [x] Riesgo DHCP aceptado temporalmente por George mientras la reserva sigue pendiente.
+- [x] Puesto real de la secretaria probado con su cuenta.
+- [x] Dispositivo real de George probado por Tailscale.
+- [x] PC servidor no entrará en suspensión durante el horario acordado.
+- [x] Persona de contacto definida si falla LAN, Wi-Fi o Tailscale.
 
 ## Módulos incluidos en el piloto
 
@@ -339,17 +349,24 @@ Detener nuevas entradas en el ERP cuando:
   [`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md).
 - Checklist ejecutable del Día 0:
   [`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
+- Usuarios y accesos del Bloque 59D:
+  [`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md).
+- Confirmación previa y firma:
+  [`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
 - Permisos vigentes:
   [`42-guia-operativa-permisos-usuarios.md`](42-guia-operativa-permisos-usuarios.md).
 
 ## Conclusión
 
-Agua Activa ERP está técnicamente preparado para continuar el Día 0, pero el
-corte 59B lo clasifica como **no listo** y **todavía no está autorizado el
-inicio del piloto**. El backup diario fue corregido y comprobado en el Bloque
-59C; la autorización todavía depende de cerrar las credenciales definitivas y
-reglas de cuentas, resolver o aceptar expresamente el riesgo DHCP, confirmar el
-servidor y probar los accesos desde los dispositivos reales.
+Agua Activa ERP queda **listo con reservas para piloto controlado**. En 59D se
+cerraron credenciales, cuentas personales, accesos posteriores a la rotación,
+servidor, método paralelo, conciliación, incidencias, revisión de backup y la
+decisión temporal DHCP. La reserva DHCP sigue pendiente con riesgo aceptado.
+
+El piloto todavía no inicia: el bloque siguiente debe registrar el comienzo
+efectivo del Día 1. La fecha, horario, alcance diario y decisión sobre ventas a
+crédito se completan como controles de ejecución en ese bloque y no reabren el
+cierre de usuarios y accesos de 59D.
 
 El eventual piloto será limitado, reversible en lo operativo mediante el
 método actual y evaluado al final de cinco días. Su cierre no equivale

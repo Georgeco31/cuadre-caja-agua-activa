@@ -335,6 +335,14 @@ cuadre-caja-agua-activa/
   mediante el Programador terminó con resultado `0`, generó `.dump`, `.sha256`
   y `.json`, y aprobó `pg_restore --list`. Los demás bloqueadores continúan y el
   piloto no se inicia.
+- Bloque 59D: las cuentas `admin`/`admin_auditor` y
+  `estherdelgado31`/`operator`, la salud LAN/Tailscale, `KERNELOS-PC` y la tarea
+  de backup con resultado `0` fueron reconfirmados sin exponer secretos.
+  Después se cerraron la rotación segura, los accesos reales, la continuidad
+  del servidor, Docker, el método paralelo, las cuentas personales, los
+  responsables operativos y la decisión temporal DHCP. Decisión:
+  **listo con reservas para piloto controlado**; la reserva DHCP sigue pendiente
+  y el piloto no se inicia hasta el bloque siguiente.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -422,6 +430,10 @@ de gastos, cookies ni refresh tokens.
   respaldo, módulos, contingencia y confirmación de George.
 - `docs/50-diagnostico-backup-diario-desatendido.md`: causa, corrección, logs y
   validación del backup diario del Bloque 59C.
+- `docs/51-usuarios-accesos-pre-piloto.md`: evidencia técnica, usuarios,
+  accesos, servidor, DHCP, backup, reservas y decisión del Bloque 59D.
+- `docs/52-confirmacion-dia-0-pre-piloto.md`: checklist de confirmación y firma
+  anterior al Día 1.
 
 ## Antes de usar datos reales
 
@@ -430,8 +442,9 @@ producción local y demuestran backup/restore aislado, tarea diaria y permisos
 en el despliegue actual. El Bloque 59A prepara el plan y el corte 59B conserva
 la decisión **no listo** por bloqueadores operativos. El Bloque 59C resuelve el
 fallo técnico del backup diario, pero no los demás bloqueadores. Todavía no se
-autoriza iniciar el piloto ni declarar producción definitiva. Leer en este
-orden:
+autoriza declarar producción definitiva. El Bloque 59D cierra los controles
+humanos y deja el sistema listo con reserva DHCP aceptada, pero no inicia el
+piloto; el Día 1 debe comenzar en un bloque posterior. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -455,7 +468,9 @@ orden:
 20. `docs/48-cierre-pendientes-pre-piloto.md`.
 21. `docs/49-checklist-dia-0-piloto.md`.
 22. `docs/50-diagnostico-backup-diario-desatendido.md`.
-23. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
+23. `docs/51-usuarios-accesos-pre-piloto.md`.
+24. `docs/52-confirmacion-dia-0-pre-piloto.md`.
+25. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
     obligatorios y aprobar el Día 0.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,

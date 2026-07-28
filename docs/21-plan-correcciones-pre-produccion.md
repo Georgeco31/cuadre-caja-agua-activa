@@ -286,6 +286,38 @@ seguimiento del siguiente disparador natural, copia externa, retención y
 alertas. La evidencia está en
 [`50-diagnostico-backup-diario-desatendido.md`](50-diagnostico-backup-diario-desatendido.md).
 
+## Estado del Bloque 59D
+
+El corte de usuarios y accesos pre-piloto reconfirmó sin consultar hashes ni
+secretos:
+
+- `admin` activo con rol `admin_auditor`;
+- `estherdelgado31` activa con rol `operator`;
+- producción saludable por localhost, LAN y Tailscale;
+- Alembic en `0026_user_roles` y PostgreSQL `5432` no publicado;
+- `KERNELOS-PC` como host comprobado, Docker disponible y suspensión con
+  corriente alterna configurada en `Nunca`;
+- tarea `AguaActivaERP-BackupDiario` en `Ready`, última ejecución
+  2026-07-28 06:41:41, `LastTaskResult = 0` y siguiente ejecución
+  2026-07-28 23:30:30.
+
+George autorizó y completó la rotación segura de ambas credenciales, confirmó
+las pruebas reales por LAN y Tailscale, designó `KERNELOS-PC` como servidor,
+confirmó Docker y el método manual paralelo, y aceptó temporalmente el riesgo
+DHCP mientras la reserva continúa pendiente.
+
+George confirmó después la titularidad y uso exclusivo de las cuentas, el login
+posterior de cada titular y los responsables de servidor, conciliación,
+incidencias y backup.
+
+La decisión final 59D es **listo con reservas para piloto controlado** por el
+riesgo DHCP aceptado temporalmente. La reserva DHCP continúa pendiente y el
+piloto no se inició; el comienzo efectivo del Día 1 corresponde al bloque
+siguiente. Evidencia y checklist:
+
+- [`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md);
+- [`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -297,7 +329,7 @@ alertas. La evidencia está en
 | P0-05 | 55A/55A-2 | Compose productivo endurecido (comprobado en KERNELOS-PC para prueba controlada) | Desarrollo/infraestructura | Crítica | Sin reload/dev; restart, healthchecks, logs, usuarios y volumen verificados en PC |
 | P0-06 | 55A/55A-2/55B-1 | Retirar exposición de PostgreSQL (sin `ports`; sin listener en host; pendiente prueba desde otro equipo) | Infraestructura | Crítica | `5432` no accesible desde otro equipo; API sí conecta internamente |
 | P0-07 | 55A | Rotar contraseña PostgreSQL y secretos productivos | George + infraestructura | Crítica | No hay defaults; health/login pasan; secretos no se publican |
-| P0-08 | 55B-1 | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente antes del piloto) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
+| P0-08 | 55B-1/59D | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente con riesgo aceptado para el piloto controlado) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla; reserva antes de producción definitiva |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
 | P0-10 | 56A/56C/59B/59C y posteriores | Backup manual y tarea diaria comprobados; 59C resolvió el resultado `1` con `LastTaskResult = 0`, log seguro y reintentos; faltan seguimiento sostenido, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada de forma sostenida y alerta de fallo |
 | P0-11 | 56B | Restauración real en ambiente aislado (demostrada; faltan pruebas integrales de login y muestras) | Infraestructura + George | Crítica | Restore, tablas, conteos, Alembic, health y cleanup aprobados; login y muestras pasan en pruebas integrales |
@@ -372,7 +404,10 @@ Bloque 59B: corte no listo; cerrar backup, credenciales, accesos, servidor y DHC
 Bloque 59C: resultado 1 diagnosticado; tarea corregida y validada con resultado 0
   |
   v
-Completar y firmar el Día 0 de los documentos 48 y 49
+Bloque 59D: cierre humano aprobado; listo con reserva DHCP, piloto no iniciado
+  |
+  v
+Completar y firmar el Día 0 de los documentos 48, 49, 51 y 52
   |
   v
 Piloto controlado de cinco días, solo con autorización de George

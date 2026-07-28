@@ -10,6 +10,11 @@ No escribir contraseñas, tokens, contenido de `.env.production.local`, hashes,
 dumps ni secretos. Para una contraseña solo se permite registrar
 `rotada correctamente`.
 
+El Bloque 59D creó una versión de confirmación previa con el corte técnico
+actual en
+[`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
+Ambos checklists deben coincidir antes de autorizar el Día 1.
+
 | Dato | Registro |
 | --- | --- |
 | Fecha del Día 0 | |
@@ -23,15 +28,15 @@ dumps ni secretos. Para una contraseña solo se permite registrar
 
 ## 1. Decisión previa sobre bloqueadores
 
-- [ ] Se revisó
+- [x] Se revisó
   [`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md).
-- [ ] No queda un bloqueador abierto.
+- [x] No queda un bloqueador abierto.
 - [x] La última ejecución mediante la tarea terminó con resultado `0`.
 - [ ] La reserva DHCP está configurada y la IP LAN fue reconfirmada.
-- [ ] Si no existe reserva DHCP, George escribió
+- [x] Si no existe reserva DHCP, George escribió
   `riesgo aceptado temporal`, la fecha, el control diario de IP y el criterio de
   detención.
-- [ ] George comprende que una reserva o un riesgo aceptado no convierte el ERP
+- [x] George comprende que una reserva o un riesgo aceptado no convierte el ERP
   en producción definitiva.
 
 Si alguna casilla aplicable queda vacía, no se autoriza el Día 1.
@@ -42,19 +47,23 @@ se conserva como control separado en la sección 6.
 
 ## 2. PC servidor y Docker
 
-- [ ] El equipo se identifica como `KERNELOS-PC`.
-- [ ] KERNELOS-PC está conectada a corriente.
-- [ ] KERNELOS-PC permanecerá encendida durante todo el horario operativo.
-- [ ] Hay una persona responsable de encendido y revisión.
-- [ ] Windows no entrará en suspensión ni hibernación durante el uso.
-- [ ] Docker Desktop está abierto y disponible.
-- [ ] La sesión necesaria para Docker y la tarea de backup estará activa.
-- [ ] `db`, `api` y `web` aparecen `healthy`.
-- [ ] El health termina con cero fallos críticos.
-- [ ] Alembic muestra `0026_user_roles`.
-- [ ] PostgreSQL `5432` no está publicado.
-- [ ] La fecha y hora local son correctas.
-- [ ] Hay espacio libre suficiente para operación y backups.
+- [x] El equipo se identifica como `KERNELOS-PC`.
+- [x] George confirma la continuidad de KERNELOS-PC durante el horario.
+- [x] KERNELOS-PC permanecerá encendida durante todo el horario operativo.
+- [x] George es responsable de encendido y revisión.
+- [x] Windows no entrará en suspensión ni hibernación durante el uso.
+- [x] Docker Desktop está abierto y disponible en el corte técnico.
+- [x] La sesión necesaria para Docker y la tarea de backup estará activa.
+- [x] `db`, `api` y `web` aparecen `healthy`.
+- [x] El health termina con cero fallos críticos.
+- [x] Alembic muestra `0026_user_roles`.
+- [x] PostgreSQL `5432` no está publicado.
+- [x] La fecha y hora local son correctas.
+- [x] Hay espacio libre suficiente para operación y backups (84,26 GB en el corte).
+
+La configuración técnica observada usa `Sleep after = Nunca` con corriente
+alterna. La casilla de continuidad permanece abierta hasta que George confirme
+energía, horario y prohibición de suspensión manual.
 
 Comando autorizado de comprobación:
 
@@ -66,9 +75,9 @@ Resultado:
 
 | Campo | Registro |
 | --- | --- |
-| Fecha/hora del health | |
-| Resultado general | |
-| Observaciones sin secretos | |
+| Fecha/hora del health | 2026-07-28, corte 59D |
+| Resultado general | OK; cero fallos críticos y cero advertencias |
+| Observaciones sin secretos | LAN/Tailscale OK; Alembic 0026; 5432 no publicado |
 
 ## 3. Usuarios, roles y contraseñas
 
@@ -76,42 +85,43 @@ Estado técnico conocido al crear esta plantilla:
 
 | Cuenta | Rol esperado | Activa | Titular confirmado | No se comparte |
 | --- | --- | --- | --- | --- |
-| `admin` | `admin_auditor` | Sí | [ ] | [ ] |
-| `estherdelgado31` | `operator` | Sí | [ ] | [ ] |
+| `admin` | `admin_auditor` | Sí | [x] | [x] |
+| `estherdelgado31` | `operator` | Sí | [x] | [x] |
 
-- [ ] George confirma que `admin` es la cuenta administrativa.
-- [ ] George confirma que `estherdelgado31` es la cuenta operativa.
-- [ ] La operadora usará únicamente su cuenta de rol `operator`.
-- [ ] La operadora no conoce ni usará la contraseña administrativa.
-- [ ] George no prestará la cuenta administrativa para resolver bloqueos.
-- [ ] Nadie usará una cuenta compartida.
-- [ ] Contraseña de `admin_auditor`: `rotada correctamente`.
-- [ ] Contraseña de `operator`: `rotada correctamente`.
-- [ ] Cada titular conoce únicamente su propia contraseña.
-- [ ] Las contraseñas no fueron copiadas en chat, papel visible, captura o
+- [x] George confirma que `admin` es la cuenta administrativa.
+- [x] George confirma que `estherdelgado31` es la cuenta operativa.
+- [x] La operadora usará únicamente su cuenta de rol `operator`.
+- [x] La operadora no conoce ni usará la contraseña administrativa.
+- [x] George no prestará la cuenta administrativa para resolver bloqueos.
+- [x] Nadie usará una cuenta compartida.
+- [x] contraseña admin rotada correctamente.
+- [x] contraseña estherdelgado31 rotada correctamente.
+- [x] Cada titular conoce únicamente su propia contraseña.
+- [x] Las contraseñas no fueron copiadas en chat, papel visible, captura o
   documentación.
-- [ ] Los roles visibles después del login coinciden con lo esperado.
+- [x] Los roles visibles después del login coinciden con lo esperado.
 - [ ] Los permisos vigentes de los Bloques 58B a 58D-2 fueron recordados.
 
 ## 4. Acceso LAN de la operadora
 
 Realizar desde el dispositivo que se usará en la oficina:
 
-- [ ] Abrir `http://192.168.100.220:3000/login`.
-- [ ] La pantalla de login carga.
-- [ ] Iniciar sesión con la cuenta personal de rol `operator`.
-- [ ] El dashboard carga.
-- [ ] El rol mostrado es el esperado.
-- [ ] Abrir una pantalla operativa permitida.
-- [ ] Confirmar que no aparecen accesos administrativos.
-- [ ] Cerrar sesión y volver a entrar correctamente.
-- [ ] Guardar solo evidencia sin contraseña ni token.
+- [x] Abrir `http://192.168.100.220:3000/login`.
+- [x] La pantalla de login carga.
+- [x] Iniciar sesión con la cuenta de rol `operator`.
+- [x] El dashboard carga.
+- [x] El rol mostrado es el esperado.
+- [x] Se muestran los 22 destinos operativos esperados.
+- [x] Abrir una pantalla operativa permitida.
+- [x] Confirmar que no aparecen Reportes/Gerencia/Exportaciones/Usuarios/Precios/Nómina.
+- [x] Cerrar sesión correctamente.
+- [x] Guardar solo evidencia sin contraseña ni token.
 
 | Campo | Registro |
 | --- | --- |
 | Dispositivo probado | |
 | Pantalla operativa abierta | |
-| Resultado | OK / No OK |
+| Resultado | OK; confirmado por George el 2026-07-28 |
 | Evidencia segura | |
 | Responsable | |
 
@@ -119,22 +129,23 @@ Realizar desde el dispositivo que se usará en la oficina:
 
 Realizar desde el dispositivo que George usará fuera de la LAN:
 
-- [ ] Tailscale está conectado a la red privada aprobada.
-- [ ] Abrir `http://100.121.163.126:3000/login`.
-- [ ] La pantalla de login carga.
-- [ ] Iniciar sesión con la cuenta personal de rol `admin_auditor`.
-- [ ] El dashboard carga.
-- [ ] El rol mostrado es el esperado.
-- [ ] Abrir el panel gerencial o un reporte autorizado.
-- [ ] Comprobar una exportación de solo lectura, si aplica.
-- [ ] Cerrar sesión correctamente.
-- [ ] Guardar solo evidencia sin contraseña, token ni contenido sensible.
+- [x] Tailscale está conectado a la red privada aprobada.
+- [x] Abrir `http://100.121.163.126:3000/login`.
+- [x] La pantalla de login carga.
+- [x] Iniciar sesión con la cuenta de rol `admin_auditor`.
+- [x] El dashboard carga.
+- [x] El rol mostrado es el esperado.
+- [x] Se muestran los 33 destinos esperados.
+- [x] Abrir el panel gerencial o un reporte autorizado.
+- [x] Comprobar una exportación de solo lectura, si aplica.
+- [x] Cerrar sesión correctamente.
+- [x] Guardar solo evidencia sin contraseña, token ni contenido sensible.
 
 | Campo | Registro |
 | --- | --- |
 | Dispositivo probado | |
 | Reporte o exportación comprobada | |
-| Resultado | OK / No OK |
+| Resultado | OK; confirmado por George el 2026-07-28 |
 | Evidencia segura | |
 | Responsable | George |
 
@@ -158,8 +169,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-
 - [x] La metadata JSON es válida y no contiene secretos.
 - [x] `pg_restore --list` termina correctamente.
 - [x] El backup no está en staging ni se subirá a Git.
-- [ ] Se definió quién revisará la tarea cada mañana.
-- [ ] Se entiende que esta validación no autoriza ejecutar un restore.
+- [x] Se definió quién revisará la tarea cada mañana.
+- [x] Se entiende que esta validación no autoriza ejecutar un restore.
 
 | Campo | Registro |
 | --- | --- |
@@ -168,29 +179,32 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-
 | Fecha del backup validado | 2026-07-28 06:41 |
 | Dump + SHA256 + JSON | OK |
 | `pg_restore --list` | OK |
-| Responsable de revisión diaria | |
+| Responsable de revisión diaria | George, cada mañana antes de operar |
+
+La siguiente ejecución natural de las 23:30 es un control rutinario posterior a
+la corrección 59C. Si vuelve a fallar, se convierte en bloqueador.
 
 ## 7. Método paralelo e incidencias
 
-- [ ] El método actual está disponible para toda la jornada.
-- [ ] Se acordó cómo relacionar el mismo movimiento en ambos registros.
-- [ ] Se acordó la hora de conciliación diaria.
-- [ ] La plantilla
+- [x] El método actual está disponible para toda la jornada.
+- [x] Se acordó conciliar el mismo período en ambos registros.
+- [x] Se acordó la hora de conciliación diaria.
+- [x] La plantilla
   [`46-registro-incidencias-piloto.md`](46-registro-incidencias-piloto.md)
   está lista.
-- [ ] Se definió el canal para avisar incidencias.
-- [ ] Se definió quién recibe y clasifica incidencias.
-- [ ] Todos saben registrar hora, usuario, módulo y resultado sin secretos.
+- [x] Se definió el canal para avisar incidencias.
+- [x] Se definió quién recibe y clasifica incidencias.
+- [x] Todos saben registrar hora, usuario, módulo y resultado sin secretos.
 - [ ] Todos saben que una diferencia no se corrige a ciegas.
-- [ ] Todos conocen el punto de corte para continuar solo con el método actual.
+- [x] Se confirmó que el ERP todavía no reemplaza oficialmente el método actual.
 
 | Campo | Registro |
 | --- | --- |
-| Método paralelo preparado | |
-| Responsable de conciliación | |
-| Canal de incidencias | |
-| Responsable de incidencias | |
-| Hora de revisión diaria | |
+| Método paralelo preparado | Confirmado por George |
+| Responsable de conciliación | George |
+| Canal de incidencias | WhatsApp directo a George; registrar las importantes en la plantilla |
+| Responsable de incidencias | George |
+| Hora de revisión diaria | Al cierre del día, después del cuadre de caja |
 
 ## 8. Módulos que se usarán
 
@@ -276,20 +290,22 @@ Ante una pausa o detención:
 Marcar una sola decisión:
 
 - [ ] **Listo para piloto:** todos los controles obligatorios están cerrados.
-- [ ] **Listo con reservas:** solo existen riesgos expresamente aceptados, con
+- [x] **Listo con reservas:** solo existen riesgos expresamente aceptados, con
   controles, responsable y criterio de detención.
 - [ ] **No listo:** queda al menos un bloqueador; se mueve el Día 1.
 
 | Campo | Confirmación |
 | --- | --- |
-| Decisión | |
-| Riesgos aceptados | |
-| Controles de cada riesgo | |
-| Bloqueadores restantes | |
-| Fecha autorizada para el Día 1 | |
-| Nombre de George | |
-| Firma o confirmación escrita | |
-| Fecha y hora de confirmación | |
+| Decisión | Listo para piloto controlado, con reserva DHCP |
+| Riesgos aceptados | Riesgo DHCP aceptado temporalmente |
+| Controles de cada riesgo | Verificar IP; detener y actualizar si cambia |
+| Bloqueadores restantes | Ninguno para preparar el inicio |
+| Fecha autorizada para el Día 1 | Se ejecutará en el bloque siguiente |
+| Nombre de George | George |
+| Firma o confirmación escrita | Confirmación escrita recibida |
+| Fecha y hora de confirmación | 2026-07-28 |
 
 La firma de este checklist autoriza únicamente el inicio controlado del Día 1
-en paralelo con el método actual. No autoriza producción definitiva.
+en paralelo con el método actual. No autoriza producción definitiva. La fecha,
+el horario y el alcance exacto de módulos deben registrarse en el bloque de
+inicio antes de crear la primera operación del piloto.
