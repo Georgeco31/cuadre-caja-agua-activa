@@ -1,5 +1,9 @@
 import type { UserRole } from "@/types/auth";
 
+import {
+  DashboardModuleGroup,
+  type DashboardModuleAction,
+} from "@/components/DashboardModuleGroup";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 
@@ -21,9 +25,9 @@ type DashboardActionGroup = {
 
 const actionGroups: DashboardActionGroup[] = [
   {
-    id: "caja",
-    title: "Inicio / Caja",
-    description: "Cuadre diario e historial de sesiones.",
+    id: "operacion",
+    title: "Operación diaria",
+    description: "Caja, seguimiento del día, gastos, compras y equipo.",
     actions: [
       {
         href: "/dashboard/cash-session",
@@ -38,13 +42,6 @@ const actionGroups: DashboardActionGroup[] = [
         description: "Consultar cuadres registrados y sus detalles.",
         icon: "HI",
       },
-    ],
-  },
-  {
-    id: "operacion",
-    title: "Operación diaria",
-    description: "Seguimiento del día, gastos, compras y equipo.",
-    actions: [
       {
         href: "/dashboard/daily-summary",
         title: "Resumen diario",
@@ -292,41 +289,58 @@ const actionGroups: DashboardActionGroup[] = [
 const frequentActionHrefs = new Set([
   "/dashboard/cash-session",
   "/dashboard/sales/cash",
+  "/dashboard/sales/credit",
+  "/dashboard/customers",
   "/dashboard/route-loads",
-  "/dashboard/daily-summary",
+  "/dashboard/production",
+  "/dashboard/reports",
+  "/dashboard/exports",
 ]);
 
 export function DashboardQuickActions({ role }: { role?: UserRole }) {
   const canViewAction = (action: DashboardAction) =>
     !action.adminOnly || role === "admin_auditor";
-  const frequentActions = actionGroups
+  const orderedGroups = [...actionGroups].sort(
+    (first, second) =>
+      groupDisplayOrder.indexOf(first.id) - groupDisplayOrder.indexOf(second.id),
+  );
+  const frequentActions = orderedGroups
     .flatMap((group) => group.actions)
     .filter(
       (action) => canViewAction(action) && frequentActionHrefs.has(action.href),
     );
+  const visibleActionCount = orderedGroups
+    .flatMap((group) => group.actions)
+    .filter(canViewAction).length;
 
   return (
     <section
       aria-labelledby="dashboard-actions-title"
-      className="space-y-8"
+      className="scroll-mt-24 space-y-8"
       id="modulos"
     >
-      <div>
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-water-700">
-          Acceso directo
-        </p>
-        <h2
-          className="mt-2 text-2xl font-semibold tracking-tight text-slate-950"
-          id="dashboard-actions-title"
-        >
-          Acciones frecuentes
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-slate-600">
-          Atajos a las tareas habituales de la operación diaria.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-water-700">
+            Acceso directo
+          </p>
+          <h2
+            className="mt-2 text-2xl font-semibold tracking-tight text-slate-950"
+            id="dashboard-actions-title"
+          >
+            Acciones frecuentes
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            Entra directamente a las tareas habituales de la operación.
+          </p>
+        </div>
+        <StatusBadge
+          label={`${visibleActionCount} destinos disponibles`}
+          tone="info"
+        />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {frequentActions.map((action) => (
           <ActionCard
             description={action.description}
@@ -348,54 +362,54 @@ export function DashboardQuickActions({ role }: { role?: UserRole }) {
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
               Todos los módulos
             </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Los mismos accesos del ERP, organizados por área de trabajo.
+            </p>
           </div>
-          <StatusBadge label="7 grupos operativos" tone="info" />
+          <StatusBadge label="6 grupos operativos" tone="neutral" />
         </div>
 
-        {actionGroups.map((group) => {
-          const visibleActions = group.actions.filter(canViewAction);
-          if (visibleActions.length === 0) {
-            return null;
-          }
+        <div className="grid min-w-0 items-start gap-5 xl:grid-cols-2">
+          {orderedGroups.map((group, index) => {
+            const visibleActions: DashboardModuleAction[] = group.actions
+              .filter(canViewAction)
+              .map((action) => ({
+                badge: action.adminOnly ? (
+                  <StatusBadge label="Admin" tone="neutral" />
+                ) : undefined,
+                description: action.description,
+                href: action.href,
+                icon: action.icon,
+                title: action.title,
+                variant: action.primary ? "primary" : "secondary",
+              }));
 
-          return (
-            <section
-              aria-labelledby={`dashboard-group-${group.id}`}
-              className="rounded-3xl border border-slate-200 bg-white p-4 shadow-card sm:p-6"
-              key={group.id}
-            >
-              <div className="mb-4">
-                <h3
-                  className="text-lg font-semibold text-slate-950"
-                  id={`dashboard-group-${group.id}`}
-                >
-                  {group.title}
-                </h3>
-                <p className="mt-1 text-sm text-slate-600">
-                  {group.description}
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                {visibleActions.map((action) => (
-                  <ActionCard
-                    badge={
-                      action.adminOnly ? (
-                        <StatusBadge label="Admin" tone="neutral" />
-                      ) : undefined
-                    }
-                    description={action.description}
-                    href={action.href}
-                    icon={action.icon}
-                    key={action.href}
-                    title={action.title}
-                    variant={action.primary ? "primary" : "secondary"}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
+            if (visibleActions.length === 0) {
+              return null;
+            }
+
+            return (
+              <DashboardModuleGroup
+                actions={visibleActions}
+                description={group.description}
+                id={group.id}
+                index={index + 1}
+                key={group.id}
+                title={group.title}
+              />
+            );
+          })}
+        </div>
       </div>
     </section>
   );
 }
+
+const groupDisplayOrder = [
+  "operacion",
+  "ventas",
+  "rutas",
+  "inventario",
+  "reportes",
+  "administracion",
+];

@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { BackupReminderCard } from "@/components/BackupReminderCard";
+import {
+  DashboardAlertPanel,
+  type DashboardAlertItem,
+} from "@/components/DashboardAlertPanel";
+import {
+  DashboardKpiGrid,
+  type DashboardKpiItem,
+} from "@/components/DashboardKpiGrid";
 import { DashboardQuickActions } from "@/components/DashboardQuickActions";
 import {
   DashboardRecentSessions,
@@ -153,6 +161,9 @@ export default function DashboardPage() {
     return null;
   }
 
+  const dashboardKpis = getDashboardKpis(todayData?.summary ?? null);
+  const dashboardAlerts = getDashboardAlerts(todayData);
+
   return (
     <DashboardShell
       activeHref="/dashboard"
@@ -160,27 +171,31 @@ export default function DashboardPage() {
       dateLabel={formatTopbarDate(new Date())}
       moduleHref="#modulos"
       roleLabel={
-        user?.role === "admin_auditor"
-          ? "Administrador / auditor"
-          : "Operador"
+        user
+          ? user.role === "admin_auditor"
+            ? "Administrador / auditor"
+            : "Operador"
+          : undefined
       }
       userName={user?.username}
     >
-      <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-7 sm:px-6 sm:py-9 xl:px-8">
+      <div className="mx-auto flex w-full min-w-0 max-w-screen-2xl flex-col gap-8 px-4 py-7 sm:px-6 sm:py-9 xl:gap-10 xl:px-8">
         <PageHeader
           actions={<LogoutButton />}
-          description="Consulta el estado de caja, retoma las tareas frecuentes y accede a cada área del ERP desde un solo lugar."
+          description="Revisa el cuadre de hoy, atiende avisos reales y entra a cada área del ERP desde un solo lugar."
           eyebrow="Panel operativo"
           meta={
             <div className="flex flex-wrap items-center gap-2">
-              <StatusBadge
-                label={
-                  user?.role === "admin_auditor"
-                    ? "Acceso administrador"
-                    : "Acceso operador"
-                }
-                tone="info"
-              />
+              {user ? (
+                <StatusBadge
+                  label={
+                    user.role === "admin_auditor"
+                      ? "Acceso administrador"
+                      : "Acceso operador"
+                  }
+                  tone="info"
+                />
+              ) : null}
               <span className="text-sm text-slate-500">
                 {formatLongDate(new Date())}
               </span>
@@ -189,17 +204,30 @@ export default function DashboardPage() {
           title={`Buen día, ${user?.username ?? "equipo"}`}
         />
 
-        {error ? <ErrorMessage message={error} /> : null}
+        {error ? (
+          <section
+            aria-label="Alerta de carga del dashboard"
+            className="scroll-mt-24"
+            id="alertas"
+          >
+            <ErrorMessage message={error} />
+          </section>
+        ) : null}
 
         {!error ? (
           <>
-            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(280px,0.8fr)]">
+            <DashboardKpiGrid items={dashboardKpis} />
+
+            <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.75fr)]">
               <DashboardTodayCard
                 cashSession={todayData?.cashSession ?? null}
                 summary={todayData?.summary ?? null}
               />
-              <BackupReminderCard />
+              <DashboardAlertPanel alerts={dashboardAlerts}>
+                <BackupReminderCard />
+              </DashboardAlertPanel>
             </div>
+
             <DashboardQuickActions role={user?.role} />
             <DashboardRecentSessions items={recentSessions} />
           </>
@@ -237,6 +265,69 @@ function getErrorMessage(possibleError: unknown): string {
   }
 
   return "No se pudo cargar el panel operativo.";
+}
+
+function getDashboardKpis(
+  summary: CashSessionSummary | null,
+): DashboardKpiItem[] {
+  if (!summary) {
+    return [];
+  }
+
+  return [
+    {
+      icon: "TC",
+      label: "Total contado",
+      value: formatMoney(summary.total_counted),
+    },
+    {
+      icon: "GA",
+      label: "Gastos antes",
+      value: formatMoney(summary.total_pre_count_expenses),
+    },
+    {
+      icon: "GD",
+      label: "Gastos después",
+      value: formatMoney(summary.total_post_count_expenses),
+    },
+    {
+      hint: "Resultado oficial",
+      icon: "TF",
+      label: "Total final",
+      tone: "water",
+      value: formatMoney(summary.final_total),
+    },
+  ];
+}
+
+function getDashboardAlerts(
+  todayData: TodayDashboardData | null,
+): DashboardAlertItem[] {
+  if (todayData) {
+    return [];
+  }
+
+  return [
+    {
+      description:
+        "No existe una sesión de caja para la fecha de hoy. Puedes registrarla desde el bloque principal.",
+      id: "cash-session-pending",
+      title: "Cuadre pendiente",
+      tone: "warning",
+    },
+  ];
+}
+
+function formatMoney(value: string): string {
+  const numberValue = Number(value);
+  if (Number.isNaN(numberValue)) {
+    return `$${value}`;
+  }
+
+  return new Intl.NumberFormat("es-EC", {
+    style: "currency",
+    currency: "USD",
+  }).format(numberValue);
 }
 
 function formatTopbarDate(value: Date): string {

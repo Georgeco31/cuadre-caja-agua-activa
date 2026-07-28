@@ -156,7 +156,9 @@ export function DashboardShell({
           </div>
         </header>
 
-        <main className="pb-24 lg:pb-10">{children}</main>
+        <main className="min-w-0 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-10">
+          {children}
+        </main>
       </div>
 
       <nav

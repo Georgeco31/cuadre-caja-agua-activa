@@ -24,7 +24,7 @@ export function StatCard({
   icon,
 }: StatCardProps) {
   return (
-    <div className={`rounded-2xl border p-4 ${toneStyles[tone]}`}>
+    <div className={`min-w-0 rounded-2xl border p-4 ${toneStyles[tone]}`}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           {label}
@@ -38,7 +38,7 @@ export function StatCard({
           </span>
         ) : null}
       </div>
-      <div className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+      <div className="mt-2 break-words text-lg font-semibold tabular-nums tracking-tight text-slate-950 sm:text-xl">
         {value}
       </div>
       {hint ? (

@@ -384,6 +384,11 @@ cambiar navegación funcional.
 
 ### 57C - Dashboard principal
 
+**Estado:** implementado en el frontend y documentado en
+`docs/34-bloque-57c-dashboard-principal.md`. La validación técnica y el health
+LAN/Tailscale están aprobados; queda pendiente la matriz visual autenticada por
+rol con una credencial productiva vigente.
+
 #### Objetivo
 
 Convertir el índice plano en un panel de trabajo diario con jerarquía.
