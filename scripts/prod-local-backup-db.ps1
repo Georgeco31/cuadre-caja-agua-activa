@@ -6,8 +6,44 @@ $ComposeFile = "docker-compose.prod.yml"
 $EnvFile = ".env.production.local"
 $BackupRelativeDirectory = "backups/postgres"
 $BackupDirectory = Join-Path $RepoRoot $BackupRelativeDirectory
+$BackupLogRelativeDirectory = "backups/logs"
+$BackupLogDirectory = Join-Path $RepoRoot $BackupLogRelativeDirectory
 
 . (Join-Path $PSScriptRoot "prod-local-common.ps1")
+
+function Protect-BackupLogMessage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $safeMessage = $Message -replace "[\r\n]+", " "
+    $safeMessage = $safeMessage -replace `
+        "(?i)\b(POSTGRES_PASSWORD|AUTH_SECRET_KEY|ADMIN_PASSWORD)\s*[:=]\s*\S+", `
+        '$1=[REDACTED]'
+    $safeMessage = $safeMessage -replace `
+        "(?i)(postgres(?:ql)?(?:\+\w+)?://)[^@\s]+@", `
+        '$1[REDACTED]@'
+    return $safeMessage
+}
+
+function Write-BackupTaskLog {
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("INFO", "OK", "ERROR", "WARNING")]
+        [string]$Level,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
+
+    $safeMessage = Protect-BackupLogMessage -Message $Message
+    $line = "{0} [{1}] {2}" -f `
+        (Get-Date).ToString("yyyy-MM-dd HH:mm:ss zzz"), `
+        $Level, `
+        $safeMessage
+    Add-Content -LiteralPath $script:BackupTaskLogPath -Value $line -Encoding UTF8
+}
 
 function ConvertFrom-BackupComposePsJson {
     param(
@@ -147,13 +183,53 @@ function Assert-BackupPathIgnored {
 $containerTempPath = ""
 $containerTempCreated = $false
 
+if (-not (Test-Path -LiteralPath $BackupLogDirectory -PathType Container)) {
+    New-Item -ItemType Directory -Path $BackupLogDirectory -Force | Out-Null
+}
+
+$logTimestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+$logSuffix = 0
+do {
+    $logSuffixText = if ($logSuffix -eq 0) { "" } else { "-$logSuffix" }
+    $script:BackupTaskLogPath = Join-Path `
+        $BackupLogDirectory `
+        "backup-task-$logTimestamp$logSuffixText.log"
+    $logSuffix++
+} while (Test-Path -LiteralPath $script:BackupTaskLogPath)
+
+New-Item -ItemType File -Path $script:BackupTaskLogPath -Force | Out-Null
+Write-BackupTaskLog -Level "INFO" -Message "Inicio de backup programado."
+Write-BackupTaskLog -Level "INFO" -Message "Repositorio: $RepoRoot"
+Write-Host "Log seguro: $script:BackupTaskLogPath"
+
 Push-Location $RepoRoot
 try {
     Assert-ProdLocalPrerequisites `
         -RepoRoot $RepoRoot `
         -ComposeFile $ComposeFile `
         -EnvFile $EnvFile
+    Write-BackupTaskLog `
+        -Level "OK" `
+        -Message "Docker Desktop y Docker Compose disponibles."
+
     Test-ProdComposeConfiguration -ComposeFile $ComposeFile -EnvFile $EnvFile
+    Write-BackupTaskLog `
+        -Level "OK" `
+        -Message "Configuracion Docker Compose valida."
+
+    $safeServices = @(
+        Get-SafeDockerServicesStatus `
+            -ComposeFile $ComposeFile `
+            -EnvFile $EnvFile
+    )
+    $safeServicesText = @(
+        $safeServices | ForEach-Object {
+            "$($_.service)=$($_.state)/$($_.health)"
+        }
+    ) -join ", "
+    Write-BackupTaskLog `
+        -Level "INFO" `
+        -Message "Estado de contenedores: $safeServicesText"
 
     $runningServices = @(
         & docker compose -f $ComposeFile --env-file $EnvFile `
@@ -163,6 +239,7 @@ try {
         -not ($runningServices | Where-Object { $_.Trim() -eq "db" })) {
         throw "El contenedor db no esta corriendo. Inicie y verifique el ERP antes del backup."
     }
+    Write-BackupTaskLog -Level "OK" -Message "Contenedor db disponible."
 
     if (-not (Test-Path -LiteralPath $BackupDirectory -PathType Container)) {
         New-Item -ItemType Directory -Path $BackupDirectory -Force | Out-Null
@@ -187,6 +264,9 @@ try {
     Assert-BackupPathIgnored `
         -RepoRoot $RepoRoot `
         -RelativeBackupPath $relativeDumpPath
+    Write-BackupTaskLog `
+        -Level "INFO" `
+        -Message "Archivo seleccionado: $backupFileName"
 
     $containerTempPath = "/tmp/$backupFileName"
     Write-Host "Creando backup PostgreSQL en un temporal seguro del contenedor db..."
@@ -197,6 +277,7 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "pg_dump termino con codigo $LASTEXITCODE."
     }
+    Write-BackupTaskLog -Level "OK" -Message "pg_dump termino correctamente."
 
     Write-Host "Copiando el backup al host sin streaming binario de PowerShell..."
     & docker compose -f $ComposeFile --env-file $EnvFile `
@@ -204,6 +285,9 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "docker compose cp termino con codigo $LASTEXITCODE."
     }
+    Write-BackupTaskLog `
+        -Level "OK" `
+        -Message "Backup copiado al host: $backupFileName"
 
     $dumpFile = Get-Item -LiteralPath $dumpPath
     if ($dumpFile.Length -le 0) {
@@ -217,6 +301,7 @@ try {
         throw "pg_restore --list no pudo validar el backup."
     }
     $validationStatus = "OK: pg_restore --list"
+    Write-BackupTaskLog -Level "OK" -Message $validationStatus
 
     $hash = (Get-FileHash -LiteralPath $dumpPath -Algorithm SHA256).Hash.ToLowerInvariant()
     Set-Content `
@@ -254,6 +339,12 @@ try {
     $metadata |
         ConvertTo-Json -Depth 5 |
         Set-Content -LiteralPath $metadataPath -Encoding UTF8
+    Write-BackupTaskLog `
+        -Level "OK" `
+        -Message "Artefactos .dump, .sha256 y .json creados."
+    Write-BackupTaskLog `
+        -Level "OK" `
+        -Message "Backup finalizado correctamente: $backupFileName"
 
     Write-Host ""
     Write-Host "Backup creado: $dumpPath" -ForegroundColor Green
@@ -265,12 +356,21 @@ try {
     Write-Host "Este backup todavia debe probarse con restauracion en el Bloque 56B." `
         -ForegroundColor Yellow
 }
+catch {
+    Write-BackupTaskLog `
+        -Level "ERROR" `
+        -Message "Backup fallido: $($_.Exception.Message)"
+    throw
+}
 finally {
     if ($containerTempCreated -and
         -not [string]::IsNullOrWhiteSpace($containerTempPath)) {
         & docker compose -f $ComposeFile --env-file $EnvFile exec -T db `
             sh -c 'rm -f -- "$1"' backup-script $containerTempPath *> $null
         if ($LASTEXITCODE -ne 0) {
+            Write-BackupTaskLog `
+                -Level "WARNING" `
+                -Message "No se pudo eliminar el temporal del contenedor."
             Write-Warning "No se pudo eliminar el archivo temporal del contenedor: $containerTempPath"
         }
     }

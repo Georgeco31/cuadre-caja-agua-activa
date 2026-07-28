@@ -26,7 +26,7 @@ dumps ni secretos. Para una contraseña solo se permite registrar
 - [ ] Se revisó
   [`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md).
 - [ ] No queda un bloqueador abierto.
-- [ ] La última ejecución desatendida del backup terminó con resultado `0`.
+- [x] La última ejecución mediante la tarea terminó con resultado `0`.
 - [ ] La reserva DHCP está configurada y la IP LAN fue reconfirmada.
 - [ ] Si no existe reserva DHCP, George escribió
   `riesgo aceptado temporal`, la fecha, el control diario de IP y el criterio de
@@ -35,6 +35,10 @@ dumps ni secretos. Para una contraseña solo se permite registrar
   en producción definitiva.
 
 Si alguna casilla aplicable queda vacía, no se autoriza el Día 1.
+
+El Bloque 59C cerró el resultado técnico `1` y validó una ejecución mediante
+`Start-ScheduledTask`. La ejecución por el disparador natural, sin intervención,
+se conserva como control separado en la sección 6.
 
 ## 2. PC servidor y Docker
 
@@ -143,27 +147,27 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\prod-local-backup-list.ps1
 ```
 
-- [ ] La tarea `AguaActivaERP-BackupDiario` existe.
-- [ ] La próxima ejecución es coherente con las 23:30.
+- [x] La tarea `AguaActivaERP-BackupDiario` existe.
+- [x] La próxima ejecución es coherente con las 23:30.
 - [ ] La última ejecución ocurrió por el disparador, sin intervención.
-- [ ] El último resultado es `0`.
-- [ ] La ejecución creó un nuevo `.dump`.
-- [ ] Existe su `.sha256`.
-- [ ] Existe su `.json`.
-- [ ] El checksum coincide.
-- [ ] La metadata JSON es válida y no contiene secretos.
-- [ ] `pg_restore --list` termina correctamente.
-- [ ] El backup no está en staging ni se subirá a Git.
+- [x] El último resultado es `0`.
+- [x] La ejecución creó un nuevo `.dump`.
+- [x] Existe su `.sha256`.
+- [x] Existe su `.json`.
+- [x] El checksum coincide.
+- [x] La metadata JSON es válida y no contiene secretos.
+- [x] `pg_restore --list` termina correctamente.
+- [x] El backup no está en staging ni se subirá a Git.
 - [ ] Se definió quién revisará la tarea cada mañana.
 - [ ] Se entiende que esta validación no autoriza ejecutar un restore.
 
 | Campo | Registro |
 | --- | --- |
-| Última ejecución | |
-| Último resultado | |
-| Fecha del backup validado | |
-| Dump + SHA256 + JSON | OK / No OK |
-| `pg_restore --list` | OK / No OK |
+| Última ejecución | 2026-07-28 06:41:41, inicio manual de la tarea |
+| Último resultado | `0` |
+| Fecha del backup validado | 2026-07-28 06:41 |
+| Dump + SHA256 + JSON | OK |
+| `pg_restore --list` | OK |
 | Responsable de revisión diaria | |
 
 ## 7. Método paralelo e incidencias
@@ -289,4 +293,3 @@ Marcar una sola decisión:
 
 La firma de este checklist autoriza únicamente el inicio controlado del Día 1
 en paralelo con el método actual. No autoriza producción definitiva.
-

@@ -330,6 +330,11 @@ cuadre-caja-agua-activa/
   tarea desatendida terminó con resultado `1` y siguen pendientes credenciales,
   dispositivos reales, servidor y DHCP. Decisión actual: **no listo**; el
   piloto no se inicia.
+- Bloque 59C: el resultado `1` se correlacionó con indisponibilidad de Docker.
+  La tarea recibió directorio de inicio, reintentos y logging seguro; una prueba
+  mediante el Programador terminó con resultado `0`, generó `.dump`, `.sha256`
+  y `.json`, y aprobó `pg_restore --list`. Los demás bloqueadores continúan y el
+  piloto no se inicia.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -415,14 +420,18 @@ de gastos, cookies ni refresh tokens.
   bloqueadores y decisión del Bloque 59B.
 - `docs/49-checklist-dia-0-piloto.md`: checklist práctico de personas, accesos,
   respaldo, módulos, contingencia y confirmación de George.
+- `docs/50-diagnostico-backup-diario-desatendido.md`: causa, corrección, logs y
+  validación del backup diario del Bloque 59C.
 
 ## Antes de usar datos reales
 
 Los Bloques 54 a 58D-2 resuelven la separación de roles, preparan Docker de
 producción local y demuestran backup/restore aislado, tarea diaria y permisos
 en el despliegue actual. El Bloque 59A prepara el plan y el corte 59B conserva
-la decisión **no listo** por bloqueadores operativos. Todavía no se autoriza
-iniciar el piloto ni declarar producción definitiva. Leer en este orden:
+la decisión **no listo** por bloqueadores operativos. El Bloque 59C resuelve el
+fallo técnico del backup diario, pero no los demás bloqueadores. Todavía no se
+autoriza iniciar el piloto ni declarar producción definitiva. Leer en este
+orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -445,7 +454,8 @@ iniciar el piloto ni declarar producción definitiva. Leer en este orden:
 19. `docs/46-registro-incidencias-piloto.md`.
 20. `docs/48-cierre-pendientes-pre-piloto.md`.
 21. `docs/49-checklist-dia-0-piloto.md`.
-22. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
+22. `docs/50-diagnostico-backup-diario-desatendido.md`.
+23. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
     obligatorios y aprobar el Día 0.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
@@ -535,7 +545,9 @@ utiles en macOS/Linux, pero no son necesarios en Windows. La guia completa es
 tarea diaria esta en `docs/28-backups-postgresql-windows.md`, y la restauracion
 aislada esta en `docs/29-restauracion-controlada-postgresql.md`. La evidencia
 de activacion de la tarea esta en
-`docs/30-backup-diario-programado-windows.md`.
+`docs/30-backup-diario-programado-windows.md`; el diagnóstico y la corrección
+del resultado `1` están en
+`docs/50-diagnostico-backup-diario-desatendido.md`.
 
 El arranque productivo no reconstruye por defecto ni ejecuta migraciones o
 seeds. Los Bloques 55B-2 y

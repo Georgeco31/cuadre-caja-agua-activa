@@ -14,14 +14,20 @@ foreach ($commandName in @("Get-ScheduledTask", "Get-ScheduledTaskInfo")) {
     }
 }
 
-$task = Get-ScheduledTask `
-    -TaskPath $TaskPath `
-    -TaskName $TaskName `
-    -ErrorAction SilentlyContinue
-if ($null -eq $task) {
-    Write-Host "Estado: no existe"
-    Write-Host "Tarea: $TaskName"
-    exit 0
+try {
+    $task = Get-ScheduledTask `
+        -TaskPath $TaskPath `
+        -TaskName $TaskName `
+        -ErrorAction Stop
+}
+catch {
+    if ($_.FullyQualifiedErrorId -like "CmdletizationQuery_NotFound*") {
+        Write-Host "Estado: no existe"
+        Write-Host "Tarea: $TaskName"
+        exit 0
+    }
+
+    throw "No se pudo consultar la tarea $TaskName. Ejecute PowerShell con permisos suficientes. Detalle: $($_.Exception.Message)"
 }
 
 $info = Get-ScheduledTaskInfo `

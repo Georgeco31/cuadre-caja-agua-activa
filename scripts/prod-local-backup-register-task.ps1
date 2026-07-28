@@ -35,10 +35,21 @@ if ($BackupScript.Contains('"')) {
     throw "La ruta del repositorio contiene comillas y no es segura para la tarea programada."
 }
 
-$existingTask = Get-ScheduledTask `
-    -TaskPath $TaskPath `
-    -TaskName $TaskName `
-    -ErrorAction SilentlyContinue
+try {
+    $existingTask = Get-ScheduledTask `
+        -TaskPath $TaskPath `
+        -TaskName $TaskName `
+        -ErrorAction Stop
+}
+catch {
+    if ($_.FullyQualifiedErrorId -like "CmdletizationQuery_NotFound*") {
+        $existingTask = $null
+    }
+    else {
+        throw "No se pudo consultar si la tarea $TaskName ya existe. Ejecute PowerShell con permisos suficientes. Detalle: $($_.Exception.Message)"
+    }
+}
+
 if ($null -ne $existingTask) {
     throw "La tarea $TaskName ya existe. Revise su estado o quitela de forma explicita antes de registrarla otra vez."
 }
@@ -72,7 +83,8 @@ if ($PSCmdlet.ShouldProcess(
     try {
         $action = New-ScheduledTaskAction `
             -Execute $powerShellExecutable `
-            -Argument $arguments
+            -Argument $arguments `
+            -WorkingDirectory $RepoRoot
         $trigger = New-ScheduledTaskTrigger -Daily -At $runAt
         $principal = New-ScheduledTaskPrincipal `
             -UserId $currentUser `
@@ -81,6 +93,9 @@ if ($PSCmdlet.ShouldProcess(
         $settings = New-ScheduledTaskSettingsSet `
             -MultipleInstances IgnoreNew `
             -ExecutionTimeLimit (New-TimeSpan -Hours 2) `
+            -StartWhenAvailable `
+            -RestartCount 3 `
+            -RestartInterval (New-TimeSpan -Minutes 5) `
             -AllowStartIfOnBatteries `
             -DontStopIfGoingOnBatteries
 

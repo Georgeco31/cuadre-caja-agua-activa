@@ -48,7 +48,7 @@ checklist práctico del Día 0 en
 | Alembic | `0026_user_roles` |
 | PostgreSQL | `5432` no publicado |
 | Backup existente | Dump, checksum, JSON y `pg_restore --list`, OK |
-| Tarea diaria | Existe y está `Ready`, pero la última ejecución desatendida terminó con resultado `1` |
+| Tarea diaria | Corregida en 59C; está `Ready` y la última ejecución mediante la tarea terminó con resultado `0` |
 | DHCP | Pendiente y sin aceptación temporal de George |
 | Decisión | **No listo; no iniciar el piloto** |
 
@@ -76,7 +76,7 @@ y evidencia. El piloto no puede empezar con una casilla vacía.
 
 | Confirmación obligatoria | Responsable | Evidencia mínima | Estado |
 | --- | --- | --- | --- |
-| Primera ejecución desatendida real del backup diario terminada con resultado `0` | George | Fecha/hora de la tarea y nuevo juego `.dump`, `.sha256`, `.json` válido | [ ] |
+| Ejecución mediante la tarea diaria terminada con resultado `0` | George | 2026-07-28 06:41; `.dump`, `.sha256`, `.json` y `pg_restore --list`, OK | [x] |
 | Contraseñas definitivas de `admin_auditor` y `operator` rotadas por canal seguro | George | Confirmación sin escribir ni adjuntar la contraseña | [ ] |
 | Usuarios reales activos, individuales y asociados a cada persona | George | Lista de nombres de usuario y rol, sin contraseñas | [ ] |
 | Reserva DHCP o dirección estable del servidor configurada | George / técnico de red | Dirección reservada y acceso LAN posterior aprobado | [ ] |
@@ -101,7 +101,7 @@ También deben definirse antes de comenzar:
 
 | Riesgo | Efecto posible | Control del piloto |
 | --- | --- | --- |
-| Backup desatendido no comprobado | Jornada sin respaldo esperado | No iniciar hasta comprobarlo; revisar el resultado cada mañana |
+| Docker no disponible a la hora del backup | Jornada sin respaldo esperado | Tres reintentos cada cinco minutos, log seguro y revisión cada mañana |
 | Cambio de IP del servidor | Pérdida de acceso de la secretaria | Configurar reserva DHCP antes del Día 1 |
 | PC apagada, suspendida o Docker detenido | ERP no disponible | Definir horario y responsable; mantener el método actual |
 | Cuenta compartida | Pérdida de trazabilidad | Usar cuentas personales; detener la sesión compartida |
@@ -163,6 +163,7 @@ También deben definirse antes de comenzar:
 - [x] Restore real demostrado en ambiente aislado.
 - [x] Tarea diaria registrada a las 23:30.
 - [x] Inicio manual controlado de la tarea aprobado.
+- [x] Ejecución corregida mediante `Start-ScheduledTask` con resultado `0`.
 - [ ] Primera ejecución por su disparador, sin intervención, aprobada.
 - [ ] Hora de las 23:30 confirmada como compatible con la operación.
 - [ ] Backup más reciente y resultado de tarea revisados antes del Día 1.
@@ -177,10 +178,12 @@ La comprobación debe seguir
 No se deben adjuntar dumps, checksums con rutas sensibles, variables ni
 credenciales a este documento.
 
-En el corte 59B, la tarea existía y su próxima ejecución estaba programada, pero
-la ejecución desatendida del 2026-07-27 23:30:30 terminó con resultado `1`. Un
-backup existente posterior aprobó checksum, metadata y `pg_restore --list`, pero
-no sustituye una ejecución por disparador con resultado `0`.
+En el corte 59B, la ejecución del 2026-07-27 23:30:30 terminó con resultado `1`.
+El Bloque 59C correlacionó el fallo con indisponibilidad de Docker, añadió
+directorio de inicio, reintentos y logging seguro, y validó la tarea con
+resultado `0` y un nuevo juego de backup. La siguiente ejecución por el
+disparador natural continúa como control operativo antes del Día 1. Ver
+[`50-diagnostico-backup-diario-desatendido.md`](50-diagnostico-backup-diario-desatendido.md).
 
 ## Checklist de red y acceso
 
@@ -261,7 +264,8 @@ El Día 1 solo puede comenzar cuando:
 - el Día 0 del [plan de cinco días](47-plan-piloto-5-dias.md) fue aprobado;
 - la secretaria puede entrar con `operator` desde su equipo;
 - George puede entrar con `admin_auditor` por Tailscale;
-- el backup desatendido real fue comprobado;
+- la tarea de backup corregida terminó con resultado `0` y generó artefactos
+  válidos;
 - servidor, Docker, LAN y Tailscale están disponibles;
 - el método actual y la plantilla de incidencias están preparados;
 - se decidió si las ventas a crédito entran o quedan excluidas;
@@ -342,10 +346,10 @@ Detener nuevas entradas en el ERP cuando:
 
 Agua Activa ERP está técnicamente preparado para continuar el Día 0, pero el
 corte 59B lo clasifica como **no listo** y **todavía no está autorizado el
-inicio del piloto**. La autorización depende de corregir y comprobar el backup
-diario desatendido, cerrar las credenciales definitivas y reglas de cuentas,
-resolver o aceptar expresamente el riesgo DHCP, confirmar el servidor y probar
-los accesos desde los dispositivos reales.
+inicio del piloto**. El backup diario fue corregido y comprobado en el Bloque
+59C; la autorización todavía depende de cerrar las credenciales definitivas y
+reglas de cuentas, resolver o aceptar expresamente el riesgo DHCP, confirmar el
+servidor y probar los accesos desde los dispositivos reales.
 
 El eventual piloto será limitado, reversible en lo operativo mediante el
 método actual y evaluado al final de cinco días. Su cierre no equivale

@@ -13,9 +13,9 @@ Fecha del corte: **2026-07-28**.
 
 **NO LISTO para iniciar el piloto.**
 
-La infraestructura productiva local está saludable y las cuentas requeridas
-existen activas con los roles correctos. Sin embargo, la última ejecución
-desatendida de la tarea diaria terminó con código `1`, no existe confirmación de
+La infraestructura productiva local está saludable, las cuentas requeridas
+existen activas con los roles correctos y el Bloque 59C corrigió y validó la
+tarea diaria con `LastTaskResult = 0`. Sin embargo, no existe confirmación de
 rotación de las contraseñas definitivas, faltan las pruebas actuales desde los
 dispositivos reales y George todavía debe confirmar las reglas de cuentas,
 servidor, método paralelo y DHCP.
@@ -43,9 +43,9 @@ los bloqueadores de este documento y completar
 | George reconoce cuál cuenta corresponde a cada rol | Bloqueador | Requiere confirmación expresa en el Día 0 |
 | Contraseñas definitivas fuertes y vigentes | Bloqueador | No se rotaron ni se recibió confirmación segura durante este bloque |
 | Tarea diaria registrada | Confirmado | `AguaActivaERP-BackupDiario` existe, está `Ready` y conserva su disparador diario |
-| Última ejecución desatendida exitosa | Bloqueador | La ejecución de 2026-07-27 23:30:30 terminó con resultado `1`; se requiere una ejecución por disparador con resultado `0` |
-| Backup existente reciente y legible | Confirmado | El juego más reciente del 2026-07-28 05:15 tiene dump, checksum y metadata; el hash coincide, el JSON es válido y `pg_restore --list` aprobó |
-| Backup manual nuevo del Bloque 59B | No ejecutado | No hubo autorización explícita de George; se validó el backup existente sin crear otro |
+| Última ejecución de la tarea exitosa | Confirmado | El Bloque 59C corrigió la tarea y `Start-ScheduledTask` terminó con resultado `0`; la próxima ejecución natural debe revisarse como control operativo |
+| Backup existente reciente y legible | Confirmado | El juego creado por la tarea el 2026-07-28 06:41 tiene dump, checksum y metadata; el hash coincide, el JSON es válido y `pg_restore --list` aprobó |
+| Backup manual nuevo del Bloque 59C | Confirmado | La prueba manual del script creó y validó un juego separado antes de probar la tarea |
 | Endpoint LAN disponible | Confirmado | API y Web responden desde KERNELOS-PC en `192.168.100.220` |
 | Prueba LAN desde el dispositivo de oficina | Bloqueador | Faltan login `operator`, dashboard y una pantalla operativa desde el equipo real |
 | Endpoint Tailscale disponible | Confirmado | API y Web responden desde KERNELOS-PC en `100.121.163.126` |
@@ -80,41 +80,49 @@ acción por un canal seguro, la única evidencia documental permitida será
 
 ## Backup diario
 
-La comprobación actual de la tarea devolvió:
+La comprobación posterior al Bloque 59C devolvió:
 
 | Dato | Resultado |
 | --- | --- |
 | Tarea | `AguaActivaERP-BackupDiario` |
 | Estado | `Ready` |
 | Próxima ejecución | 2026-07-28 23:30:30 |
-| Última ejecución | 2026-07-27 23:30:30 |
-| Último resultado | `1` |
+| Última ejecución | 2026-07-28 06:41:41 |
+| Último resultado | `0` |
 | Acción configurada | Script seguro `prod-local-backup-db.ps1` |
+| Directorio de inicio | Raíz absoluta del repositorio |
 | Tipo de inicio | Usuario interactivo, nivel limitado |
+| Reintentos | 3, cada 5 minutos |
+| Iniciar cuando esté disponible | Sí |
 
-El resultado `1` no cierra la prueba desatendida. No se encontraron eventos
-operativos disponibles que permitan afirmar una causa. Antes del piloto debe
-revisarse que la sesión de Windows y Docker Desktop estén disponibles, dejar
-actuar el siguiente disparador y confirmar resultado `0` y un nuevo juego
-`.dump`, `.sha256` y `.json`.
+La causa del resultado histórico `1` fue la indisponibilidad de Docker: sus logs
+registraron apagado del backend a las 23:28:06 y un error de conexión al motor a
+las 23:30:01, inmediatamente antes de la tarea de las 23:30:30. La tarea no
+tenía reintentos y el script no guardaba logs.
 
-## Backup existente validado
+La corrección fijó el directorio de inicio, activó `StartWhenAvailable`, añadió
+tres reintentos cada cinco minutos y creó logging seguro por ejecución en
+`backups/logs`. La evidencia completa está en
+[`50-diagnostico-backup-diario-desatendido.md`](50-diagnostico-backup-diario-desatendido.md).
 
-No se creó un backup manual nuevo. El backup existente más reciente fue
-comprobado sin restaurarlo:
+## Backup generado por la tarea y validado
 
-- fecha local: 2026-07-28 05:15;
+La tarea corregida creó el backup más reciente, comprobado sin restaurarlo:
+
+- archivo: `agua-activa-postgres-20260728-064137.dump`;
+- fecha local: 2026-07-28 06:41;
 - tamaño: 281631 bytes;
 - archivo `.dump`: presente;
 - archivo `.sha256`: presente y coincide con el dump;
 - archivo `.json`: presente y se puede interpretar;
 - `pg_restore --list`: **OK**;
-- carpeta montada en solo lectura dentro de un contenedor temporal sin red para
-  la validación;
+- copia temporal dentro de `db` usada solo por `pg_restore --list` y retirada
+  después de la validación;
+- log seguro `backup-task-20260728-064137.log` con resultado OK;
 - ningún backup se añadió a Git.
 
-Este resultado demuestra que el respaldo existente es legible, pero no
-convierte la ejecución desatendida fallida en exitosa.
+La validación independiente solo ejecutó `pg_restore --list`; no creó una base
+ni ejecutó restore.
 
 ## Acceso LAN
 
@@ -209,8 +217,8 @@ registrando fecha, alcance, control diario de la IP y criterio de detención.
 
 **Ninguno registrado en este corte.**
 
-En particular, no se presume aceptado el riesgo DHCP, el fallo del backup diario
-ni el uso de evidencia histórica de acceso.
+En particular, no se presume aceptado el riesgo DHCP ni el uso de evidencia
+histórica de acceso.
 
 ## Bloqueadores restantes
 
@@ -219,19 +227,16 @@ ni el uso de evidencia histórica de acceso.
 2. Confirmar que las cuentas son personales, que no se comparten, que la
    operadora no usará la cuenta administrativa y que George reconoce ambos
    roles.
-3. Obtener una ejecución realmente desatendida de
-   `AguaActivaERP-BackupDiario` con resultado `0` y validar el nuevo juego de
-   archivos.
-4. Probar LAN desde el dispositivo real de oficina con `operator`.
-5. Probar Tailscale desde el dispositivo real de George con `admin_auditor`.
-6. Confirmar KERNELOS-PC como servidor, horario, responsable, Docker Desktop y
+3. Probar LAN desde el dispositivo real de oficina con `operator`.
+4. Probar Tailscale desde el dispositivo real de George con `admin_auditor`.
+5. Confirmar KERNELOS-PC como servidor, horario, responsable, Docker Desktop y
    prohibición de suspensión durante la operación.
-7. Configurar la reserva DHCP o registrar la aceptación temporal explícita del
+6. Configurar la reserva DHCP o registrar la aceptación temporal explícita del
    riesgo con sus controles.
-8. Confirmar que el método actual estará disponible en paralelo y que la
+7. Confirmar que el método actual estará disponible en paralelo y que la
    plantilla y el canal de incidencias están listos.
-9. Completar y firmar el checklist Día 0.
-10. Registrar la autorización explícita de George para iniciar el Día 1.
+8. Completar y firmar el checklist Día 0.
+9. Registrar la autorización explícita de George para iniciar el Día 1.
 
 ## Checklist Día 0 resumido
 
@@ -241,7 +246,7 @@ ni el uso de evidencia histórica de acceso.
 | Titularidad y no compartir cuentas | Bloqueador |
 | Contraseñas definitivas | Bloqueador |
 | Backup existente reciente validado | Confirmado |
-| Backup diario desatendido | Bloqueador |
+| Backup diario mediante tarea | Confirmado en el Bloque 59C; revisar el siguiente disparador natural |
 | Acceso secretaria / `operator` | Bloqueador |
 | Acceso George / `admin_auditor` | Bloqueador |
 | Permisos por rol | Confirmados por los Bloques 58B a 58D-2 |
@@ -258,7 +263,6 @@ ni el uso de evidencia histórica de acceso.
 - [ ] Listo con reservas.
 - [x] **No listo.**
 
-Motivo: existen bloqueadores de credenciales, backup desatendido, accesos desde
-dispositivos reales, continuidad del servidor y DHCP. La salud técnica actual
-no reemplaza esas confirmaciones.
-
+Motivo: existen bloqueadores de credenciales, accesos desde dispositivos reales,
+continuidad del servidor y DHCP. La salud técnica actual y el backup corregido
+no reemplazan esas confirmaciones.
