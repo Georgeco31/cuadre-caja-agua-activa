@@ -316,6 +316,9 @@ cuadre-caja-agua-activa/
   las 23:30 y validada mediante inicio manual controlado. La prueba genero un
   nuevo `.dump`, `.sha256` y `.json`, aprobo `pg_restore --list` y no afecto la
   salud de produccion.
+- Bloque 58A: matriz granular propuesta para `operator`, inventario de pantallas
+  y endpoints, riesgos y decisiones pendientes de George. No cambia permisos
+  efectivos ni codigo.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -380,6 +383,8 @@ de gastos, cookies ni refresh tokens.
   en un contenedor temporal aislado y evidencia segura del Bloque 56B.
 - `docs/30-backup-diario-programado-windows.md`: registro, prueba controlada y
   evidencia operativa de la tarea diaria de Windows del Bloque 56C.
+- `docs/38-matriz-permisos-operador.md`: matriz granular propuesta para
+  `operator`, diferencias frente al estado actual y decisiones pendientes.
 
 ## Antes de usar datos reales
 

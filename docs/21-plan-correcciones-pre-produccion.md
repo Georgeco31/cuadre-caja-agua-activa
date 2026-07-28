@@ -145,6 +145,17 @@ Esto activa y verifica operativamente la tarea diaria. Continúan pendientes la
 copia externa periódica, retención, alertas, monitoreo, pruebas integrales y el
 piloto.
 
+## Estado del Bloque 58A
+
+La matriz granular propuesta para `operator` quedó documentada, sin cambios de
+código, datos, autenticación ni permisos efectivos. El inventario separa
+guardas frontend, autorización backend y capacidades que hoy continúan abiertas
+para ambos roles.
+
+Las decisiones sensibles permanecen pendientes de George y deben cerrarse antes
+de implementar 58B. La propuesta, los riesgos y la secuencia 58B a 58E están en
+[`38-matriz-permisos-operador.md`](38-matriz-permisos-operador.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
