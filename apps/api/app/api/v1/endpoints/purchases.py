@@ -21,7 +21,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=PurchaseRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=PurchaseRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_purchase(
     payload: PurchaseCreate,
     db: Session = Depends(get_db),

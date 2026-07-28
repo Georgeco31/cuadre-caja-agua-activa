@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.vehicle import (
     FuelType,
     VehicleCreate,
@@ -18,7 +18,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=VehicleRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=VehicleRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_vehicle(
     payload: VehicleCreate,
     db: Session = Depends(get_db),
@@ -54,7 +59,11 @@ def get_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{vehicle_id}", response_model=VehicleRead)
+@router.patch(
+    "/{vehicle_id}",
+    response_model=VehicleRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_vehicle(
     vehicle_id: int,
     payload: VehicleUpdate,
@@ -66,7 +75,11 @@ def update_vehicle(
         raise _http_error(error) from error
 
 
-@router.patch("/{vehicle_id}/deactivate", response_model=VehicleRead)
+@router.patch(
+    "/{vehicle_id}/deactivate",
+    response_model=VehicleRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def deactivate_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     try:
         return vehicle_service.deactivate_vehicle(db, vehicle_id)
@@ -74,7 +87,11 @@ def deactivate_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{vehicle_id}/activate", response_model=VehicleRead)
+@router.patch(
+    "/{vehicle_id}/activate",
+    response_model=VehicleRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def activate_vehicle(vehicle_id: int, db: Session = Depends(get_db)):
     try:
         return vehicle_service.activate_vehicle(db, vehicle_id)

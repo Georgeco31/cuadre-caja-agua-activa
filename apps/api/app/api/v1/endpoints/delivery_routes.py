@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.delivery_route import (
     DeliveryRouteCreate,
     DeliveryRouteRead,
@@ -16,7 +16,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=DeliveryRouteRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=DeliveryRouteRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_delivery_route(
     payload: DeliveryRouteCreate,
     db: Session = Depends(get_db),
@@ -52,7 +57,11 @@ def get_delivery_route(route_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{route_id}", response_model=DeliveryRouteRead)
+@router.patch(
+    "/{route_id}",
+    response_model=DeliveryRouteRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_delivery_route(
     route_id: int,
     payload: DeliveryRouteUpdate,
@@ -64,7 +73,11 @@ def update_delivery_route(
         raise _http_error(error) from error
 
 
-@router.patch("/{route_id}/deactivate", response_model=DeliveryRouteRead)
+@router.patch(
+    "/{route_id}/deactivate",
+    response_model=DeliveryRouteRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def deactivate_delivery_route(route_id: int, db: Session = Depends(get_db)):
     try:
         return delivery_route_service.deactivate_delivery_route(db, route_id)
@@ -72,7 +85,11 @@ def deactivate_delivery_route(route_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{route_id}/activate", response_model=DeliveryRouteRead)
+@router.patch(
+    "/{route_id}/activate",
+    response_model=DeliveryRouteRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def activate_delivery_route(route_id: int, db: Session = Depends(get_db)):
     try:
         return delivery_route_service.activate_delivery_route(db, route_id)

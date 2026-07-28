@@ -46,6 +46,7 @@ def preview_material_consumption(
     "/batches/{batch_id}/material-consumption",
     response_model=ProductionMaterialConsumptionRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_material_consumption(
     batch_id: int,

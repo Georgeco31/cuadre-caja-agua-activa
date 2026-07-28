@@ -35,6 +35,7 @@ router = APIRouter(
     "/locations",
     response_model=InventoryLocationRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_location(
     payload: InventoryLocationCreate,
@@ -75,6 +76,7 @@ def get_location(location_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/locations/{location_id}",
     response_model=InventoryLocationRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def update_location(
     location_id: int,
@@ -90,6 +92,7 @@ def update_location(
 @router.patch(
     "/locations/{location_id}/deactivate",
     response_model=InventoryLocationRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_location(location_id: int, db: Session = Depends(get_db)):
     try:
@@ -101,6 +104,7 @@ def deactivate_location(location_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/locations/{location_id}/activate",
     response_model=InventoryLocationRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_location(location_id: int, db: Session = Depends(get_db)):
     try:
@@ -135,7 +139,10 @@ def create_movement(
     current_user: User = Depends(get_current_user),
 ):
     try:
-        if payload.movement_type in {"adjustment_in", "adjustment_out"}:
+        if (
+            payload.movement_type in {"adjustment_in", "adjustment_out"}
+            or payload.unit_cost is not None
+        ):
             ensure_admin_auditor(current_user)
         return inventory_service.create_movement(
             db,

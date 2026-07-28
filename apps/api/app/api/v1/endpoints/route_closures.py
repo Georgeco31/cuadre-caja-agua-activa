@@ -22,7 +22,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=RouteClosureRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=RouteClosureRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_route_closure(
     payload: RouteClosureCreate,
     db: Session = Depends(get_db),

@@ -2,9 +2,9 @@
 
 ## Estado y alcance
 
-- Bloque: **58A**.
-- Estado: **10 decisiones principales resueltas por George; base documental
-  lista para 58B**.
+- Bloque: **58A cerrado; protección backend 58B implementada**.
+- Estado: **10 decisiones principales resueltas por George; backend protegido
+  y probado en 58B**.
 - Fecha de corte: **2026-07-28**.
 - Alcance: inventario de pantallas, endpoints y permisos existentes; propuesta
   de permisos granulares para `operator`; riesgos y estrategia futura.
@@ -12,12 +12,24 @@
   autenticación, migraciones, seeds, base de datos, variables de entorno o
   lógica de negocio.
 
-Este documento no concede ni revoca permisos. La matriz efectiva que refleja
-el Bloque 54 continúa en
-[`22-matriz-permisos-roles.md`](22-matriz-permisos-roles.md) hasta que George
-apruebe una implementación y los bloques 58B a 58D apliquen y prueben la nueva
-política. Los asuntos no cubiertos por las decisiones oficiales quedan como
-pendientes futuros y deben denegarse a `operator` por defecto.
+El inventario de estado actual conservado en este documento corresponde al
+corte previo a 58B. La política efectiva de backend se implementó y documentó
+en [`39-bloque-58b-proteccion-backend-permisos.md`](39-bloque-58b-proteccion-backend-permisos.md).
+Los asuntos no aprobados se deniegan a `operator` por defecto.
+
+## Actualización de implementación 58B
+
+- El backend aplica `require_admin_auditor` a las familias sensibles y usa una
+  validación interna para movimientos de inventario.
+- `operator` conserva cierre de caja, alta de clientes, ventas de contado y a
+  crédito, cobros, producción diaria y movimientos `entry`/`exit` sin costo.
+- El alcance recibido para 58B resolvió como permitidos la venta a crédito y el
+  cobro; por tanto, las antiguas preguntas F-01 y F-02 dejan de ser pendientes.
+- Ajustes de inventario, costos, correcciones, anulaciones, administración,
+  nómina, panel gerencial y exportaciones responden `403`.
+- Se agregaron 42 casos específicos por rol y la suite completa quedó en 972
+  pruebas aprobadas.
+- El frontend permanece sin cambios y se ajustará en 58C.
 
 ## Objetivo
 
@@ -311,8 +323,8 @@ comportamiento efectivo actual.
 | Precio resuelto durante venta | **O** | N/A | N/A | N/A | N/A | N/A | N/A | **A** |
 | Listas e ítems de precios | **A** | **A** | **A** | N/A | N/A | **A** para activar/desactivar | **A** | **A** |
 | Ventas de contado | **O** | **T** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
-| Ventas a crédito | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** para límites y excepciones |
-| Cobros / pagos de crédito | **O** | **F** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
+| Ventas a crédito | **O** | **T** | N/A en el modelo actual | N/A | N/A | **A** | **A** | **A** para límites y excepciones |
+| Cobros / pagos de crédito | **O** | **T** | N/A en el modelo actual | N/A | N/A | **A** | **A** | N/A |
 | Cartera operativa | **O** | N/A | N/A | N/A | N/A | N/A | **A** | **A** para políticas de crédito |
 | Rutas de entrega | **O** | **A** | **A** | N/A | N/A | **A** para desactivar | **A** | **A** |
 | Vehículos | **O** | **A** | **A** | N/A | N/A | **A** para desactivar | **A** | **A** |
@@ -369,7 +381,8 @@ identifique al usuario y conserve la evidencia necesaria:
 - registrar o reemplazar cantidades del conteo mientras el cuadre esté abierto;
 - registrar gastos de caja mientras el cuadre esté abierto;
 - cerrar el cuadre diario; no puede reabrirlo ni corregirlo después;
-- crear clientes y ventas de contado;
+- crear clientes y ventas de contado o a crédito;
+- registrar cobros de ventas a crédito;
 - registrar producción diaria, sin que esta decisión autorice aplicar la
   producción al inventario, consumir insumos, editar fórmulas o cambiar costos;
 - registrar movimientos manuales operativos de inventario:
@@ -414,7 +427,6 @@ Las capacidades **F** no forman parte del permiso de `operator` para 58B. No
 deben quedar abiertas por conservar el comportamiento actual:
 
 - editar datos básicos de clientes;
-- registrar ventas a crédito o cobros;
 - registrar carga, retorno, cierre o recepción de efectivo de ruta;
 - aplicar producción al inventario;
 - confirmar consumo de insumos;
@@ -453,8 +465,8 @@ provisional es denegar a `operator`:
 
 | ID | Pendiente futuro | Regla para 58B |
 | --- | --- | --- |
-| F-01 | ¿El operador puede registrar ventas a crédito? | No conceder hasta decisión posterior. |
-| F-02 | ¿El operador puede registrar cobros? | No conceder hasta decisión posterior; D-04 ya prohíbe anularlos. |
+| F-01 | ¿El operador puede registrar ventas a crédito? | **Resuelta para 58B: Sí**, con trazabilidad; anulación administrativa. |
+| F-02 | ¿El operador puede registrar cobros? | **Resuelta para 58B: Sí**, con trazabilidad; D-04 mantiene la anulación administrativa. |
 | F-03 | ¿El operador puede ver resumen mensual o reporte acumulado de caja? | Mantener fuera del rol hasta clasificar la sensibilidad. |
 | F-04 | ¿El operador puede registrar compras? | No conceder hasta definir costos, documentos y responsable. |
 | F-05 | ¿El operador puede aplicar producción al inventario? | No conceder; D-08 solo autoriza registrar producción diaria. |
@@ -519,7 +531,7 @@ backend.
 | `POST /inventory/movements` con `adjustment_in` o `adjustment_out` | Mantener `admin_auditor`. |
 | Anulación de movimiento y mutaciones de ubicaciones | Restringir a `admin_auditor`. |
 | `/employees`, controles laborales y `/payroll` | Restringir gestión, datos sensibles y escrituras a `admin_auditor`; cualquier lectura mínima futura requerirá un diseño separado. |
-| Crear venta a crédito o cobro | Denegar a `operator` como pendiente **F**; las anulaciones ya son administrativas. |
+| Crear venta a crédito o cobro | Permitir a `operator` con trazabilidad; las anulaciones siguen siendo administrativas. |
 | Mutaciones de compras, gastos operativos y proveedores | Denegar a `operator` como pendiente **F**, salvo configuraciones que ya son administrativas. |
 | Mutaciones de carga, retorno, cierre y recibo de ruta | Denegar a `operator` como pendiente **F**; mantener consultas operativas aprobadas. |
 | Mutaciones de productos, rutas y vehículos | Restringir a `admin_auditor` según la matriz. |

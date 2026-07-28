@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.supplier import SupplierCreate, SupplierRead, SupplierUpdate
 from app.services import suppliers as supplier_service
 
@@ -12,7 +12,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=SupplierRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=SupplierRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_supplier(
     payload: SupplierCreate,
     db: Session = Depends(get_db),
@@ -46,7 +51,11 @@ def get_supplier(supplier_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{supplier_id}", response_model=SupplierRead)
+@router.patch(
+    "/{supplier_id}",
+    response_model=SupplierRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_supplier(
     supplier_id: int,
     payload: SupplierUpdate,
@@ -58,7 +67,11 @@ def update_supplier(
         raise _http_error(error) from error
 
 
-@router.patch("/{supplier_id}/deactivate", response_model=SupplierRead)
+@router.patch(
+    "/{supplier_id}/deactivate",
+    response_model=SupplierRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def deactivate_supplier(supplier_id: int, db: Session = Depends(get_db)):
     try:
         return supplier_service.deactivate_supplier(db, supplier_id)
@@ -66,7 +79,11 @@ def deactivate_supplier(supplier_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{supplier_id}/activate", response_model=SupplierRead)
+@router.patch(
+    "/{supplier_id}/activate",
+    response_model=SupplierRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def activate_supplier(supplier_id: int, db: Session = Depends(get_db)):
     try:
         return supplier_service.activate_supplier(db, supplier_id)

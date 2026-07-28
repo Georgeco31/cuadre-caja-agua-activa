@@ -100,6 +100,7 @@ def void_production_batch(
     "/batches/{batch_id}/apply-inventory",
     response_model=ProductionInventoryApplicationRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def apply_production_to_inventory(
     batch_id: int,

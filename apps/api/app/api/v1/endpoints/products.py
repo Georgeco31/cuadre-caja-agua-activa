@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.product import (
     ProductCategory,
     ProductCreate,
@@ -20,7 +20,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ProductRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_product(
     payload: ProductCreate,
     db: Session = Depends(get_db),
@@ -58,7 +63,11 @@ def get_product(product_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{product_id}", response_model=ProductRead)
+@router.patch(
+    "/{product_id}",
+    response_model=ProductRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_product(
     product_id: int,
     payload: ProductUpdate,
@@ -73,6 +82,7 @@ def update_product(
 @router.patch(
     "/{product_id}/production-classification",
     response_model=ProductRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def update_product_production_classification(
     product_id: int,
@@ -89,7 +99,11 @@ def update_product_production_classification(
         raise _http_error(error) from error
 
 
-@router.patch("/{product_id}/deactivate", response_model=ProductRead)
+@router.patch(
+    "/{product_id}/deactivate",
+    response_model=ProductRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def deactivate_product(product_id: int, db: Session = Depends(get_db)):
     try:
         return product_service.deactivate_product(db, product_id)
@@ -97,7 +111,11 @@ def deactivate_product(product_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{product_id}/activate", response_model=ProductRead)
+@router.patch(
+    "/{product_id}/activate",
+    response_model=ProductRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def activate_product(product_id: int, db: Session = Depends(get_db)):
     try:
         return product_service.activate_product(db, product_id)

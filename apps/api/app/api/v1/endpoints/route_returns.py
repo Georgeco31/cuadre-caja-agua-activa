@@ -20,7 +20,12 @@ router = APIRouter(
 )
 
 
-@router.post("", response_model=RouteReturnRead, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=RouteReturnRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def create_route_return(
     payload: RouteReturnCreate,
     db: Session = Depends(get_db),

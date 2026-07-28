@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.customer import (
     CustomerCreate,
     CustomerRead,
@@ -53,7 +53,11 @@ def get_customer(customer_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{customer_id}", response_model=CustomerRead)
+@router.patch(
+    "/{customer_id}",
+    response_model=CustomerRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_customer(
     customer_id: int,
     payload: CustomerUpdate,
@@ -65,7 +69,11 @@ def update_customer(
         raise _http_error(error) from error
 
 
-@router.patch("/{customer_id}/deactivate", response_model=CustomerRead)
+@router.patch(
+    "/{customer_id}/deactivate",
+    response_model=CustomerRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def deactivate_customer(customer_id: int, db: Session = Depends(get_db)):
     try:
         return customer_service.deactivate_customer(db, customer_id)
@@ -73,7 +81,11 @@ def deactivate_customer(customer_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{customer_id}/activate", response_model=CustomerRead)
+@router.patch(
+    "/{customer_id}/activate",
+    response_model=CustomerRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def activate_customer(customer_id: int, db: Session = Depends(get_db)):
     try:
         return customer_service.activate_customer(db, customer_id)

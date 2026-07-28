@@ -223,6 +223,7 @@ def activate_recurring_template(
     "/recurring/{template_id}/create-expense",
     response_model=OperatingExpenseRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_expense_from_template(
     template_id: int,
@@ -265,6 +266,7 @@ def get_summary(
     "",
     response_model=OperatingExpenseRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_expense(
     payload: OperatingExpenseCreate,
@@ -316,7 +318,11 @@ def get_expense(expense_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/{expense_id}", response_model=OperatingExpenseRead)
+@router.patch(
+    "/{expense_id}",
+    response_model=OperatingExpenseRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_expense(
     expense_id: int,
     payload: OperatingExpenseUpdate,

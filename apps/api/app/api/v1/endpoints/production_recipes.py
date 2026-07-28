@@ -30,6 +30,7 @@ router = APIRouter(
     "/recipes",
     response_model=ProductionRecipeRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_recipe(
     payload: ProductionRecipeCreate,
@@ -72,7 +73,11 @@ def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
         raise _http_error(error) from error
 
 
-@router.patch("/recipes/{recipe_id}", response_model=ProductionRecipeRead)
+@router.patch(
+    "/recipes/{recipe_id}",
+    response_model=ProductionRecipeRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def update_recipe(
     recipe_id: int,
     payload: ProductionRecipeUpdate,
@@ -87,6 +92,7 @@ def update_recipe(
 @router.patch(
     "/recipes/{recipe_id}/activate",
     response_model=ProductionRecipeRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_recipe(recipe_id: int, db: Session = Depends(get_db)):
     try:
@@ -98,6 +104,7 @@ def activate_recipe(recipe_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/recipes/{recipe_id}/deactivate",
     response_model=ProductionRecipeRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_recipe(recipe_id: int, db: Session = Depends(get_db)):
     try:
@@ -126,6 +133,7 @@ def void_recipe(
     "/recipes/{recipe_id}/items",
     response_model=ProductionRecipeItemRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_recipe_item(
     recipe_id: int,
@@ -141,6 +149,7 @@ def create_recipe_item(
 @router.patch(
     "/recipe-items/{item_id}",
     response_model=ProductionRecipeItemRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def update_recipe_item(
     item_id: int,
@@ -156,6 +165,7 @@ def update_recipe_item(
 @router.patch(
     "/recipe-items/{item_id}/deactivate",
     response_model=ProductionRecipeItemRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def deactivate_recipe_item(item_id: int, db: Session = Depends(get_db)):
     try:
@@ -167,6 +177,7 @@ def deactivate_recipe_item(item_id: int, db: Session = Depends(get_db)):
 @router.patch(
     "/recipe-items/{item_id}/activate",
     response_model=ProductionRecipeItemRead,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def activate_recipe_item(item_id: int, db: Session = Depends(get_db)):
     try:

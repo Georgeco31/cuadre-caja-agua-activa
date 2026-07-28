@@ -20,12 +20,12 @@ from app.services import payroll as payroll_service
 router = APIRouter(
     prefix="/payroll",
     tags=["payroll"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_auditor)],
 )
 employee_router = APIRouter(
     prefix="/employees",
     tags=["payroll"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_auditor)],
 )
 
 

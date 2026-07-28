@@ -24,6 +24,7 @@ router = APIRouter(
     "",
     response_model=RouteCashReceiptRead,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def create_route_cash_receipt(
     payload: RouteCashReceiptCreate,

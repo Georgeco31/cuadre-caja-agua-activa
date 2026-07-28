@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi import status as http_status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db
+from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.daily_operational_summary import DailyOperationalSummary
 from app.schemas.monthly_operational_summary import MonthlyOperationalSummary
 from app.schemas.report import CashSummaryReport
@@ -27,7 +27,11 @@ router = APIRouter(
 )
 
 
-@router.get("/cash-summary", response_model=CashSummaryReport)
+@router.get(
+    "/cash-summary",
+    response_model=CashSummaryReport,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def get_cash_summary(
     date_from: Date | None = None,
     date_to: Date | None = None,
@@ -84,6 +88,7 @@ def get_daily_operational_summary(
 @router.get(
     "/monthly-operational-summary",
     response_model=MonthlyOperationalSummary,
+    dependencies=[Depends(require_admin_auditor)],
 )
 def get_monthly_operational_summary(
     year: int | None = Query(default=None, ge=1, le=9999),

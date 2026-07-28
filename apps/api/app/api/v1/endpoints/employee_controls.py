@@ -27,7 +27,7 @@ from app.services import employee_controls as control_service
 router = APIRouter(
     prefix="/employees",
     tags=["employee-controls"],
-    dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(require_admin_auditor)],
 )
 
 

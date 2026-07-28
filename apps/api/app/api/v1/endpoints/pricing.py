@@ -40,7 +40,11 @@ def create_price_list(
         raise _http_error(error) from error
 
 
-@router.get("/price-lists", response_model=list[PriceListRead])
+@router.get(
+    "/price-lists",
+    response_model=list[PriceListRead],
+    dependencies=[Depends(require_admin_auditor)],
+)
 def list_price_lists(
     search: str | None = None,
     list_type: PriceListType | None = None,
@@ -59,7 +63,11 @@ def list_price_lists(
     )
 
 
-@router.get("/price-lists/{price_list_id}", response_model=PriceListRead)
+@router.get(
+    "/price-lists/{price_list_id}",
+    response_model=PriceListRead,
+    dependencies=[Depends(require_admin_auditor)],
+)
 def get_price_list(
     price_list_id: int,
     db: Session = Depends(get_db),
