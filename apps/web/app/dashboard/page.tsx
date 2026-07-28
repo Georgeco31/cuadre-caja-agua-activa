@@ -13,6 +13,9 @@ import { DashboardTodayCard } from "@/components/DashboardTodayCard";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
+import { DashboardShell } from "@/components/ui/DashboardShell";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   ApiError,
   getCashSessionByDate,
@@ -151,41 +154,58 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-6">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-water-700">Agua Activa</p>
-            <h1 className="mt-1 text-2xl font-semibold text-slate-950">
-              Panel operativo de caja
-            </h1>
-            {user ? (
-              <p className="mt-2 text-sm text-slate-600">
-                Bienvenido, {user.username} ·{" "}
-                {user.role === "admin_auditor"
-                  ? "Administrador / auditor"
-                  : "Operador"}
-              </p>
-            ) : null}
-          </div>
-          <LogoutButton />
-        </header>
+    <DashboardShell
+      activeHref="/dashboard"
+      alertsHref="#alertas"
+      dateLabel={formatTopbarDate(new Date())}
+      moduleHref="#modulos"
+      roleLabel={
+        user?.role === "admin_auditor"
+          ? "Administrador / auditor"
+          : "Operador"
+      }
+      userName={user?.username}
+    >
+      <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 py-7 sm:px-6 sm:py-9 xl:px-8">
+        <PageHeader
+          actions={<LogoutButton />}
+          description="Consulta el estado de caja, retoma las tareas frecuentes y accede a cada área del ERP desde un solo lugar."
+          eyebrow="Panel operativo"
+          meta={
+            <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge
+                label={
+                  user?.role === "admin_auditor"
+                    ? "Acceso administrador"
+                    : "Acceso operador"
+                }
+                tone="info"
+              />
+              <span className="text-sm text-slate-500">
+                {formatLongDate(new Date())}
+              </span>
+            </div>
+          }
+          title={`Buen día, ${user?.username ?? "equipo"}`}
+        />
 
         {error ? <ErrorMessage message={error} /> : null}
 
         {!error ? (
           <>
-            <DashboardTodayCard
-              cashSession={todayData?.cashSession ?? null}
-              summary={todayData?.summary ?? null}
-            />
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(280px,0.8fr)]">
+              <DashboardTodayCard
+                cashSession={todayData?.cashSession ?? null}
+                summary={todayData?.summary ?? null}
+              />
+              <BackupReminderCard />
+            </div>
             <DashboardQuickActions role={user?.role} />
             <DashboardRecentSessions items={recentSessions} />
-            <BackupReminderCard />
           </>
         ) : null}
       </div>
-    </main>
+    </DashboardShell>
   );
 }
 
@@ -217,4 +237,18 @@ function getErrorMessage(possibleError: unknown): string {
   }
 
   return "No se pudo cargar el panel operativo.";
+}
+
+function formatTopbarDate(value: Date): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(value);
+}
+
+function formatLongDate(value: Date): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    dateStyle: "full",
+  }).format(value);
 }

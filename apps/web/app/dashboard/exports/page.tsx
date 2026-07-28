@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LogoutButton } from "@/components/LogoutButton";
+import { DashboardShell } from "@/components/ui/DashboardShell";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ResponsiveToolbar } from "@/components/ui/ResponsiveToolbar";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ApiError, downloadFile, getCurrentUser } from "@/lib/api";
 import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type {
@@ -158,6 +162,7 @@ export default function ReportExportsPage() {
   const [downloadingFormat, setDownloadingFormat] =
     useState<ReportExportFormat | null>(null);
   const [forbidden, setForbidden] = useState(false);
+  const [accountName, setAccountName] = useState("Agua Activa");
 
   useEffect(() => {
     const storedToken = getToken();
@@ -172,6 +177,7 @@ export default function ReportExportsPage() {
     try {
       const currentUser = await getCurrentUser(activeToken);
       saveUser(currentUser);
+      setAccountName(currentUser.username);
       if (currentUser.role !== "admin_auditor") {
         setForbidden(true);
         setError("No tienes permisos para acceder a las exportaciones.");
@@ -291,86 +297,101 @@ export default function ReportExportsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl flex-col gap-7 px-4 py-6 sm:px-6">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+    <DashboardShell
+      activeHref="/dashboard/exports"
+      dateLabel={formatTopbarDate(new Date())}
+      roleLabel="Administrador / auditor"
+      userName={accountName}
+    >
+      <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-7 px-4 py-7 sm:px-6 sm:py-9 xl:px-8">
+        <PageHeader
+          actions={<LogoutButton />}
+          description="Descarga reportes detallados en Excel o resúmenes ejecutivos en PDF. Todas las exportaciones conservan sus filtros y son solo lectura."
+          eyebrow="Reportes y control"
+          meta={
             <Link
-              className="text-sm font-semibold text-water-700 hover:text-water-500"
+              className="inline-flex min-h-10 items-center text-sm font-semibold text-water-700 hover:text-water-600"
               href="/dashboard"
             >
-              Volver al dashboard
+              ← Volver al dashboard
             </Link>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-              Exportaciones del ERP
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Descarga reportes detallados en Excel o resúmenes ejecutivos en
-              PDF. Todas las exportaciones son solo lectura.
-            </p>
-          </div>
-          <LogoutButton />
-        </header>
+          }
+          title="Centro de exportaciones"
+        />
 
         {forbidden && error ? <ErrorMessage message={error} /> : null}
 
         {!forbidden ? (
           <>
-        <ExportSection
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          disabled={downloadingFormat !== null || !token}
-          format="excel"
-          isDownloading={downloadingFormat === "excel"}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onReportChange={(value) => selectReport("excel", value)}
-          onSelectedDateChange={setSelectedDate}
-          onSelectedMonthChange={setSelectedMonth}
-          onSubmit={(event) => handleDownload(event, "excel")}
-          reports={EXCEL_REPORTS}
-          selectedDate={selectedDate}
-          selectedMonth={selectedMonth}
-          selectedReport={selectedReports.excel}
-        />
+            <ResponsiveToolbar
+              actions={
+                <button
+                  className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400 sm:w-auto"
+                  disabled={downloadingFormat !== null}
+                  onClick={useCurrentMonth}
+                  type="button"
+                >
+                  Restablecer período actual
+                </button>
+              }
+            >
+              <div className="flex items-start gap-3">
+                <StatusBadge label="Solo lectura" tone="success" />
+                <p className="max-w-2xl text-sm leading-6 text-slate-600">
+                  Selecciona un formato y un reporte. El período actual ya está
+                  preparado como punto de partida.
+                </p>
+              </div>
+            </ResponsiveToolbar>
 
-        <ExportSection
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          disabled={downloadingFormat !== null || !token}
-          format="pdf"
-          isDownloading={downloadingFormat === "pdf"}
-          onDateFromChange={setDateFrom}
-          onDateToChange={setDateTo}
-          onReportChange={(value) => selectReport("pdf", value)}
-          onSelectedDateChange={setSelectedDate}
-          onSelectedMonthChange={setSelectedMonth}
-          onSubmit={(event) => handleDownload(event, "pdf")}
-          reports={PDF_REPORTS}
-          selectedDate={selectedDate}
-          selectedMonth={selectedMonth}
-          selectedReport={selectedReports.pdf}
-        />
+            <div className="grid items-start gap-6 xl:grid-cols-2">
+              <ExportSection
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                disabled={downloadingFormat !== null || !token}
+                format="excel"
+                isDownloading={downloadingFormat === "excel"}
+                onDateFromChange={setDateFrom}
+                onDateToChange={setDateTo}
+                onReportChange={(value) => selectReport("excel", value)}
+                onSelectedDateChange={setSelectedDate}
+                onSelectedMonthChange={setSelectedMonth}
+                onSubmit={(event) => handleDownload(event, "excel")}
+                reports={EXCEL_REPORTS}
+                selectedDate={selectedDate}
+                selectedMonth={selectedMonth}
+                selectedReport={selectedReports.excel}
+              />
 
-        {error ? <ErrorMessage message={error} /> : null}
+              <ExportSection
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                disabled={downloadingFormat !== null || !token}
+                format="pdf"
+                isDownloading={downloadingFormat === "pdf"}
+                onDateFromChange={setDateFrom}
+                onDateToChange={setDateTo}
+                onReportChange={(value) => selectReport("pdf", value)}
+                onSelectedDateChange={setSelectedDate}
+                onSelectedMonthChange={setSelectedMonth}
+                onSubmit={(event) => handleDownload(event, "pdf")}
+                reports={PDF_REPORTS}
+                selectedDate={selectedDate}
+                selectedMonth={selectedMonth}
+                selectedReport={selectedReports.pdf}
+              />
+            </div>
 
-        <button
-          className="h-11 self-start rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
-          disabled={downloadingFormat !== null}
-          onClick={useCurrentMonth}
-          type="button"
-        >
-          Restablecer período actual
-        </button>
+            {error ? <ErrorMessage message={error} /> : null}
 
-        <p className="rounded-lg border border-water-100 bg-water-50 px-4 py-3 text-sm leading-6 text-water-900">
-          Los archivos reflejan los datos registrados en el sistema para el
-          período seleccionado y no modifican información.
-        </p>
+            <p className="rounded-2xl border border-water-100 bg-water-50 px-5 py-4 text-sm leading-6 text-water-900">
+              Los archivos reflejan los datos registrados en el sistema para el
+              período seleccionado y no modifican información.
+            </p>
           </>
         ) : null}
       </div>
-    </main>
+    </DashboardShell>
   );
 }
 
@@ -411,26 +432,39 @@ function ExportSection({
 }: ExportSectionProps) {
   const isPdf = format === "pdf";
   return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold text-slate-950">
-          {isPdf ? "Exportaciones PDF" : "Exportaciones Excel"}
-        </h2>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          {isPdf
-            ? "Descarga reportes ejecutivos del ERP en formato PDF. Estas exportaciones son solo lectura y no modifican información del sistema."
-            : "Descarga reportes detallados del ERP en formato Excel con filtros básicos."}
-        </p>
+    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
+      <div className="border-b border-slate-200 bg-slate-50/80 p-5 sm:p-6">
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden="true"
+            className={
+              isPdf
+                ? "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-800 text-xs font-black text-white"
+                : "inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-water-700 text-xs font-black text-white"
+            }
+          >
+            {isPdf ? "PDF" : "XLS"}
+          </span>
+          <div>
+            <h2 className="text-xl font-semibold text-slate-950">
+              {isPdf ? "Exportaciones PDF" : "Exportaciones Excel"}
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              {isPdf
+                ? "Resúmenes ejecutivos listos para revisar o imprimir."
+                : "Reportes detallados con filtros básicos para análisis."}
+            </p>
+          </div>
+        </div>
         {isPdf ? (
-          <p className="mt-2 text-sm font-medium text-water-800">
-            Para reportes detallados use Excel. El PDF está pensado como
+          <p className="mt-4 rounded-xl border border-water-100 bg-water-50 px-4 py-3 text-sm font-medium leading-6 text-water-800">
+            Para reportes detallados usa Excel. El PDF está pensado como
             resumen ejecutivo o impresión.
           </p>
         ) : null}
       </div>
-
       <form
-        className="space-y-6 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6"
+        className="space-y-6 p-5 sm:p-6"
         onSubmit={onSubmit}
       >
         <label className="block">
@@ -438,7 +472,7 @@ function ExportSection({
             Tipo de reporte
           </span>
           <select
-            className="mt-2 h-11 w-full rounded-md border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+            className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
             disabled={disabled}
             onChange={(event) =>
               onReportChange(event.target.value as ReportExportType)
@@ -479,7 +513,7 @@ function ExportSection({
               Mes del reporte
             </span>
             <input
-              className="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              className="mt-2 h-11 w-full rounded-xl border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
               disabled={disabled}
               onChange={(event) => onSelectedMonthChange(event.target.value)}
               required
@@ -499,7 +533,7 @@ function ExportSection({
         ) : null}
 
         {selectedReport.filterMode === "none" ? (
-          <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+          <p className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
             Este reporte muestra el estado actual del inventario y no requiere
             un período.
           </p>
@@ -508,8 +542,8 @@ function ExportSection({
         <button
           className={
             isPdf
-              ? "h-11 rounded-md bg-slate-800 px-5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-              : "h-11 rounded-md bg-water-700 px-5 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+              ? "min-h-11 w-full rounded-xl bg-slate-800 px-5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
+              : "min-h-11 w-full rounded-xl bg-water-700 px-5 text-sm font-semibold text-white shadow-water transition hover:bg-water-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none sm:w-auto"
           }
           disabled={disabled}
           type="submit"
@@ -538,7 +572,7 @@ function DateField({
     <label className="block max-w-sm">
       <span className="text-sm font-semibold text-slate-800">{label}</span>
       <input
-        className="mt-2 h-11 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+        className="mt-2 h-11 w-full rounded-xl border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         required={label === "Fecha del reporte"}
@@ -604,4 +638,12 @@ function getErrorMessage(
     return possibleError.message;
   }
   return `No se pudo descargar el archivo ${format === "pdf" ? "PDF" : "Excel"}.`;
+}
+
+function formatTopbarDate(value: Date): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(value);
 }

@@ -19,6 +19,7 @@ body {
   margin: 0;
   background: #f8fafc;
   color: #020617;
+  -webkit-font-smoothing: antialiased;
 }
 
 button,
@@ -26,4 +27,9 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+::selection {
+  background: #d9f0ff;
+  color: #123f5a;
 }
