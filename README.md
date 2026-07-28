@@ -319,6 +319,12 @@ cuadre-caja-agua-activa/
 - Bloque 58A: matriz granular de `operator` actualizada con diez decisiones
   oficiales de George, trazabilidad obligatoria, restricciones y pendientes
   futuros. No cambia permisos efectivos ni codigo.
+- Bloques 58B a 58D-2: permisos backend y frontend implementados, pruebas
+  integrales aprobadas y despliegue local sincronizado. `admin_auditor`
+  conserva control total y `operator` sus 22 destinos operativos.
+- Bloque 59A: preparación documental del piloto interno paralelo de cinco días,
+  con checklist previo, guías por rol, registro de incidencias y criterios de
+  inicio, pausa y detención. El piloto todavía no se inicia.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -386,13 +392,28 @@ de gastos, cookies ni refresh tokens.
 - `docs/38-matriz-permisos-operador.md`: matriz granular de
   `operator`, decisiones oficiales, diferencias frente al estado actual y base
   documental para el Bloque 58B.
+- `docs/41-bloque-58d-pruebas-integrales-permisos.md`: validación integral por
+  rol y sincronización del despliegue productivo local.
+- `docs/42-guia-operativa-permisos-usuarios.md`: uso de cuentas y escalamiento
+  de acciones restringidas.
+- `docs/43-preparacion-piloto-interno.md`: estado, pendientes obligatorios,
+  alcance, checklists y criterios del piloto interno.
+- `docs/44-guia-piloto-secretaria-operador.md`: flujo diario sencillo para la
+  persona de oficina.
+- `docs/45-guia-piloto-george-admin.md`: control diario, conciliación y
+  contingencia para George.
+- `docs/46-registro-incidencias-piloto.md`: plantilla y reglas de seguimiento
+  de incidencias.
+- `docs/47-plan-piloto-5-dias.md`: Día 0 y cinco jornadas de operación en
+  paralelo.
 
 ## Antes de usar datos reales
 
-Los Bloques 54 a 56C resuelven la separacion base de roles, preparan Docker de
-produccion local y demuestran backup/restore aislado y la tarea diaria, pero
-**todavia no autorizan mover el ERP al servidor ni iniciar el piloto**. Leer en
-este orden:
+Los Bloques 54 a 58D-2 resuelven la separación de roles, preparan Docker de
+producción local y demuestran backup/restore aislado, tarea diaria y permisos
+en el despliegue actual. El Bloque 59A prepara el plan, pero **todavía no
+autoriza iniciar el piloto ni declarar producción definitiva**. Leer en este
+orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -407,14 +428,20 @@ este orden:
 11. `docs/29-restauracion-controlada-postgresql.md`.
 12. `docs/30-backup-diario-programado-windows.md`.
 13. `docs/20-checklist-preparacion-servidor-local.md`.
-14. `docs/15-guia-piloto-datos-reales.md`, solo cuando los riesgos criticos
-    esten cerrados.
+14. `docs/41-bloque-58d-pruebas-integrales-permisos.md`.
+15. `docs/42-guia-operativa-permisos-usuarios.md`.
+16. `docs/43-preparacion-piloto-interno.md`.
+17. `docs/44-guia-piloto-secretaria-operador.md`.
+18. `docs/45-guia-piloto-george-admin.md`.
+19. `docs/46-registro-incidencias-piloto.md`.
+20. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
+    obligatorios y aprobar el Día 0.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni
 crea gastos, y un cierre o recibo de ruta no modifica el conteo oficial de
-caja. El piloto debera mantener conciliacion manual y backups diarios, despues
-de probar la restauracion.
+caja. El piloto deberá mantener el método actual, conciliación diaria y backups
+comprobados durante sus cinco jornadas.
 
 ## Ejecucion local con Docker
 

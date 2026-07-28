@@ -216,6 +216,32 @@ La evidencia y la guía interna están en:
 - [`41-bloque-58d-pruebas-integrales-permisos.md`](41-bloque-58d-pruebas-integrales-permisos.md);
 - [`42-guia-operativa-permisos-usuarios.md`](42-guia-operativa-permisos-usuarios.md).
 
+## Estado del Bloque 59A
+
+El Bloque 59A deja preparada la documentación para un piloto interno paralelo
+de cinco días. Define alcance, responsabilidades, conciliación diaria,
+incidencias, criterios de éxito y reglas de pausa o detención. No cambia
+código, datos, permisos, credenciales ni infraestructura y no inicia el piloto.
+
+Antes del Día 1 continúan como bloqueadores explícitos:
+
+- confirmar el primer backup diario realmente desatendido;
+- rotar las contraseñas definitivas de `admin_auditor` y `operator`;
+- confirmar usuarios reales, activos, individuales y sin cuentas compartidas;
+- configurar la reserva DHCP;
+- confirmar que KERNELOS-PC permanecerá encendida y que Docker Desktop inicia;
+- probar el acceso de la secretaria desde su equipo real;
+- probar el acceso de George por Tailscale;
+- completar el Día 0 y registrar la autorización de George.
+
+La lista completa y las guías de ejecución están en:
+
+- [`43-preparacion-piloto-interno.md`](43-preparacion-piloto-interno.md);
+- [`44-guia-piloto-secretaria-operador.md`](44-guia-piloto-secretaria-operador.md);
+- [`45-guia-piloto-george-admin.md`](45-guia-piloto-george-admin.md);
+- [`46-registro-incidencias-piloto.md`](46-registro-incidencias-piloto.md);
+- [`47-plan-piloto-5-dias.md`](47-plan-piloto-5-dias.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -247,7 +273,7 @@ La evidencia y la guía interna están en:
 | P1-07 | 55A | UPS y apagado limpio | George + infraestructura | Alta | Corte controlado no corrompe datos; reinicio queda documentado |
 | P1-08 | 55B | Pruebas de integración PostgreSQL | Desarrollo | Alta | Locks, concurrencia, índices parciales y constraints pasan en PostgreSQL |
 | P1-09 | 56/58D-2 | Smoke E2E por rol en servidor (aprobado) | Desarrollo | Media | Aprobado: login, módulos permitidos, restricciones, panel y exportaciones pasan en servidor |
-| P1-10 | 56/58D | Capacitación y guía de secretaria (guía preparada; capacitación pendiente) | George | Alta | Operador completa flujo diario sin acceso administrativo |
+| P1-10 | 56/58D/59A | Guía de secretaria preparada en el documento 44; capacitación y práctica del Día 0 pendientes | George | Alta | Operador completa flujo diario sin acceso administrativo |
 
 ## Mejoras que pueden esperar
 
@@ -293,10 +319,13 @@ Bloques 58A-58D: matriz, backend, frontend y código validados
 Bloque 58D-2 aprobado: rebuild y smoke productivo integral por rol
   |
   v
-Pruebas integrales, retención, copia externa y monitoreo
+Bloque 59A: checklist, guías, incidencias y plan paralelo documentados
   |
   v
-Piloto controlado, solo después de cerrar los pendientes
+Cerrar pendientes obligatorios del documento 43 y completar el Día 0
+  |
+  v
+Piloto controlado de cinco días, solo con autorización de George
 ```
 
 ## Guardas obligatorias para el Bloque 54
@@ -347,4 +376,6 @@ La preproducción queda cerrada cuando:
 - fecha/hora reflejan Ecuador;
 - backup automático y restore aislado están aprobados;
 - pruebas y build pasan desde el commit etiquetado;
-- el checklist 20 está completo y firmado por George.
+- el checklist 20 está completo y firmado por George;
+- los pendientes obligatorios del documento 43 están cerrados;
+- el Día 0 del documento 47 está aprobado por George.

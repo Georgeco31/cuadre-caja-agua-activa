@@ -156,6 +156,21 @@ Al terminar:
 - cierra la sesión;
 - no dejes contraseñas ni reportes visibles.
 
+## Uso durante el piloto interno
+
+Esta guía sigue siendo la referencia de permisos. Para el trabajo del piloto,
+usar además:
+
+- [`44-guia-piloto-secretaria-operador.md`](44-guia-piloto-secretaria-operador.md)
+  para el flujo diario de oficina;
+- [`45-guia-piloto-george-admin.md`](45-guia-piloto-george-admin.md) para la
+  revisión y contingencia de George;
+- [`46-registro-incidencias-piloto.md`](46-registro-incidencias-piloto.md) para
+  documentar bloqueos o diferencias.
+
+El piloto no amplía los permisos de `operator`. Un bloqueo se revisa con George;
+no se resuelve prestando la cuenta administrativa ni cambiando el rol.
+
 ## Regla principal
 
 La cuenta de operador es para operar. La cuenta de administrador/auditor es para
