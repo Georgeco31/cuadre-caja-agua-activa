@@ -2,6 +2,7 @@ import type { DeliveryRoute } from "@/types/deliveryRoute";
 
 type DeliveryRouteListProps = {
   deliveryRoutes: DeliveryRoute[];
+  canManage?: boolean;
   hasActiveFilters?: boolean;
   changingRouteId?: number | null;
   onEdit: (deliveryRoute: DeliveryRoute) => void;
@@ -10,6 +11,7 @@ type DeliveryRouteListProps = {
 
 export function DeliveryRouteList({
   deliveryRoutes,
+  canManage = true,
   hasActiveFilters = false,
   changingRouteId = null,
   onEdit,
@@ -41,7 +43,9 @@ export function DeliveryRouteList({
                 <th className="px-4 py-3 font-medium">Referencias</th>
                 <th className="px-4 py-3 font-medium">Efectivo esperado</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
+                {canManage ? (
+                  <th className="px-4 py-3 font-medium">Acciones</th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -50,7 +54,8 @@ export function DeliveryRouteList({
 
                 return (
                   <tr key={deliveryRoute.id}>
-                    <td className="px-4 py-3 align-top">
+                    {canManage ? (
+                      <td className="px-4 py-3 align-top">
                       <p className="font-medium text-slate-950">
                         {deliveryRoute.name}
                       </p>
@@ -62,7 +67,8 @@ export function DeliveryRouteList({
                           {deliveryRoute.description}
                         </p>
                       ) : null}
-                    </td>
+                      </td>
+                    ) : null}
                     <td className="px-4 py-3 align-top text-slate-700">
                       <p>{deliveryRoute.zone ?? "Sin zona"}</p>
                       <p className="mt-1 text-xs text-slate-500">

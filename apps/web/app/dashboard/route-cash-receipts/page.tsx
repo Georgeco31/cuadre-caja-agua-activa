@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -331,6 +332,9 @@ export default function RouteCashReceiptsPage() {
           </p>
         ) : null}
 
+        {!canVoid ? <AccessRestricted compact /> : null}
+
+        {canVoid ? (
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <div>
             <p className="text-sm font-medium text-water-700">Nuevo registro</p>
@@ -506,6 +510,7 @@ export default function RouteCashReceiptsPage() {
             </div>
           </form>
         </section>
+        ) : null}
 
         <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">

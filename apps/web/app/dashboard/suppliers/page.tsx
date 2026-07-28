@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -16,6 +17,7 @@ import {
   updateSupplier,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Supplier, SupplierPayload } from "@/types/supplier";
 
 type SupplierFormValues = {
@@ -57,6 +59,7 @@ const emptyFilters: SupplierFilterValues = {
 };
 
 export default function SuppliersPage() {
+  const canManage = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -253,19 +256,23 @@ export default function SuppliersPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:bg-slate-300"
-              type="button"
-              disabled={isSaving}
-              onClick={openCreateForm}
-            >
-              Nuevo proveedor
-            </button>
+            {canManage ? (
+              <button
+                className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:bg-slate-300"
+                type="button"
+                disabled={isSaving}
+                onClick={openCreateForm}
+              >
+                Nuevo proveedor
+              </button>
+            ) : null}
             <LogoutButton />
           </div>
         </header>
 
-        {isFormVisible ? (
+        {!canManage ? <AccessRestricted compact /> : null}
+
+        {canManage && isFormVisible ? (
           <form
             className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
             onSubmit={handleSubmit}
@@ -553,32 +560,34 @@ export default function SuppliersPage() {
                       {supplier.notes}
                     </p>
                   ) : null}
-                  <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
-                    <button
-                      className="h-9 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                      type="button"
-                      disabled={changingSupplierId === supplier.id}
-                      onClick={() => openEditForm(supplier)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className={
-                        supplier.is_active
-                          ? "h-9 rounded-md border border-red-200 bg-white px-3 text-sm font-semibold text-red-700 hover:bg-red-50"
-                          : "h-9 rounded-md border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
-                      }
-                      type="button"
-                      disabled={changingSupplierId === supplier.id}
-                      onClick={() => handleToggleActive(supplier)}
-                    >
-                      {changingSupplierId === supplier.id
-                        ? "Guardando..."
-                        : supplier.is_active
-                          ? "Desactivar"
-                          : "Activar"}
-                    </button>
-                  </div>
+                  {canManage ? (
+                    <div className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+                      <button
+                        className="h-9 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                        type="button"
+                        disabled={changingSupplierId === supplier.id}
+                        onClick={() => openEditForm(supplier)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className={
+                          supplier.is_active
+                            ? "h-9 rounded-md border border-red-200 bg-white px-3 text-sm font-semibold text-red-700 hover:bg-red-50"
+                            : "h-9 rounded-md border border-emerald-200 bg-white px-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+                        }
+                        type="button"
+                        disabled={changingSupplierId === supplier.id}
+                        onClick={() => handleToggleActive(supplier)}
+                      >
+                        {changingSupplierId === supplier.id
+                          ? "Guardando..."
+                          : supplier.is_active
+                            ? "Desactivar"
+                            : "Activar"}
+                      </button>
+                    </div>
+                  ) : null}
                 </article>
               ))}
             </div>

@@ -6,12 +6,14 @@ import {
 } from "@/components/DashboardModuleGroup";
 import { ActionCard } from "@/components/ui/ActionCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { canAccessDashboardPath } from "@/lib/frontendPermissions";
 
 type DashboardAction = {
   href: string;
   title: string;
   description: string;
   icon: string;
+  operatorDescription?: string;
   primary?: boolean;
   adminOnly?: boolean;
 };
@@ -52,6 +54,7 @@ const actionGroups: DashboardActionGroup[] = [
         href: "/dashboard/operating-expenses",
         title: "Gastos operativos",
         description: "Registrar gastos generales fuera del cuadre diario de caja.",
+        operatorDescription: "Consultar los gastos operativos registrados.",
         icon: "GO",
       },
       {
@@ -59,6 +62,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Compras",
         description:
           "Registrar compras sin afectar caja ni inventario automáticamente.",
+        operatorDescription: "Consultar las compras registradas.",
         icon: "CO",
       },
       {
@@ -66,6 +70,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Control de empleados",
         description: "Asistencia, anticipos y préstamos de empleados.",
         icon: "CE",
+        adminOnly: true,
       },
       {
         href: "/dashboard/payroll",
@@ -73,6 +78,7 @@ const actionGroups: DashboardActionGroup[] = [
         description:
           "Calcular roles de empleados sin modificar caja automáticamente.",
         icon: "NP",
+        adminOnly: true,
       },
     ],
   },
@@ -131,6 +137,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Rutas",
         description:
           "Registrar rutas y zonas de entrega para el control operativo.",
+        operatorDescription: "Consultar rutas y zonas de entrega.",
         icon: "RU",
       },
       {
@@ -138,6 +145,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Vehículos",
         description:
           "Registrar camiones y vehículos para el control operativo.",
+        operatorDescription: "Consultar los vehículos registrados.",
         icon: "VH",
       },
       {
@@ -145,12 +153,14 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Carga de camión",
         description:
           "Mover productos desde bodega hacia un vehículo para una ruta.",
+        operatorDescription: "Consultar las cargas de camión registradas.",
         icon: "CG",
       },
       {
         href: "/dashboard/route-returns",
         title: "Retorno de ruta",
         description: "Registrar productos que regresan del vehículo a bodega.",
+        operatorDescription: "Consultar los retornos de ruta registrados.",
         icon: "RT",
       },
       {
@@ -164,6 +174,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Cierre de ruta",
         description:
           "Comparar efectivo esperado contra efectivo entregado por una ruta.",
+        operatorDescription: "Consultar los cierres financieros de ruta.",
         icon: "CI",
       },
       {
@@ -171,6 +182,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Dinero de ruta en caja",
         description:
           "Registrar efectivo de rutas cerradas dentro de un cuadre abierto.",
+        operatorDescription: "Consultar el dinero de ruta registrado en caja.",
         icon: "DC",
       },
       {
@@ -191,6 +203,7 @@ const actionGroups: DashboardActionGroup[] = [
         href: "/dashboard/products",
         title: "Productos",
         description: "Registrar productos, presentaciones y precios base.",
+        operatorDescription: "Consultar productos, presentaciones y precios vigentes.",
         icon: "PR",
       },
       {
@@ -198,6 +211,8 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Inventario",
         description:
           "Controlar stock por ubicación con entradas, salidas y ajustes.",
+        operatorDescription:
+          "Consultar stock y registrar entradas o salidas sin costos.",
         icon: "IN",
       },
       {
@@ -212,6 +227,7 @@ const actionGroups: DashboardActionGroup[] = [
         description:
           "Definir insumos, materia prima y costos estimados de producción.",
         icon: "FP",
+        adminOnly: true,
       },
       {
         href: "/dashboard/production/material-consumption",
@@ -219,6 +235,7 @@ const actionGroups: DashboardActionGroup[] = [
         description:
           "Consumir materia prima usando fórmulas de producción.",
         icon: "CI",
+        adminOnly: true,
       },
     ],
   },
@@ -233,11 +250,13 @@ const actionGroups: DashboardActionGroup[] = [
         description:
           "Registrar empleados, cargos y datos base para pagos futuros.",
         icon: "EM",
+        adminOnly: true,
       },
       {
         href: "/dashboard/suppliers",
         title: "Proveedores",
         description: "Gestionar proveedores de Agua Activa.",
+        operatorDescription: "Consultar el directorio de proveedores.",
         icon: "PV",
       },
       {
@@ -259,6 +278,7 @@ const actionGroups: DashboardActionGroup[] = [
         title: "Ver resumen acumulado",
         description: "Revisar totales acumulados por rango y estado.",
         icon: "RA",
+        adminOnly: true,
       },
       {
         href: "/dashboard/monthly-summary",
@@ -266,6 +286,7 @@ const actionGroups: DashboardActionGroup[] = [
         description:
           "Revisar caja, producción, ventas, rutas y alertas de todo el mes.",
         icon: "RM",
+        adminOnly: true,
       },
       {
         href: "/dashboard/management",
@@ -299,7 +320,7 @@ const frequentActionHrefs = new Set([
 
 export function DashboardQuickActions({ role }: { role?: UserRole }) {
   const canViewAction = (action: DashboardAction) =>
-    !action.adminOnly || role === "admin_auditor";
+    canAccessDashboardPath(role, action.href);
   const orderedGroups = [...actionGroups].sort(
     (first, second) =>
       groupDisplayOrder.indexOf(first.id) - groupDisplayOrder.indexOf(second.id),
@@ -343,7 +364,11 @@ export function DashboardQuickActions({ role }: { role?: UserRole }) {
       <div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {frequentActions.map((action) => (
           <ActionCard
-            description={action.description}
+            description={
+              role === "operator" && action.operatorDescription
+                ? action.operatorDescription
+                : action.description
+            }
             href={action.href}
             icon={action.icon}
             key={`frequent-${action.href}`}
@@ -377,7 +402,10 @@ export function DashboardQuickActions({ role }: { role?: UserRole }) {
                 badge: action.adminOnly ? (
                   <StatusBadge label="Admin" tone="neutral" />
                 ) : undefined,
-                description: action.description,
+                description:
+                  role === "operator" && action.operatorDescription
+                    ? action.operatorDescription
+                    : action.description,
                 href: action.href,
                 icon: action.icon,
                 title: action.title,

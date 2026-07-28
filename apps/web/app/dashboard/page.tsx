@@ -170,6 +170,7 @@ export default function DashboardPage() {
       alertsHref="#alertas"
       dateLabel={formatTopbarDate(new Date())}
       moduleHref="#modulos"
+      role={user?.role}
       roleLabel={
         user
           ? user.role === "admin_auditor"

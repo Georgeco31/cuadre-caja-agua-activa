@@ -5,6 +5,7 @@ import {
 
 type CustomerListProps = {
   customers: Customer[];
+  canManage?: boolean;
   hasActiveFilters?: boolean;
   changingCustomerId?: number | null;
   onEdit: (customer: Customer) => void;
@@ -13,6 +14,7 @@ type CustomerListProps = {
 
 export function CustomerList({
   customers,
+  canManage = true,
   hasActiveFilters = false,
   changingCustomerId = null,
   onEdit,
@@ -44,7 +46,9 @@ export function CustomerList({
                 <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Crédito</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
+                {canManage ? (
+                  <th className="px-4 py-3 font-medium">Acciones</th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -53,12 +57,14 @@ export function CustomerList({
 
                 return (
                   <tr key={customer.id}>
-                    <td className="px-4 py-3 align-top">
+                    {canManage ? (
+                      <td className="px-4 py-3 align-top">
                       <p className="font-medium text-slate-950">{customer.name}</p>
                       <p className="mt-1 max-w-56 text-xs text-slate-500">
                         {customer.route_reference ?? "Sin ruta o zona"}
                       </p>
-                    </td>
+                      </td>
+                    ) : null}
                     <td className="px-4 py-3 align-top text-slate-700">
                       <p>{customer.primary_phone ?? "Sin teléfono"}</p>
                       {customer.secondary_phone ? (

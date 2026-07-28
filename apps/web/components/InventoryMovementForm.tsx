@@ -15,6 +15,7 @@ type InventoryMovementFormProps = {
   locations: InventoryLocation[];
   isSubmitting?: boolean;
   canAdjust?: boolean;
+  canSetCost?: boolean;
   onSubmit: (payload: InventoryMovementPayload) => Promise<boolean>;
 };
 
@@ -37,6 +38,7 @@ export function InventoryMovementForm({
   locations,
   isSubmitting = false,
   canAdjust = false,
+  canSetCost = false,
   onSubmit,
 }: InventoryMovementFormProps) {
   const [values, setValues] = useState<FormValues>(buildInitialValues);
@@ -54,13 +56,23 @@ export function InventoryMovementForm({
       setValidationError("Selecciona una ubicación activa.");
       return;
     }
+    if (
+      !canAdjust &&
+      values.movementType !== "entry" &&
+      values.movementType !== "exit"
+    ) {
+      setValidationError(
+        "Solo puedes registrar movimientos de entrada o salida.",
+      );
+      return;
+    }
     if (!isValidDecimal(values.quantity, 3, true)) {
       setValidationError(
         "La cantidad debe ser mayor a cero y tener máximo tres decimales.",
       );
       return;
     }
-    const unitCost = values.unitCost.trim();
+    const unitCost = canSetCost ? values.unitCost.trim() : "";
     if (unitCost && !isValidDecimal(unitCost, 2)) {
       setValidationError(
         "El costo unitario debe ser mayor o igual a cero y tener máximo dos decimales.",
@@ -200,23 +212,25 @@ export function InventoryMovementForm({
               }
             />
           </label>
-          <label className="block">
-            <span className="text-sm font-medium text-slate-700">
-              Costo unitario
-            </span>
-            <input
-              className={fieldClassName}
-              type="number"
-              inputMode="decimal"
-              min="0"
-              step="0.01"
-              value={values.unitCost}
-              disabled={isSubmitting}
-              onChange={(event) =>
-                setValues({ ...values, unitCost: event.target.value })
-              }
-            />
-          </label>
+          {canSetCost ? (
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">
+                Costo unitario
+              </span>
+              <input
+                className={fieldClassName}
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="0.01"
+                value={values.unitCost}
+                disabled={isSubmitting}
+                onChange={(event) =>
+                  setValues({ ...values, unitCost: event.target.value })
+                }
+              />
+            </label>
+          ) : null}
           <label className="block md:col-span-2">
             <span className="text-sm font-medium text-slate-700">
               Motivo u observación

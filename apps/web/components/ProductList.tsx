@@ -7,16 +7,20 @@ import {
 
 type ProductListProps = {
   products: Product[];
+  canManage?: boolean;
   hasActiveFilters?: boolean;
   changingProductId?: number | null;
+  showSensitiveCosts?: boolean;
   onEdit: (product: Product) => void;
   onToggleActive: (product: Product) => void;
 };
 
 export function ProductList({
   products,
+  canManage = true,
   hasActiveFilters = false,
   changingProductId = null,
+  showSensitiveCosts = true,
   onEdit,
   onToggleActive,
 }: ProductListProps) {
@@ -37,7 +41,7 @@ export function ProductList({
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1240px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1080px] border-collapse text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">Producto</th>
@@ -45,10 +49,14 @@ export function ProductList({
                 <th className="px-4 py-3 font-medium">Categoría</th>
                 <th className="px-4 py-3 font-medium">Producción</th>
                 <th className="px-4 py-3 font-medium">Precio base</th>
-                <th className="px-4 py-3 font-medium">Costo estimado</th>
+                {showSensitiveCosts ? (
+                  <th className="px-4 py-3 font-medium">Costo estimado</th>
+                ) : null}
                 <th className="px-4 py-3 font-medium">Retornable</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
+                {canManage ? (
+                  <th className="px-4 py-3 font-medium">Acciones</th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -88,13 +96,16 @@ export function ProductList({
                     <td className="px-4 py-3 align-top font-medium text-slate-950">
                       {formatMoney(product.default_price)}
                     </td>
-                    <td className="px-4 py-3 align-top text-slate-700">
-                      {formatMoney(product.cost_estimate)}
-                    </td>
+                    {showSensitiveCosts ? (
+                      <td className="px-4 py-3 align-top text-slate-700">
+                        {formatMoney(product.cost_estimate)}
+                      </td>
+                    ) : null}
                     <td className="px-4 py-3 align-top text-slate-700">
                       {product.is_returnable_container ? "Sí" : "No"}
                     </td>
-                    <td className="px-4 py-3 align-top">
+                    {canManage ? (
+                      <td className="px-4 py-3 align-top">
                       <span
                         className={
                           product.is_active
@@ -104,7 +115,8 @@ export function ProductList({
                       >
                         {product.is_active ? "Activo" : "Inactivo"}
                       </span>
-                    </td>
+                      </td>
+                    ) : null}
                     <td className="px-4 py-3 align-top">
                       <div className="flex items-center gap-3">
                         <button

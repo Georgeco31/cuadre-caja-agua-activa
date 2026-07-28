@@ -378,16 +378,23 @@ function ProductionDetail({
           </tbody>
         </table>
       </div>
-      <ProductionInventoryPanel
-        batch={batch}
-        locations={locations}
-        application={inventoryApplication}
-        isApplying={isApplying}
-        isVoiding={isVoidingApplication}
-        canVoid={canVoid}
-        onApply={onApplyInventory}
-        onVoid={onVoidInventoryApplication}
-      />
+      {canVoid ? (
+        <ProductionInventoryPanel
+          batch={batch}
+          locations={locations}
+          application={inventoryApplication}
+          isApplying={isApplying}
+          isVoiding={isVoidingApplication}
+          canVoid={canVoid}
+          onApply={onApplyInventory}
+          onVoid={onVoidInventoryApplication}
+        />
+      ) : (
+        <p className="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          La aplicación a inventario está disponible solo para el
+          administrador/auditor.
+        </p>
+      )}
     </div>
   );
 }

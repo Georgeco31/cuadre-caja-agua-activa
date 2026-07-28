@@ -164,6 +164,26 @@ denegarse a `operator` en 58B. La política, los riesgos y la secuencia 58B a 58
 están en
 [`38-matriz-permisos-operador.md`](38-matriz-permisos-operador.md).
 
+## Estado de los Bloques 58B y 58C
+
+58B convirtió la matriz aprobada en protección backend efectiva. Las acciones
+críticas del operador responden `403`, 42 pruebas específicas por rol pasaron y
+la suite backend completa quedó en 972 pruebas aprobadas.
+
+58C alineó el frontend con esa política sin cambiar backend, endpoints,
+payloads, cálculos, autenticación ni roles. El operador conserva caja y cierre
+diario, clientes, ventas, cobros, producción diaria e inventario
+`entry`/`exit` sin costo. La interfaz retira sus accesos y controles de
+correcciones, anulaciones, precios, gerencia, exportaciones, usuarios,
+empleados/nómina, fórmulas, consumo de insumos, ajustes y costos.
+
+El dashboard muestra 33 destinos para `admin_auditor` y 22 para `operator`. La
+guarda común del dashboard bloquea también la navegación directa a pantallas
+administrativas con un mensaje no técnico; el backend sigue siendo la frontera
+de seguridad. Typecheck, build, Compose y el recorrido manual de ambos roles
+aprobaron. La evidencia está en
+[`40-bloque-58c-frontend-permisos-operador.md`](40-bloque-58c-frontend-permisos-operador.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -185,8 +205,8 @@ están en
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
 | --- | --- | --- | --- | --- | --- |
-| P1-01 | 54 | Centralizar guardas y sesión frontend | Desarrollo | Alta | Todas las rutas usan un único mecanismo y pruebas cubren 401/403 |
-| P1-02 | 54 | Limitar navegación según rol | Desarrollo | Alta | Operator solo ve módulos permitidos; backend sigue siendo autoridad |
+| P1-01 | 54/58C | Centralizar guardas y sesión frontend (avance: rutas administrativas del dashboard usan una política y un `layout` común) | Desarrollo | Alta | Todas las rutas usan un único mecanismo y pruebas cubren 401/403 |
+| P1-02 | 58C | Limitar navegación según rol (implementado) | Desarrollo | Alta | Operator solo ve módulos permitidos; backend sigue siendo autoridad |
 | P1-03 | 54/55A | Rate limit y registro de intentos de login | Desarrollo | Alta | Intentos excesivos se limitan sin bloquear operación legítima |
 | P1-04 | 55A | Restringir documentación OpenAPI | Desarrollo | Media | `/docs` y `/openapi.json` no quedan públicos en producción |
 | P1-05 | 55A | HTTPS local o acceso cifrado equivalente | Infraestructura | Alta | Credenciales/token no viajan en texto claro por red no confiable |

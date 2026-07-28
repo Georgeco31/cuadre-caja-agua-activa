@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { BrandLogo } from "@/components/ui/BrandLogo";
+import { useCurrentRole } from "@/lib/useCurrentRole";
+import type { UserRole } from "@/types/auth";
 
 type DashboardShellProps = {
   activeHref: string;
@@ -9,6 +13,7 @@ type DashboardShellProps = {
   children: ReactNode;
   dateLabel: string;
   moduleHref?: string;
+  role?: UserRole;
   roleLabel?: string;
   userName?: string;
 };
@@ -17,7 +22,12 @@ const navigation = [
   { href: "/dashboard", label: "Inicio", icon: "⌂" },
   { href: "/dashboard/cash-session", label: "Caja", icon: "$" },
   { href: "/dashboard/delivery-routes", label: "Rutas", icon: "↗" },
-  { href: "/dashboard/reports", label: "Reportes", icon: "▤" },
+  {
+    href: "/dashboard/reports",
+    label: "Reportes",
+    icon: "▤",
+    adminOnly: true,
+  },
 ] as const;
 
 export function DashboardShell({
@@ -26,9 +36,16 @@ export function DashboardShell({
   children,
   dateLabel,
   moduleHref = "/dashboard#modulos",
+  role,
   roleLabel,
   userName = "Agua Activa",
 }: DashboardShellProps) {
+  const { role: storedRole } = useCurrentRole();
+  const activeRole = role ?? storedRole;
+  const visibleNavigation = navigation.filter(
+    (item) => !("adminOnly" in item) || activeRole === "admin_auditor",
+  );
+
   return (
     <div className="min-h-screen overflow-x-clip bg-slate-50">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-water-900 px-4 py-5 text-white shadow-xl lg:flex">
@@ -51,7 +68,7 @@ export function DashboardShell({
           Principal
         </p>
         <nav aria-label="Navegación principal" className="space-y-1">
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const isActive = activeHref === item.href;
             return (
               <Link
@@ -162,9 +179,13 @@ export function DashboardShell({
 
       <nav
         aria-label="Navegación móvil"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-slate-200 bg-white/95 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden"
+        className={`fixed inset-x-0 bottom-0 z-40 grid border-t border-slate-200 bg-white/95 px-1 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:hidden ${
+          visibleNavigation.length === navigation.length
+            ? "grid-cols-5"
+            : "grid-cols-4"
+        }`}
       >
-        {navigation.map((item) => {
+        {visibleNavigation.map((item) => {
           const isActive = activeHref === item.href;
           return (
             <Link

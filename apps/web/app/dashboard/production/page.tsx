@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -322,15 +323,27 @@ export default function ProductionPage() {
         <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           La producción no aumenta inventario automáticamente hasta que se
           aplique a una ubicación. Tampoco consume materia prima
-          automáticamente.{" "}
-          <Link
-            className="font-semibold underline hover:text-amber-700"
-            href="/dashboard/production/material-consumption"
-          >
-            Ir a consumo de insumos
-          </Link>
-          .
+          automáticamente.
+          {canVoid ? (
+            <>
+              {" "}
+              <Link
+                className="font-semibold underline hover:text-amber-700"
+                href="/dashboard/production/material-consumption"
+              >
+                Ir a consumo de insumos
+              </Link>
+              .
+            </>
+          ) : null}
         </p>
+
+        {!canVoid ? (
+          <AccessRestricted
+            compact
+            message="Puedes registrar y consultar la producción diaria. Aplicar producción al inventario, consumir insumos y anular registros está disponible solo para el administrador/auditor."
+          />
+        ) : null}
 
         {error ? <ErrorMessage message={error} /> : null}
         {message ? (

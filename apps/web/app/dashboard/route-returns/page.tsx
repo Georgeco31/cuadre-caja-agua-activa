@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -277,6 +278,8 @@ export default function RouteReturnsPage() {
           cobros, dinero entregado, diferencias ni cierres de ruta.
         </p>
 
+        {!canVoid ? <AccessRestricted compact /> : null}
+
         {error ? <ErrorMessage message={error} /> : null}
         {message ? (
           <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
@@ -288,13 +291,15 @@ export default function RouteReturnsPage() {
           <LoadingState label="Cargando módulo de retornos..." />
         ) : (
           <>
-            <RouteReturnForm
-              loads={availableLoads}
-              locations={activeLocations}
-              stocks={stocks}
-              isSubmitting={isSaving}
-              onSubmit={handleCreate}
-            />
+            {canVoid ? (
+              <RouteReturnForm
+                loads={availableLoads}
+                locations={activeLocations}
+                stocks={stocks}
+                isSubmitting={isSaving}
+                onSubmit={handleCreate}
+              />
+            ) : null}
             <RouteReturnList
               canVoid={canVoid}
               returns={returns}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import {
   DeliveryRouteFilters,
   type DeliveryRouteFilterValues,
@@ -22,6 +23,7 @@ import {
   updateDeliveryRoute,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type {
   DeliveryRoute,
   DeliveryRoutePayload,
@@ -35,6 +37,7 @@ const emptyFilters: DeliveryRouteFilterValues = {
 };
 
 export default function DeliveryRoutesPage() {
+  const canManage = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [deliveryRoutes, setDeliveryRoutes] = useState<DeliveryRoute[]>([]);
@@ -223,19 +226,23 @@ export default function DeliveryRoutesPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-              type="button"
-              disabled={isSaving}
-              onClick={handleShowCreateForm}
-            >
-              Nueva ruta
-            </button>
+            {canManage ? (
+              <button
+                className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                type="button"
+                disabled={isSaving}
+                onClick={handleShowCreateForm}
+              >
+                Nueva ruta
+              </button>
+            ) : null}
             <LogoutButton />
           </div>
         </header>
 
-        {isFormVisible ? (
+        {!canManage ? <AccessRestricted compact /> : null}
+
+        {canManage && isFormVisible ? (
           <DeliveryRouteForm
             key={editingRoute?.id ?? "new"}
             deliveryRoute={editingRoute}
@@ -265,6 +272,7 @@ export default function DeliveryRoutesPage() {
         ) : (
           <DeliveryRouteList
             deliveryRoutes={deliveryRoutes}
+            canManage={canManage}
             hasActiveFilters={hasActiveFilters(appliedFilters)}
             changingRouteId={changingRouteId}
             onEdit={handleEdit}

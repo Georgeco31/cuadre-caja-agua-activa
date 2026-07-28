@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -22,6 +23,7 @@ import {
   updateProduct,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Product, ProductPayload } from "@/types/product";
 
 const emptyFilters: ProductFilterValues = {
@@ -32,6 +34,7 @@ const emptyFilters: ProductFilterValues = {
 };
 
 export default function ProductsPage() {
+  const canManage = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -214,24 +217,31 @@ export default function ProductsPage() {
               Productos y precios
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Administra los productos de Agua Activa. Este módulo será la base
-              para ventas, inventario, producción y rutas.
+              {canManage
+                ? "Administra los productos de Agua Activa."
+                : "Consulta los productos y precios vigentes de Agua Activa."}{" "}
+              Este módulo es la base para ventas, inventario, producción y
+              rutas.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-              type="button"
-              disabled={isSaving}
-              onClick={handleShowCreateForm}
-            >
-              Nuevo producto
-            </button>
+            {canManage ? (
+              <button
+                className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                type="button"
+                disabled={isSaving}
+                onClick={handleShowCreateForm}
+              >
+                Nuevo producto
+              </button>
+            ) : null}
             <LogoutButton />
           </div>
         </header>
 
-        {isFormVisible ? (
+        {!canManage ? <AccessRestricted compact /> : null}
+
+        {canManage && isFormVisible ? (
           <ProductForm
             key={editingProduct?.id ?? "new"}
             product={editingProduct}
@@ -261,6 +271,8 @@ export default function ProductsPage() {
         ) : (
           <ProductList
             products={products}
+            canManage={canManage}
+            showSensitiveCosts={canManage}
             hasActiveFilters={hasActiveFilters(appliedFilters)}
             changingProductId={changingProductId}
             onEdit={handleEdit}

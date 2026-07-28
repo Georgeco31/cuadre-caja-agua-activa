@@ -2,15 +2,18 @@
 
 ## Estado y alcance
 
-- Bloque: **58A cerrado; protección backend 58B implementada**.
+- Bloque: **58A cerrado; protección backend 58B y alineación frontend 58C
+  implementadas**.
 - Estado: **10 decisiones principales resueltas por George; backend protegido
-  y probado en 58B**.
+  y probado en 58B; interfaz ajustada y validada por rol en 58C**.
 - Fecha de corte: **2026-07-28**.
-- Alcance: inventario de pantallas, endpoints y permisos existentes; propuesta
-  de permisos granulares para `operator`; riesgos y estrategia futura.
-- Fuera de alcance: cambios de backend, frontend, rutas, endpoints,
-  autenticación, migraciones, seeds, base de datos, variables de entorno o
-  lógica de negocio.
+- Alcance original 58A: inventario de pantallas, endpoints y permisos
+  existentes; propuesta de permisos granulares para `operator`; riesgos y
+  estrategia futura.
+- Actualizaciones posteriores: estado efectivo del backend de 58B y de la
+  presentación frontend de 58C. No se cambiaron endpoints, payloads,
+  autenticación, roles, migraciones, seeds, base de datos ni lógica de negocio
+  en 58C.
 
 El inventario de estado actual conservado en este documento corresponde al
 corte previo a 58B. La política efectiva de backend se implementó y documentó
@@ -29,7 +32,30 @@ Los asuntos no aprobados se deniegan a `operator` por defecto.
   nómina, panel gerencial y exportaciones responden `403`.
 - Se agregaron 42 casos específicos por rol y la suite completa quedó en 972
   pruebas aprobadas.
-- El frontend permanece sin cambios y se ajustará en 58C.
+- La presentación frontend se alineó después en 58C.
+
+## Actualización de implementación 58C
+
+- Se centralizó la decisión de acceso visual a rutas administrativas del
+  dashboard y se agregó una guarda común en su `layout`.
+- `operator` ve **22 destinos** justificados en lugar de los 29 anteriores:
+  se retiraron gerencia, exportaciones, usuarios, precios administrativos,
+  empleados, control laboral, nómina, fórmulas, consumo de insumos, resumen
+  acumulado y reporte mensual.
+- Una URL directa restringida muestra un mensaje claro y no monta la pantalla
+  administrativa. El backend de 58B continúa siendo la autoridad real.
+- En pantallas mixtas se conservaron las acciones aprobadas y se ocultaron
+  correcciones, anulaciones, mutaciones de catálogos, costos, ajustes de
+  inventario y otras operaciones reservadas.
+- `operator` conserva caja y cierre diario, clientes, ventas, cobros,
+  producción diaria e inventario `entry`/`exit` sin costo.
+- `admin_auditor` conserva los **33 destinos**, los módulos administrativos y
+  las descargas Excel/PDF.
+- La validación manual cubrió ambos roles y los viewports `1366x768`,
+  `1440x900`, `390x844` y `412x915`, sin desbordamiento horizontal ni accesos
+  restringidos en la navegación móvil del operador.
+- El detalle, las pantallas afectadas y la evidencia técnica están en
+  [`40-bloque-58c-frontend-permisos-operador.md`](40-bloque-58c-frontend-permisos-operador.md).
 
 ## Objetivo
 

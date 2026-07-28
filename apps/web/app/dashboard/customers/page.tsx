@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import {
   CustomerFilters,
   type CustomerFilterValues,
@@ -22,6 +23,7 @@ import {
   updateCustomer,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Customer, CustomerPayload } from "@/types/customer";
 
 const emptyFilters: CustomerFilterValues = {
@@ -32,6 +34,7 @@ const emptyFilters: CustomerFilterValues = {
 };
 
 export default function CustomersPage() {
+  const canManageExistingCustomers = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -234,6 +237,13 @@ export default function CustomersPage() {
           </div>
         </header>
 
+        {!canManageExistingCustomers ? (
+          <AccessRestricted
+            compact
+            message="Puedes consultar y registrar clientes nuevos. La edición, activación e inactivación de clientes existentes está disponible solo para el administrador/auditor."
+          />
+        ) : null}
+
         {isFormVisible ? (
           <CustomerForm
             key={editingCustomer?.id ?? "new"}
@@ -264,6 +274,7 @@ export default function CustomersPage() {
         ) : (
           <CustomerList
             customers={customers}
+            canManage={canManageExistingCustomers}
             hasActiveFilters={hasActiveFilters(appliedFilters)}
             changingCustomerId={changingCustomerId}
             onEdit={handleEdit}

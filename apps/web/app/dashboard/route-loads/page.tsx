@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -266,6 +267,8 @@ export default function RouteLoadsPage() {
           cobros, dinero entregado ni cierres de ruta.
         </p>
 
+        {!canVoid ? <AccessRestricted compact /> : null}
+
         {error ? <ErrorMessage message={error} /> : null}
         {message ? (
           <p className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
@@ -277,15 +280,17 @@ export default function RouteLoadsPage() {
           <LoadingState label="Cargando módulo de cargas..." />
         ) : (
           <>
-            <RouteLoadForm
-              routes={activeRoutes}
-              vehicles={activeVehicles}
-              locations={activeLocations}
-              products={activeProducts}
-              stocks={stocks}
-              isSubmitting={isSaving}
-              onSubmit={handleCreate}
-            />
+            {canVoid ? (
+              <RouteLoadForm
+                routes={activeRoutes}
+                vehicles={activeVehicles}
+                locations={activeLocations}
+                products={activeProducts}
+                stocks={stocks}
+                isSubmitting={isSaving}
+                onSubmit={handleCreate}
+              />
+            ) : null}
             <RouteLoadList
               canVoid={canVoid}
               loads={loads}

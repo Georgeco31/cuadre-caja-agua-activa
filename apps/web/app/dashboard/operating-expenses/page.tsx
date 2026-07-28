@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -524,6 +525,8 @@ export default function OperatingExpensesPage() {
           </p>
         </section>
 
+        {!canVoid ? <AccessRestricted compact /> : null}
+
         {summary ? <SummaryPanel summary={summary} /> : null}
 
         <nav
@@ -902,16 +905,22 @@ function ExpensesSection({
             Gastos registrados
           </h2>
         </div>
-        <button
-          className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white hover:bg-water-500"
-          type="button"
-          onClick={onShowForm}
-        >
-          Nuevo gasto
-        </button>
+        {canVoid ? (
+          <button
+            className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white hover:bg-water-500"
+            type="button"
+            onClick={onShowForm}
+          >
+            Nuevo gasto
+          </button>
+        ) : (
+          <span className="text-sm font-semibold text-slate-500">
+            Solo consulta
+          </span>
+        )}
       </div>
 
-      {showForm ? (
+      {canVoid && showForm ? (
         <form
           className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
           onSubmit={onSubmit}

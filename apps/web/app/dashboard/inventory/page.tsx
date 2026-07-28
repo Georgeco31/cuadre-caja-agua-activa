@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { InventoryLocationForm } from "@/components/InventoryLocationForm";
 import { InventoryLocationList } from "@/components/InventoryLocationList";
@@ -383,23 +384,34 @@ export default function InventoryPage() {
               Inventario
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Controla el stock de productos por ubicación mediante entradas,
-              salidas y ajustes manuales. Este módulo todavía no descuenta
-              inventario automáticamente por ventas.
+              {canManageCriticalActions
+                ? "Controla el stock por ubicación mediante entradas, salidas y ajustes manuales."
+                : "Consulta el stock y registra movimientos operativos de entrada o salida."}{" "}
+              Este módulo todavía no descuenta inventario automáticamente por
+              ventas.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:bg-slate-300"
-              type="button"
-              disabled={isSavingLocation}
-              onClick={handleShowLocationForm}
-            >
-              Nueva ubicación
-            </button>
+            {canManageCriticalActions ? (
+              <button
+                className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:bg-slate-300"
+                type="button"
+                disabled={isSavingLocation}
+                onClick={handleShowLocationForm}
+              >
+                Nueva ubicación
+              </button>
+            ) : null}
             <LogoutButton />
           </div>
         </header>
+
+        {!canManageCriticalActions ? (
+          <AccessRestricted
+            compact
+            message="Puedes registrar entradas y salidas sin costo. Los ajustes, costos, ubicaciones y anulaciones están disponibles solo para el administrador/auditor."
+          />
+        ) : null}
 
         <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Las ventas, la caja, los cobros, las rutas y la producción no modifican
@@ -440,7 +452,7 @@ export default function InventoryPage() {
                   : "grid gap-6"
               }
             >
-              {isLocationFormVisible ? (
+              {canManageCriticalActions && isLocationFormVisible ? (
                 <InventoryLocationForm
                   key={editingLocation?.id ?? "new"}
                   location={editingLocation}
@@ -453,6 +465,7 @@ export default function InventoryPage() {
               <InventoryLocationList
                 locations={locations}
                 vehicles={vehicles}
+                canManage={canManageCriticalActions}
                 changingLocationId={changingLocationId}
                 onEdit={handleEditLocation}
                 onToggleActive={handleToggleLocation}
@@ -461,6 +474,7 @@ export default function InventoryPage() {
 
             <InventoryMovementForm
               canAdjust={canManageCriticalActions}
+              canSetCost={canManageCriticalActions}
               products={activeProducts}
               locations={activeLocations}
               isSubmitting={isSavingMovement}
@@ -469,6 +483,7 @@ export default function InventoryPage() {
 
             <InventoryMovementList
               canVoid={canManageCriticalActions}
+              showSensitiveDetails={canManageCriticalActions}
               movements={movements}
               products={products}
               locations={locations}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -260,9 +261,11 @@ export default function RouteClosuresPage() {
             className="shrink-0 font-semibold text-water-700 hover:text-water-500"
             href="/dashboard/route-cash-receipts"
           >
-            Registrar dinero en caja
+            {canVoid ? "Registrar dinero en caja" : "Consultar dinero en caja"}
           </Link>
         </div>
+
+        {!canVoid ? <AccessRestricted compact /> : null}
 
         {error ? <ErrorMessage message={error} /> : null}
         {message ? (
@@ -275,15 +278,17 @@ export default function RouteClosuresPage() {
           <LoadingState label="Cargando cierres financieros..." />
         ) : (
           <>
-            <RouteClosureForm
-              loads={availableLoads}
-              selectedLoadId={selectedLoadId}
-              activity={activity}
-              isLoadingActivity={isLoadingActivity}
-              isSubmitting={isSaving}
-              onLoadChange={handleLoadChange}
-              onSubmit={handleCreate}
-            />
+            {canVoid ? (
+              <RouteClosureForm
+                loads={availableLoads}
+                selectedLoadId={selectedLoadId}
+                activity={activity}
+                isLoadingActivity={isLoadingActivity}
+                isSubmitting={isSaving}
+                onLoadChange={handleLoadChange}
+                onSubmit={handleCreate}
+              />
+            ) : null}
             <RouteClosureList
               canVoid={canVoid}
               closures={closures}

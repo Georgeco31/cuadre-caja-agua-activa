@@ -7,6 +7,7 @@ import type { Vehicle } from "@/types/vehicle";
 type InventoryLocationListProps = {
   locations: InventoryLocation[];
   vehicles: Vehicle[];
+  canManage?: boolean;
   changingLocationId?: number | null;
   onEdit: (location: InventoryLocation) => void;
   onToggleActive: (location: InventoryLocation) => void;
@@ -15,6 +16,7 @@ type InventoryLocationListProps = {
 export function InventoryLocationList({
   locations,
   vehicles,
+  canManage = true,
   changingLocationId = null,
   onEdit,
   onToggleActive,
@@ -39,7 +41,9 @@ export function InventoryLocationList({
                 <th className="px-4 py-3 font-medium">Tipo</th>
                 <th className="px-4 py-3 font-medium">Vehículo</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
+                {canManage ? (
+                  <th className="px-4 py-3 font-medium">Acciones</th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -50,7 +54,8 @@ export function InventoryLocationList({
                 );
                 return (
                   <tr key={location.id}>
-                    <td className="px-4 py-3 align-top">
+                    {canManage ? (
+                      <td className="px-4 py-3 align-top">
                       <p className="font-medium text-slate-950">
                         {location.name}
                       </p>
@@ -62,7 +67,8 @@ export function InventoryLocationList({
                           {location.description}
                         </p>
                       ) : null}
-                    </td>
+                      </td>
+                    ) : null}
                     <td className="px-4 py-3 align-top text-slate-700">
                       {INVENTORY_LOCATION_TYPE_LABELS[location.location_type]}
                     </td>

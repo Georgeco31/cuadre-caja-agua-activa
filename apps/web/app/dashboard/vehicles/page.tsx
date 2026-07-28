@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -22,6 +23,7 @@ import {
   updateVehicle,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Vehicle, VehiclePayload } from "@/types/vehicle";
 
 const emptyFilters: VehicleFilterValues = {
@@ -32,6 +34,7 @@ const emptyFilters: VehicleFilterValues = {
 };
 
 export default function VehiclesPage() {
+  const canManage = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -222,19 +225,23 @@ export default function VehiclesPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-              type="button"
-              disabled={isSaving}
-              onClick={handleShowCreateForm}
-            >
-              Nuevo vehículo
-            </button>
+            {canManage ? (
+              <button
+                className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
+                type="button"
+                disabled={isSaving}
+                onClick={handleShowCreateForm}
+              >
+                Nuevo vehículo
+              </button>
+            ) : null}
             <LogoutButton />
           </div>
         </header>
 
-        {isFormVisible ? (
+        {!canManage ? <AccessRestricted compact /> : null}
+
+        {canManage && isFormVisible ? (
           <VehicleForm
             key={editingVehicle?.id ?? "new"}
             vehicle={editingVehicle}
@@ -264,6 +271,7 @@ export default function VehiclesPage() {
         ) : (
           <VehicleList
             vehicles={vehicles}
+            canManage={canManage}
             hasActiveFilters={hasActiveFilters(appliedFilters)}
             changingVehicleId={changingVehicleId}
             onEdit={handleEdit}

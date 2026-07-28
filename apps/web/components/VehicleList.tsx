@@ -6,6 +6,7 @@ import {
 
 type VehicleListProps = {
   vehicles: Vehicle[];
+  canManage?: boolean;
   hasActiveFilters?: boolean;
   changingVehicleId?: number | null;
   onEdit: (vehicle: Vehicle) => void;
@@ -14,6 +15,7 @@ type VehicleListProps = {
 
 export function VehicleList({
   vehicles,
+  canManage = true,
   hasActiveFilters = false,
   changingVehicleId = null,
   onEdit,
@@ -46,7 +48,9 @@ export function VehicleList({
                 <th className="px-4 py-3 font-medium">Capacidad</th>
                 <th className="px-4 py-3 font-medium">Chofer de referencia</th>
                 <th className="px-4 py-3 font-medium">Estado</th>
-                <th className="px-4 py-3 font-medium">Acciones</th>
+                {canManage ? (
+                  <th className="px-4 py-3 font-medium">Acciones</th>
+                ) : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -55,12 +59,14 @@ export function VehicleList({
 
                 return (
                   <tr key={vehicle.id}>
-                    <td className="px-4 py-3 align-top">
+                    {canManage ? (
+                      <td className="px-4 py-3 align-top">
                       <p className="font-medium text-slate-950">{vehicle.name}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         {vehicle.plate ?? "Sin placa"} · {vehicle.code ?? "Sin código"}
                       </p>
-                    </td>
+                      </td>
+                    ) : null}
                     <td className="px-4 py-3 align-top text-slate-700">
                       {VEHICLE_TYPE_LABELS[vehicle.vehicle_type]}
                     </td>

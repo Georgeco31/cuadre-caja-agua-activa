@@ -28,6 +28,7 @@ type InventoryMovementListProps = {
   filters: InventoryMovementFilterValues;
   isLoading?: boolean;
   canVoid?: boolean;
+  showSensitiveDetails?: boolean;
   onFiltersChange: (filters: InventoryMovementFilterValues) => void;
   onFilter: () => void;
   onClear: () => void;
@@ -48,6 +49,7 @@ export function InventoryMovementList({
   filters,
   isLoading = false,
   canVoid = false,
+  showSensitiveDetails = true,
   onFiltersChange,
   onFilter,
   onClear,
@@ -58,13 +60,30 @@ export function InventoryMovementList({
     onFilter();
   }
 
+  const visibleMovementTypes = showSensitiveDetails
+    ? movementTypes
+    : movementTypes.filter(
+        (movementType) =>
+          movementType !== "adjustment_in" &&
+          movementType !== "adjustment_out",
+      );
+  const visibleMovements = showSensitiveDetails
+    ? movements
+    : movements.filter(
+        (movement) =>
+          movement.movement_type === "entry" ||
+          movement.movement_type === "exit",
+      );
+
   return (
     <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <h2 className="text-lg font-semibold text-slate-950">
           Historial de movimientos
         </h2>
-        <span className="text-sm text-slate-500">{movements.length}</span>
+        <span className="text-sm text-slate-500">
+          {visibleMovements.length}
+        </span>
       </div>
 
       <form
@@ -140,7 +159,7 @@ export function InventoryMovementList({
             }
           >
             <option value="">Todos</option>
-            {movementTypes.map((movementType) => (
+            {visibleMovementTypes.map((movementType) => (
               <option key={movementType} value={movementType}>
                 {INVENTORY_MOVEMENT_TYPE_LABELS[movementType]}
               </option>
@@ -190,13 +209,13 @@ export function InventoryMovementList({
         <p className="px-4 py-8 text-sm text-slate-600">
           Actualizando movimientos...
         </p>
-      ) : movements.length === 0 ? (
+      ) : visibleMovements.length === 0 ? (
         <p className="px-4 py-8 text-sm text-slate-600">
           Todavía no hay movimientos para los filtros seleccionados.
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1220px] border-collapse text-left text-sm">
+          <table className="w-full min-w-[1060px] border-collapse text-left text-sm">
             <thead className="bg-slate-50 text-slate-600">
               <tr>
                 <th className="px-4 py-3 font-medium">Fecha</th>
@@ -204,17 +223,23 @@ export function InventoryMovementList({
                 <th className="px-4 py-3 font-medium">Producto</th>
                 <th className="px-4 py-3 font-medium">Ubicación</th>
                 <th className="px-4 py-3 text-right font-medium">Cantidad</th>
-                <th className="px-4 py-3 text-right font-medium">
-                  Costo unitario
-                </th>
-                <th className="px-4 py-3 text-right font-medium">Costo total</th>
+                {showSensitiveDetails ? (
+                  <>
+                    <th className="px-4 py-3 text-right font-medium">
+                      Costo unitario
+                    </th>
+                    <th className="px-4 py-3 text-right font-medium">
+                      Costo total
+                    </th>
+                  </>
+                ) : null}
                 <th className="px-4 py-3 font-medium">Estado</th>
                 <th className="px-4 py-3 font-medium">Motivo</th>
                 <th className="px-4 py-3 font-medium">Acción</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {movements.map((movement) => (
+              {visibleMovements.map((movement) => (
                 <tr key={movement.id}>
                   <td className="px-4 py-3 align-top text-slate-700">
                     {formatDate(movement.movement_date)}
@@ -239,16 +264,20 @@ export function InventoryMovementList({
                   <td className="px-4 py-3 text-right align-top font-semibold text-slate-950">
                     {formatQuantity(movement.quantity)}
                   </td>
-                  <td className="px-4 py-3 text-right align-top text-slate-700">
-                    {movement.unit_cost
-                      ? formatMoney(movement.unit_cost)
-                      : "Sin costo"}
-                  </td>
-                  <td className="px-4 py-3 text-right align-top text-slate-700">
-                    {movement.total_cost
-                      ? formatMoney(movement.total_cost)
-                      : "Sin costo"}
-                  </td>
+                  {showSensitiveDetails ? (
+                    <>
+                      <td className="px-4 py-3 text-right align-top text-slate-700">
+                        {movement.unit_cost
+                          ? formatMoney(movement.unit_cost)
+                          : "Sin costo"}
+                      </td>
+                      <td className="px-4 py-3 text-right align-top text-slate-700">
+                        {movement.total_cost
+                          ? formatMoney(movement.total_cost)
+                          : "Sin costo"}
+                      </td>
+                    </>
+                  ) : null}
                   <td className="px-4 py-3 align-top">
                     <span
                       className={

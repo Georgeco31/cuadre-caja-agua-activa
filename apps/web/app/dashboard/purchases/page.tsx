@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 
+import { AccessRestricted } from "@/components/AccessRestricted";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -328,18 +329,20 @@ export default function PurchasesPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white hover:bg-water-500 disabled:bg-slate-300"
-              type="button"
-              disabled={isSaving || isInitialLoading}
-              onClick={() => {
-                setFormValues(createEmptyForm());
-                setIsFormVisible(true);
-                clearNotices();
-              }}
-            >
-              Nueva compra
-            </button>
+            {canVoid ? (
+              <button
+                className="h-10 rounded-md bg-water-700 px-4 text-sm font-semibold text-white hover:bg-water-500 disabled:bg-slate-300"
+                type="button"
+                disabled={isSaving || isInitialLoading}
+                onClick={() => {
+                  setFormValues(createEmptyForm());
+                  setIsFormVisible(true);
+                  clearNotices();
+                }}
+              >
+                Nueva compra
+              </button>
+            ) : null}
             <LogoutButton />
           </div>
         </header>
@@ -348,6 +351,8 @@ export default function PurchasesPage() {
           Para ingresar productos al inventario desde una compra se usará un
           bloque posterior.
         </p>
+
+        {!canVoid ? <AccessRestricted compact /> : null}
 
         {error ? <ErrorMessage message={error} /> : null}
         {message ? (
@@ -360,7 +365,7 @@ export default function PurchasesPage() {
           <LoadingState label="Cargando compras..." />
         ) : (
           <>
-            {isFormVisible ? (
+            {canVoid && isFormVisible ? (
               <form
                 className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
                 onSubmit={handleCreatePurchase}
