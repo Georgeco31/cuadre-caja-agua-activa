@@ -3,17 +3,19 @@
 ## Estado y alcance
 
 - Bloque: **58A cerrado; protección backend 58B y alineación frontend 58C
-  implementadas**.
+  implementadas; código validado en 58D y producción reconstruida en 58D-2**.
 - Estado: **10 decisiones principales resueltas por George; backend protegido
-  y probado en 58B; interfaz ajustada y validada por rol en 58C**.
+  y probado en 58B; interfaz ajustada en 58C; pruebas integrales del código
+  aprobadas en 58D; backend, frontend y recorrido productivo sincronizados y
+  aprobados en 58D-2**.
 - Fecha de corte: **2026-07-28**.
 - Alcance original 58A: inventario de pantallas, endpoints y permisos
   existentes; propuesta de permisos granulares para `operator`; riesgos y
   estrategia futura.
-- Actualizaciones posteriores: estado efectivo del backend de 58B y de la
-  presentación frontend de 58C. No se cambiaron endpoints, payloads,
-  autenticación, roles, migraciones, seeds, base de datos ni lógica de negocio
-  en 58C.
+- Actualizaciones posteriores: estado efectivo del backend de 58B, de la
+  presentación frontend de 58C y de las pruebas integrales de 58D. No se
+  cambiaron endpoints, payloads, autenticación, roles, migraciones, seeds, base
+  de datos ni lógica de negocio en 58C o 58D.
 
 El inventario de estado actual conservado en este documento corresponde al
 corte previo a 58B. La política efectiva de backend se implementó y documentó
@@ -56,6 +58,47 @@ Los asuntos no aprobados se deniegan a `operator` por defecto.
   restringidos en la navegación móvil del operador.
 - El detalle, las pantallas afectadas y la evidencia técnica están en
   [`40-bloque-58c-frontend-permisos-operador.md`](40-bloque-58c-frontend-permisos-operador.md).
+
+## Actualización de validación 58D
+
+- La suite específica volvió a aprobar **42 pruebas** y la suite completa
+  aprobó **972 pruebas**.
+- El código frontend aprobó typecheck y build de **38 rutas**.
+- En navegador, `admin_auditor` conservó **33 destinos** y `operator` mostró
+  **22 destinos**.
+- Las siete URLs administrativas probadas con `operator` mostraron el mensaje
+  de acceso restringido sin montar contenido sensible.
+- Un cuadre aislado pudo crearse y cerrarse con `operator`; la corrección
+  posterior recibió `403` y el detalle no mostró formularios ni logs de
+  corrección.
+- Los cuatro viewports aprobaron sin desbordamiento horizontal y la navegación
+  móvil del operador no mostró Reportes.
+- Excel y PDF administrativos respondieron `200` con tipos de contenido y
+  archivos no vacíos.
+- LAN, Tailscale, Docker, Alembic y la no publicación de PostgreSQL aprobaron el
+  health productivo.
+- Se detectó una deriva de despliegue: las imágenes productivas no contienen
+  todo el código de 58B/58C.
+- George autorizó 58D-2: se creó un backup verificable y se reconstruyeron
+  `api` y `web` sin borrar volúmenes ni ejecutar migraciones manuales.
+- El smoke backend productivo aprobó **26/26** comprobaciones. `operator`
+  recibió `403` real en empleados, nómina, usuarios, precios, gerencia,
+  exportaciones, correcciones y anulaciones; mantuvo `200` en los módulos
+  operativos aprobados.
+- `admin_auditor` conservó `200` en las familias restringidas; Excel y PDF
+  productivos devolvieron contenido válido.
+- Los hashes de la imagen API coinciden con el código actual y la imagen web
+  nueva contiene el mensaje compilado de bloqueo de 58C.
+- El recorrido visual productivo real confirmó 33 destinos para
+  `admin_auditor`, 22 para `operator`, siete URLs restringidas, módulos
+  operativos permitidos y los cuatro viewports sin desbordamiento horizontal.
+- La descarga Excel/PDF desde la web devolvió `200`; el bottom nav móvil del
+  operador no mostró Reportes.
+- La deriva queda resuelta y 58D se aprueba sin reserva por despliegue.
+- Evidencia completa:
+  [`41-bloque-58d-pruebas-integrales-permisos.md`](41-bloque-58d-pruebas-integrales-permisos.md).
+- Guía interna:
+  [`42-guia-operativa-permisos-usuarios.md`](42-guia-operativa-permisos-usuarios.md).
 
 ## Objetivo
 

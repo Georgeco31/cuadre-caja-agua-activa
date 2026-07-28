@@ -184,6 +184,38 @@ de seguridad. Typecheck, build, Compose y el recorrido manual de ambos roles
 aprobaron. La evidencia está en
 [`40-bloque-58c-frontend-permisos-operador.md`](40-bloque-58c-frontend-permisos-operador.md).
 
+## Estado del Bloque 58D
+
+El código actual aprobó 42 pruebas específicas de permisos, la suite backend de
+972 casos, typecheck, build de 38 rutas y el recorrido visual de ambos roles.
+`admin_auditor` conservó 33 destinos y `operator` mostró 22. También aprobaron
+URLs directas, cierre de caja con corrección posterior denegada, Excel/PDF y
+los cuatro viewports.
+
+El health productivo aprobó sin fallos: Docker healthy, LAN y Tailscale
+responden, Alembic continúa en `0026_user_roles` y PostgreSQL 5432 no está
+publicado. 58D detectó que las imágenes productivas no correspondían al código
+validado: una instancia desechable de la imagen API permitió lecturas de
+empleados y nómina al operador y la imagen web no contenía el bloqueo compilado
+de 58C.
+
+George autorizó 58D-2. Se creó y verificó un backup manual, se reconstruyeron
+`api` y `web` sin borrar volúmenes, y el smoke productivo backend aprobó 26/26
+comprobaciones. El operador ahora recibe `403` real en empleados, nómina,
+usuarios, precios, gerencia, exportaciones, correcciones y anulaciones; conserva
+`200` en los módulos operativos. Excel y PDF administrativos devolvieron `200`.
+La imagen web nueva contiene el bloqueo compilado de 58C. George completó los
+inicios de sesión reales sin compartir ni modificar credenciales. El recorrido
+visual productivo aprobó 33 destinos para `admin_auditor`, 22 para `operator`,
+las siete URLs restringidas, módulos permitidos, Excel/PDF y los cuatro
+viewports sin desbordamiento horizontal. 58D queda aprobado sin reserva por
+deriva de despliegue.
+
+La evidencia y la guía interna están en:
+
+- [`41-bloque-58d-pruebas-integrales-permisos.md`](41-bloque-58d-pruebas-integrales-permisos.md);
+- [`42-guia-operativa-permisos-usuarios.md`](42-guia-operativa-permisos-usuarios.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -200,21 +232,22 @@ aprobaron. La evidencia está en
 | P0-10 | 56A/56C y posteriores | Backup manual comprobado y tarea diaria registrada con inicio manual exitoso; faltan seguimiento de ejecuciones desatendidas, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada de forma sostenida y alerta de fallo |
 | P0-11 | 56B | Restauración real en ambiente aislado (demostrada; faltan pruebas integrales de login y muestras) | Infraestructura + George | Crítica | Restore, tablas, conteos, Alembic, health y cleanup aprobados; login y muestras pasan en pruebas integrales |
 | P0-12 | 55B | Manual de recuperación y responsables | George + infraestructura | Alta | Documento puede seguirse de principio a fin y registra RPO/RTO |
+| P0-13 | 58D-2 | Sincronizar las imágenes productivas con las protecciones 58B y el frontend 58C (cerrado) | Desarrollo + George | Crítica | Aprobado: rebuild autorizado; `operator` recibe `403` en familias sensibles; dashboard 22/33, Excel/PDF, LAN, Tailscale y health pasan sobre las imágenes nuevas |
 
 ## Correcciones recomendadas antes del piloto
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
 | --- | --- | --- | --- | --- | --- |
 | P1-01 | 54/58C | Centralizar guardas y sesión frontend (avance: rutas administrativas del dashboard usan una política y un `layout` común) | Desarrollo | Alta | Todas las rutas usan un único mecanismo y pruebas cubren 401/403 |
-| P1-02 | 58C | Limitar navegación según rol (implementado) | Desarrollo | Alta | Operator solo ve módulos permitidos; backend sigue siendo autoridad |
+| P1-02 | 58C/58D-2 | Limitar navegación según rol (implementado y validado en producción) | Desarrollo | Alta | Aprobado: operator solo ve módulos permitidos; backend sigue siendo autoridad |
 | P1-03 | 54/55A | Rate limit y registro de intentos de login | Desarrollo | Alta | Intentos excesivos se limitan sin bloquear operación legítima |
 | P1-04 | 55A | Restringir documentación OpenAPI | Desarrollo | Media | `/docs` y `/openapi.json` no quedan públicos en producción |
 | P1-05 | 55A | HTTPS local o acceso cifrado equivalente | Infraestructura | Alta | Credenciales/token no viajan en texto claro por red no confiable |
 | P1-06 | 55A | Monitor de contenedores, health, disco y backups | Infraestructura | Alta | Fallos generan aviso útil para George |
 | P1-07 | 55A | UPS y apagado limpio | George + infraestructura | Alta | Corte controlado no corrompe datos; reinicio queda documentado |
 | P1-08 | 55B | Pruebas de integración PostgreSQL | Desarrollo | Alta | Locks, concurrencia, índices parciales y constraints pasan en PostgreSQL |
-| P1-09 | 56 | Smoke E2E | Desarrollo | Media | Login, caja, historial, panel y exportaciones pasan en servidor |
-| P1-10 | 56 | Capacitación y guía de secretaria | George | Alta | Operador completa flujo diario sin acceso administrativo |
+| P1-09 | 56/58D-2 | Smoke E2E por rol en servidor (aprobado) | Desarrollo | Media | Aprobado: login, módulos permitidos, restricciones, panel y exportaciones pasan en servidor |
+| P1-10 | 56/58D | Capacitación y guía de secretaria (guía preparada; capacitación pendiente) | George | Alta | Operador completa flujo diario sin acceso administrativo |
 
 ## Mejoras que pueden esperar
 
@@ -252,6 +285,12 @@ Bloque 56B aprobado: restore aislado demostrado
   |
   v
 Bloque 56C aprobado: backup diario registrado y prueba manual exitosa
+  |
+  v
+Bloques 58A-58D: matriz, backend, frontend y código validados
+  |
+  v
+Bloque 58D-2 aprobado: rebuild y smoke productivo integral por rol
   |
   v
 Pruebas integrales, retención, copia externa y monitoreo
