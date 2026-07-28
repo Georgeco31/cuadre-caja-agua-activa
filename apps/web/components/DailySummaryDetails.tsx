@@ -3,6 +3,7 @@ import {
   formatQuantity,
   formatStatus,
 } from "@/components/DailySummaryCards";
+import { ReportSection } from "@/components/ui/ReportSection";
 import type { DailyOperationalSummary } from "@/types/dailyOperationalSummary";
 
 type DailySummaryDetailsProps = {
@@ -11,40 +12,37 @@ type DailySummaryDetailsProps = {
 
 export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
   return (
-    <section aria-labelledby="daily-details-title" className="space-y-5">
-      <div>
-        <p className="text-sm font-medium text-water-700">Detalle</p>
-        <h2
-          className="mt-1 text-xl font-semibold text-slate-950"
-          id="daily-details-title"
-        >
-          Registros resumidos
-        </h2>
-      </div>
-
-      <div className="grid gap-5 xl:grid-cols-2">
+    <ReportSection
+      description="Tablas de apoyo para contrastar los totales del resumen con sus registros relacionados."
+      eyebrow="Detalle"
+      id="daily-details-title"
+      title="Registros resumidos"
+    >
+      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <DetailPanel title="Productos producidos">
           {report.production_summary.products.length ? (
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <HeaderCell>Producto</HeaderCell>
-                  <HeaderCell>Producido</HeaderCell>
-                  <HeaderCell>Merma</HeaderCell>
-                  <HeaderCell>Neto</HeaderCell>
+                  <HeaderCell numeric>Producido</HeaderCell>
+                  <HeaderCell numeric>Merma</HeaderCell>
+                  <HeaderCell numeric>Neto</HeaderCell>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {report.production_summary.products.map((product) => (
                   <tr key={product.product_id}>
                     <BodyCell>{product.product_name_snapshot}</BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatQuantity(product.quantity_produced)}
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatQuantity(product.quantity_waste)}
                     </BodyCell>
-                    <BodyCell>{formatQuantity(product.quantity_net)}</BodyCell>
+                    <BodyCell numeric>
+                      {formatQuantity(product.quantity_net)}
+                    </BodyCell>
                   </tr>
                 ))}
               </tbody>
@@ -60,16 +58,18 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
                   <HeaderCell>Producto</HeaderCell>
-                  <HeaderCell>Cantidad</HeaderCell>
-                  <HeaderCell>Monto</HeaderCell>
+                  <HeaderCell numeric>Cantidad</HeaderCell>
+                  <HeaderCell numeric>Monto</HeaderCell>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {report.sales_summary.products_sold.map((product) => (
                   <tr key={product.product_id}>
                     <BodyCell>{product.product_name_snapshot}</BodyCell>
-                    <BodyCell>{formatQuantity(product.quantity)}</BodyCell>
-                    <BodyCell>{formatMoney(product.amount)}</BodyCell>
+                    <BodyCell numeric>
+                      {formatQuantity(product.quantity)}
+                    </BodyCell>
+                    <BodyCell numeric>{formatMoney(product.amount)}</BodyCell>
                   </tr>
                 ))}
               </tbody>
@@ -86,7 +86,7 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                 <tr>
                   <HeaderCell>Carga</HeaderCell>
                   <HeaderCell>Ruta / vehículo</HeaderCell>
-                  <HeaderCell>Cantidad</HeaderCell>
+                  <HeaderCell numeric>Cantidad</HeaderCell>
                   <HeaderCell>Estado</HeaderCell>
                 </tr>
               </thead>
@@ -100,7 +100,7 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                         {load.vehicle_name}
                       </span>
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatQuantity(load.total_quantity_loaded)}
                     </BodyCell>
                     <BodyCell>{formatStatus(load.status)}</BodyCell>
@@ -120,7 +120,7 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                 <tr>
                   <HeaderCell>Retorno</HeaderCell>
                   <HeaderCell>Ruta / vehículo</HeaderCell>
-                  <HeaderCell>Cantidad</HeaderCell>
+                  <HeaderCell numeric>Cantidad</HeaderCell>
                   <HeaderCell>Estado</HeaderCell>
                 </tr>
               </thead>
@@ -134,7 +134,7 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                         {routeReturn.vehicle_name}
                       </span>
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatQuantity(routeReturn.total_quantity_returned)}
                     </BodyCell>
                     <BodyCell>{formatStatus(routeReturn.status)}</BodyCell>
@@ -154,9 +154,9 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                 <tr>
                   <HeaderCell>Cierre</HeaderCell>
                   <HeaderCell>Ruta / vehículo</HeaderCell>
-                  <HeaderCell>Esperado</HeaderCell>
-                  <HeaderCell>Entregado</HeaderCell>
-                  <HeaderCell>Diferencia</HeaderCell>
+                  <HeaderCell numeric>Esperado</HeaderCell>
+                  <HeaderCell numeric>Entregado</HeaderCell>
+                  <HeaderCell numeric>Diferencia</HeaderCell>
                   <HeaderCell>Estado</HeaderCell>
                 </tr>
               </thead>
@@ -170,13 +170,13 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                         {closure.vehicle_name_snapshot}
                       </span>
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatMoney(closure.expected_cash_total)}
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatMoney(closure.delivered_cash_total)}
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatMoney(closure.difference_amount)}
                     </BodyCell>
                     <BodyCell>{formatStatus(closure.status)}</BodyCell>
@@ -196,9 +196,9 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                 <tr>
                   <HeaderCell>Registro</HeaderCell>
                   <HeaderCell>Cierre / ruta</HeaderCell>
-                  <HeaderCell>Entregado</HeaderCell>
-                  <HeaderCell>Recibido</HeaderCell>
-                  <HeaderCell>Diferencia</HeaderCell>
+                  <HeaderCell numeric>Entregado</HeaderCell>
+                  <HeaderCell numeric>Recibido</HeaderCell>
+                  <HeaderCell numeric>Diferencia</HeaderCell>
                   <HeaderCell>Estado</HeaderCell>
                 </tr>
               </thead>
@@ -212,11 +212,13 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
                         {receipt.route_name_snapshot}
                       </span>
                     </BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
                       {formatMoney(receipt.delivered_cash_total)}
                     </BodyCell>
-                    <BodyCell>{formatMoney(receipt.received_amount)}</BodyCell>
-                    <BodyCell>
+                    <BodyCell numeric>
+                      {formatMoney(receipt.received_amount)}
+                    </BodyCell>
+                    <BodyCell numeric>
                       {formatMoney(receipt.difference_amount)}
                     </BodyCell>
                     <BodyCell>{formatStatus(receipt.status)}</BodyCell>
@@ -229,7 +231,7 @@ export function DailySummaryDetails({ report }: DailySummaryDetailsProps) {
           )}
         </DetailPanel>
       </div>
-    </section>
+    </ReportSection>
   );
 }
 
@@ -240,29 +242,57 @@ type DetailPanelProps = {
 
 function DetailPanel({ title, children }: DetailPanelProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <h3 className="border-b border-slate-200 px-4 py-3 text-base font-semibold text-slate-950">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+      <h3 className="border-b border-slate-200 bg-slate-50/80 px-4 py-3.5 text-base font-semibold text-slate-950">
         {title}
       </h3>
-      <div className="overflow-x-auto">{children}</div>
+      <div className="max-w-full overflow-x-auto">{children}</div>
     </div>
   );
 }
 
-function HeaderCell({ children }: { children: React.ReactNode }) {
+function HeaderCell({
+  children,
+  numeric = false,
+}: {
+  children: React.ReactNode;
+  numeric?: boolean;
+}) {
   return (
-    <th className="whitespace-nowrap px-4 py-3 font-medium" scope="col">
+    <th
+      className={`whitespace-nowrap px-4 py-3 font-semibold ${
+        numeric ? "text-right" : "text-left"
+      }`}
+      scope="col"
+    >
       {children}
     </th>
   );
 }
 
-function BodyCell({ children }: { children: React.ReactNode }) {
+function BodyCell({
+  children,
+  numeric = false,
+}: {
+  children: React.ReactNode;
+  numeric?: boolean;
+}) {
   return (
-    <td className="whitespace-nowrap px-4 py-3 text-slate-700">{children}</td>
+    <td
+      className={`whitespace-nowrap px-4 py-3 text-slate-700 ${
+        numeric ? "text-right tabular-nums" : ""
+      }`}
+    >
+      {children}
+    </td>
   );
 }
 
 function EmptyDetail({ message }: { message: string }) {
-  return <p className="px-4 py-5 text-sm text-slate-500">{message}</p>;
+  return (
+    <div className="px-4 py-7 text-center">
+      <p className="text-sm font-medium text-slate-700">Sin registros</p>
+      <p className="mt-1 text-sm text-slate-500">{message}</p>
+    </div>
+  );
 }

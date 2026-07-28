@@ -298,12 +298,12 @@ export default function ReportExportsPage() {
 
   return (
     <DashboardShell
-      activeHref="/dashboard/exports"
+      activeHref="/dashboard/reports"
       dateLabel={formatTopbarDate(new Date())}
-      roleLabel="Administrador / auditor"
+      roleLabel={forbidden ? "Operador" : "Administrador / auditor"}
       userName={accountName}
     >
-      <div className="mx-auto flex w-full max-w-screen-2xl flex-col gap-7 px-4 py-7 sm:px-6 sm:py-9 xl:px-8">
+      <div className="mx-auto flex w-full min-w-0 max-w-screen-2xl flex-col gap-7 px-4 py-7 sm:px-6 sm:py-9 xl:gap-9 xl:px-8">
         <PageHeader
           actions={<LogoutButton />}
           description="Descarga reportes detallados en Excel o resúmenes ejecutivos en PDF. Todas las exportaciones conservan sus filtros y son solo lectura."
@@ -344,7 +344,7 @@ export default function ReportExportsPage() {
               </div>
             </ResponsiveToolbar>
 
-            <div className="grid items-start gap-6 xl:grid-cols-2">
+            <div className="grid min-w-0 items-start gap-6 xl:grid-cols-2">
               <ExportSection
                 dateFrom={dateFrom}
                 dateTo={dateTo}
@@ -432,7 +432,7 @@ function ExportSection({
 }: ExportSectionProps) {
   const isPdf = format === "pdf";
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
+    <section className="min-w-0 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-card">
       <div className="border-b border-slate-200 bg-slate-50/80 p-5 sm:p-6">
         <div className="flex items-start gap-4">
           <span
@@ -464,7 +464,7 @@ function ExportSection({
         ) : null}
       </div>
       <form
-        className="space-y-6 p-5 sm:p-6"
+        className="min-w-0 space-y-6 p-5 sm:p-6"
         onSubmit={onSubmit}
       >
         <label className="block">

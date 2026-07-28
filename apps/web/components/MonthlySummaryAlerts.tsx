@@ -1,3 +1,4 @@
+import { ReportSection } from "@/components/ui/ReportSection";
 import type { MonthlyOperationalAlertsSummary } from "@/types/monthlyOperationalSummary";
 
 type MonthlySummaryAlertsProps = {
@@ -22,7 +23,7 @@ export function MonthlySummaryAlerts({
     return (
       <section
         aria-labelledby="monthly-alerts-title"
-        className="rounded-lg border border-emerald-200 bg-emerald-50 p-4"
+        className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5"
       >
         <p className="text-sm font-semibold text-emerald-900">
           Sin alertas operativas
@@ -38,24 +39,16 @@ export function MonthlySummaryAlerts({
   }
 
   return (
-    <section aria-labelledby="monthly-alerts-title" className="space-y-3">
-      <div>
-        <p className="text-sm font-medium text-amber-700">
-          {summary.total_alerts} alerta(s) en{" "}
-          {summary.days_with_alerts_count} día(s)
-        </p>
-        <h2
-          className="mt-1 text-xl font-semibold text-slate-950"
-          id="monthly-alerts-title"
-        >
-          Alertas importantes
-        </h2>
-      </div>
-
+    <ReportSection
+      description={`${summary.total_alerts} alerta(s) en ${summary.days_with_alerts_count} día(s) del período.`}
+      eyebrow="Seguimiento"
+      id="monthly-alerts-title"
+      title="Alertas importantes"
+    >
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {summary.alerts_by_code.map((alert) => (
           <article
-            className="rounded-lg border border-amber-200 bg-amber-50 p-4"
+            className="rounded-2xl border border-amber-200 bg-amber-50 p-4"
             key={alert.code}
           >
             <div className="flex items-start justify-between gap-3">
@@ -72,6 +65,6 @@ export function MonthlySummaryAlerts({
           </article>
         ))}
       </div>
-    </section>
+    </ReportSection>
   );
 }

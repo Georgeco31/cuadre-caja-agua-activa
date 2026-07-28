@@ -437,6 +437,11 @@ Convertir el índice plano en un panel de trabajo diario con jerarquía.
 
 ### 57D - Panel gerencial y reportes
 
+**Estado:** implementado en el frontend y documentado en
+`docs/35-bloque-57d-reportes-gerenciales.md`. La validación técnica local está
+aprobada; la matriz productiva de roles, descargas y responsive se completa
+durante el cierre del bloque.
+
 #### Objetivo
 
 Mejorar lectura de indicadores, alertas, gráficos, resúmenes y exportaciones sin

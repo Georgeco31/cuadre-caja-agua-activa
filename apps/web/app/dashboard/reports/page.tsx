@@ -9,6 +9,10 @@ import { CashSummaryReportCards } from "@/components/CashSummaryReportCards";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
+import { DashboardShell } from "@/components/ui/DashboardShell";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ResponsiveToolbar } from "@/components/ui/ResponsiveToolbar";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { ApiError, getCashSummaryReport } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
 import type {
@@ -91,27 +95,35 @@ export default function ReportsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 py-6">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+    <DashboardShell
+      activeHref="/dashboard/reports"
+      dateLabel={formatTopbarDate(new Date())}
+    >
+      <div className="mx-auto flex w-full min-w-0 max-w-screen-2xl flex-col gap-7 px-4 py-7 sm:px-6 sm:py-9 xl:gap-9 xl:px-8">
+        <PageHeader
+          actions={<LogoutButton />}
+          description="Consulta el acumulado de los cuadres registrados por período y estado, con la composición del efectivo, los gastos y el total final."
+          eyebrow="Reportes y control"
+          meta={
             <Link
-              className="text-sm font-semibold text-water-700 hover:text-water-500"
+              className="inline-flex min-h-10 items-center text-sm font-semibold text-water-700 hover:text-water-600"
               href="/dashboard"
             >
-              Volver al dashboard
+              ← Volver al dashboard
             </Link>
-            <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              Resumen acumulado de caja
-            </h1>
-          </div>
-          <LogoutButton />
-        </header>
+          }
+          title="Resumen acumulado de caja"
+        />
 
-        <p className="rounded-md border border-water-100 bg-water-50 px-4 py-3 text-sm leading-6 text-water-800">
-          Este reporte resume los cuadres registrados. No representa ventas
-          reales si el dinero de caja se arrastra entre dias.
-        </p>
+        <ResponsiveToolbar>
+          <div className="flex items-start gap-3">
+            <StatusBadge label="Solo lectura" tone="success" />
+            <p className="max-w-3xl text-sm leading-6 text-slate-600">
+              Este reporte resume los cuadres registrados. No representa ventas
+              reales si el dinero de caja se arrastra entre días.
+            </p>
+          </div>
+        </ResponsiveToolbar>
 
         <CashSummaryFilters
           filters={filters}
@@ -129,8 +141,16 @@ export default function ReportsPage() {
           <CashSummaryReportCards report={report} />
         ) : null}
       </div>
-    </main>
+    </DashboardShell>
   );
+}
+
+function formatTopbarDate(value: Date): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(value);
 }
 
 function getErrorMessage(possibleError: unknown): string {

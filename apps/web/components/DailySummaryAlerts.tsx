@@ -1,3 +1,4 @@
+import { ReportSection } from "@/components/ui/ReportSection";
 import type { DailyOperationalAlert } from "@/types/dailyOperationalSummary";
 
 type DailySummaryAlertsProps = {
@@ -18,26 +19,24 @@ const alertLabels = {
 
 export function DailySummaryAlerts({ alerts }: DailySummaryAlertsProps) {
   return (
-    <section aria-labelledby="daily-alerts-title" className="space-y-3">
-      <div>
-        <p className="text-sm font-medium text-water-700">Seguimiento</p>
-        <h2
-          className="mt-1 text-xl font-semibold text-slate-950"
-          id="daily-alerts-title"
-        >
-          Alertas del día
-        </h2>
-      </div>
-
+    <ReportSection
+      description="Avisos derivados de los registros disponibles para la fecha consultada."
+      eyebrow="Seguimiento"
+      id="daily-alerts-title"
+      title="Alertas del día"
+    >
       {alerts.length === 0 ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          No hay alertas operativas para esta fecha.
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+          <p className="font-semibold">Sin alertas operativas</p>
+          <p className="mt-1 leading-6 text-emerald-800">
+            No hay alertas operativas para esta fecha.
+          </p>
         </div>
       ) : (
         <div className="grid gap-3 lg:grid-cols-2">
           {alerts.map((alert) => (
             <div
-              className={`rounded-lg border px-4 py-3 ${alertStyles[alert.type]}`}
+              className={`rounded-2xl border px-5 py-4 ${alertStyles[alert.type]}`}
               key={alert.code}
             >
               <p className="text-xs font-semibold uppercase tracking-wide">
@@ -48,6 +47,6 @@ export function DailySummaryAlerts({ alerts }: DailySummaryAlertsProps) {
           ))}
         </div>
       )}
-    </section>
+    </ReportSection>
   );
 }

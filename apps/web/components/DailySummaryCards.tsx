@@ -1,5 +1,6 @@
-import type { ReactNode } from "react";
-
+import { MetricGrid } from "@/components/ui/MetricGrid";
+import { ReportSection } from "@/components/ui/ReportSection";
+import { StatCard } from "@/components/ui/StatCard";
 import type { DailyOperationalSummary } from "@/types/dailyOperationalSummary";
 
 type DailySummaryCardsProps = {
@@ -17,157 +18,149 @@ export function DailySummaryCards({ report }: DailySummaryCardsProps) {
   const { receivables_summary: receivables } = report;
 
   return (
-    <div className="space-y-8">
-      <SummarySection eyebrow="Caja" title="Estado del cuadre">
-        <MetricCard
+    <div className="min-w-0 space-y-8">
+      <ReportSection
+        description="Estado y resultado del cuadre registrado para la fecha."
+        eyebrow="Caja"
+        id="daily-cash-summary-title"
+        title="Estado del cuadre"
+      >
+        <MetricGrid columns="five">
+        <StatCard
           label="Estado del cuadre"
           value={formatCashStatus(
             cash.cash_session_exists,
             cash.cash_session_status,
           )}
         />
-        <MetricCard
+        <StatCard
           label="Total contado"
           value={formatMoney(cash.total_counted)}
         />
-        <MetricCard label="Gastos" value={formatMoney(cash.total_expenses)} />
-        <MetricCard
+        <StatCard label="Gastos" value={formatMoney(cash.total_expenses)} />
+        <StatCard
           label="Total final"
+          tone="water"
           value={formatMoney(cash.total_final)}
         />
-        <MetricCard
+        <StatCard
           label="Dinero de rutas en caja"
-          note={`${cash.route_cash_receipts_count} registro(s) activo(s)`}
+          hint={`${cash.route_cash_receipts_count} registro(s) activo(s)`}
           value={formatMoney(cash.route_cash_receipts_total)}
         />
-      </SummarySection>
+        </MetricGrid>
+      </ReportSection>
 
-      <SummarySection eyebrow="Producción" title="Producción y merma">
-        <MetricCard
+      <ReportSection
+        eyebrow="Producción"
+        id="daily-production-summary-title"
+        title="Producción y merma"
+      >
+        <MetricGrid>
+        <StatCard
           label="Producciones activas"
-          note={`${production.voided_production_batches_count} anulada(s)`}
+          hint={`${production.voided_production_batches_count} anulada(s)`}
           value={String(production.active_production_batches_count)}
         />
-        <MetricCard
+        <StatCard
           label="Cantidad producida"
           value={formatQuantity(production.total_quantity_produced)}
         />
-        <MetricCard
+        <StatCard
           label="Merma"
           value={formatQuantity(production.total_quantity_waste)}
         />
-        <MetricCard
+        <StatCard
           label="Neto producido"
+          tone="water"
           value={formatQuantity(production.total_quantity_net)}
         />
-      </SummarySection>
+        </MetricGrid>
+      </ReportSection>
 
-      <SummarySection eyebrow="Rutas" title="Movimiento y cierre de rutas">
-        <MetricCard
+      <ReportSection
+        eyebrow="Rutas"
+        id="daily-routes-summary-title"
+        title="Movimiento y cierre de rutas"
+      >
+        <MetricGrid columns="four">
+        <StatCard
           label="Cargas activas"
           value={String(loads.active_route_loads_count)}
         />
-        <MetricCard
+        <StatCard
           label="Retornos activos"
           value={String(returns.active_route_returns_count)}
         />
-        <MetricCard
+        <StatCard
           label="Cierres activos"
           value={String(closures.active_route_closures_count)}
         />
-        <MetricCard
+        <StatCard
           label="Efectivo esperado"
           value={formatMoney(closures.expected_cash_total)}
         />
-        <MetricCard
+        <StatCard
           label="Efectivo entregado"
           value={formatMoney(closures.delivered_cash_total)}
         />
-        <MetricCard
+        <StatCard
           label="Diferencia rutas"
           value={formatMoney(closures.difference_total)}
         />
-        <MetricCard
+        <StatCard
           label="Dinero registrado en caja"
-          note={`${receipts.active_receipts_count} registro(s) activo(s)`}
+          hint={`${receipts.active_receipts_count} registro(s) activo(s)`}
+          tone="water"
           value={formatMoney(receipts.received_amount_total)}
         />
-      </SummarySection>
+        </MetricGrid>
+      </ReportSection>
 
-      <SummarySection eyebrow="Comercial" title="Ventas y cobros">
-        <MetricCard
+      <ReportSection
+        eyebrow="Comercial"
+        id="daily-commercial-summary-title"
+        title="Ventas y cobros"
+      >
+        <MetricGrid>
+        <StatCard
           label="Ventas contado"
-          note={`${sales.cash_sales_count} venta(s)`}
+          hint={`${sales.cash_sales_count} venta(s)`}
           value={formatMoney(sales.cash_sales_total)}
         />
-        <MetricCard
+        <StatCard
           label="Ventas crédito"
-          note={`${sales.credit_sales_count} venta(s)`}
+          hint={`${sales.credit_sales_count} venta(s)`}
           value={formatMoney(sales.credit_sales_total)}
         />
-        <MetricCard
+        <StatCard
           label="Cobros"
-          note={`${receivables.payments_count} cobro(s)`}
+          hint={`${receivables.payments_count} cobro(s)`}
           value={formatMoney(receivables.payments_total)}
         />
-        <MetricCard
+        <StatCard
           label="Total ventas"
+          tone="water"
           value={formatMoney(sales.total_sales_amount)}
         />
-      </SummarySection>
+        </MetricGrid>
+      </ReportSection>
 
-      <div className="rounded-lg border border-water-100 bg-water-50 px-4 py-4 text-water-900">
-        <p className="text-sm font-medium">Flujo de efectivo de referencia</p>
-        <p className="mt-1 text-2xl font-semibold">
+      <div className="rounded-2xl border border-water-100 bg-water-50 px-5 py-5 text-water-900 shadow-card sm:px-6">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-water-700">
+          Referencia operativa
+        </p>
+        <p className="mt-2 text-sm font-semibold">
+          Flujo de efectivo de referencia
+        </p>
+        <p className="mt-2 break-words text-3xl font-semibold tabular-nums tracking-tight">
           {formatMoney(report.totals.total_business_cash_inflow_reference)}
         </p>
-        <p className="mt-2 text-sm leading-6 text-water-800">
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-water-800">
           Suma ventas de contado, cobros y dinero de rutas registrado. Es una
           referencia operativa y no reemplaza el total oficial del cuadre.
         </p>
       </div>
-    </div>
-  );
-}
-
-type SummarySectionProps = {
-  eyebrow: string;
-  title: string;
-  children: ReactNode;
-};
-
-function SummarySection({
-  eyebrow,
-  title,
-  children,
-}: SummarySectionProps) {
-  return (
-    <section className="space-y-3">
-      <div>
-        <p className="text-sm font-medium text-water-700">{eyebrow}</p>
-        <h2 className="mt-1 text-xl font-semibold text-slate-950">{title}</h2>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-type MetricCardProps = {
-  label: string;
-  value: string;
-  note?: string;
-};
-
-function MetricCard({ label, value, note }: MetricCardProps) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-sm text-slate-600">{label}</p>
-      <p className="mt-2 break-words text-lg font-semibold text-slate-950">
-        {value}
-      </p>
-      {note ? <p className="mt-1 text-xs text-slate-500">{note}</p> : null}
     </div>
   );
 }

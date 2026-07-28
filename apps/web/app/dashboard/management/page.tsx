@@ -7,6 +7,12 @@ import { useRouter } from "next/navigation";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
+import { DashboardShell } from "@/components/ui/DashboardShell";
+import { MetricGrid } from "@/components/ui/MetricGrid";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { ReportSection } from "@/components/ui/ReportSection";
+import { StatCard } from "@/components/ui/StatCard";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   ApiError,
   downloadFile,
@@ -44,6 +50,7 @@ export default function ManagementDashboardPage() {
     "xlsx" | "pdf" | null
   >(null);
   const [forbidden, setForbidden] = useState(false);
+  const [accountName, setAccountName] = useState("Agua Activa");
 
   useEffect(() => {
     const storedToken = getToken();
@@ -59,6 +66,7 @@ export default function ManagementDashboardPage() {
     try {
       const currentUser = await getCurrentUser(activeToken);
       saveUser(currentUser);
+      setAccountName(currentUser.username);
       if (currentUser.role !== "admin_auditor") {
         setForbidden(true);
         setIsLoading(false);
@@ -173,32 +181,33 @@ export default function ManagementDashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-7 px-4 py-6 sm:px-6">
-        <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <Link
-              className="text-sm font-semibold text-water-700 hover:text-water-500"
-              href="/dashboard"
-            >
-              Volver al dashboard
-            </Link>
-            <p className="mt-4 text-sm font-medium text-water-700">
-              Agua Activa
-            </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
-              Panel gerencial
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Indicadores generales de Agua Activa por período. Este panel es
-              solo lectura.
-            </p>
-          </div>
-          <LogoutButton />
-        </header>
+    <DashboardShell
+      activeHref="/dashboard/reports"
+      dateLabel={formatTopbarDate(new Date())}
+      roleLabel={forbidden ? "Operador" : "Administrador / auditor"}
+      userName={accountName}
+    >
+      <div className="mx-auto flex w-full min-w-0 max-w-screen-2xl flex-col gap-7 px-4 py-7 sm:px-6 sm:py-9 xl:gap-9 xl:px-8">
+        <PageHeader
+          actions={<LogoutButton />}
+          description="Indicadores, alertas y tendencias generales de Agua Activa por período. Este panel es solo lectura."
+          eyebrow="Reportes y control"
+          meta={
+            <div className="flex flex-wrap items-center gap-3">
+              <StatusBadge label="Acceso restringido" tone="info" />
+              <Link
+                className="inline-flex min-h-10 items-center text-sm font-semibold text-water-700 hover:text-water-600"
+                href="/dashboard"
+              >
+                ← Volver al dashboard
+              </Link>
+            </div>
+          }
+          title="Panel gerencial"
+        />
 
         {forbidden ? (
-          <section className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
             <h2 className="text-lg font-semibold text-amber-950">
               No tienes permisos
             </h2>
@@ -210,32 +219,32 @@ export default function ManagementDashboardPage() {
 
         {!forbidden ? (
           <>
-        <ManagementFilters
-          disabled={isLoading || exportingFormat !== null}
-          exportingFormat={exportingFormat}
-          filters={filters}
-          onChange={setFilters}
-          onCurrentMonth={handleCurrentMonth}
-          onExport={handleExport}
-          onSubmit={handleSubmit}
-        />
+            <ManagementFilters
+              disabled={isLoading || exportingFormat !== null}
+              exportingFormat={exportingFormat}
+              filters={filters}
+              onChange={setFilters}
+              onCurrentMonth={handleCurrentMonth}
+              onExport={handleExport}
+              onSubmit={handleSubmit}
+            />
 
-        {error ? <ErrorMessage message={error} /> : null}
+            {error ? <ErrorMessage message={error} /> : null}
 
-        {isLoading ? (
-          <LoadingState label="Cargando indicadores gerenciales..." />
-        ) : report ? (
-          <ManagementDashboardContent report={report} />
-        ) : null}
+            {isLoading ? (
+              <LoadingState label="Cargando indicadores gerenciales..." />
+            ) : report ? (
+              <ManagementDashboardContent report={report} />
+            ) : null}
 
-        <p className="rounded-lg border border-water-100 bg-water-50 px-4 py-3 text-sm leading-6 text-water-900">
-          Este panel no modifica información. Los valores son informativos y
-          dependen de los registros ingresados en cada módulo.
-        </p>
+            <p className="rounded-2xl border border-water-100 bg-water-50 px-5 py-4 text-sm leading-6 text-water-900">
+              Este panel no modifica información. Los valores son informativos
+              y dependen de los registros ingresados en cada módulo.
+            </p>
           </>
         ) : null}
       </div>
-    </main>
+    </DashboardShell>
   );
 }
 
@@ -260,52 +269,62 @@ function ManagementFilters({
 }: ManagementFiltersProps) {
   return (
     <form
-      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto_auto_auto_auto] xl:items-end"
+      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:p-5"
       onSubmit={onSubmit}
     >
-      <DateInput
-        disabled={disabled}
-        label="Fecha desde"
-        onChange={(value) => onChange({ ...filters, date_from: value })}
-        value={filters.date_from ?? ""}
-      />
-      <DateInput
-        disabled={disabled}
-        label="Fecha hasta"
-        onChange={(value) => onChange({ ...filters, date_to: value })}
-        value={filters.date_to ?? ""}
-      />
-      <button
-        className="h-10 rounded-md bg-water-700 px-5 text-sm font-semibold text-white transition hover:bg-water-500 disabled:cursor-not-allowed disabled:bg-slate-300"
-        disabled={disabled}
-        type="submit"
-      >
-        Consultar
-      </button>
-      <button
-        className="h-10 rounded-md border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
-        disabled={disabled}
-        onClick={onCurrentMonth}
-        type="button"
-      >
-        Mes actual
-      </button>
-      <button
-        className="h-10 rounded-md border border-emerald-600 bg-emerald-50 px-5 text-sm font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
-        disabled={disabled}
-        onClick={() => onExport("xlsx")}
-        type="button"
-      >
-        {exportingFormat === "xlsx" ? "Exportando..." : "Exportar Excel"}
-      </button>
-      <button
-        className="h-10 rounded-md border border-slate-700 bg-slate-50 px-5 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
-        disabled={disabled}
-        onClick={() => onExport("pdf")}
-        type="button"
-      >
-        {exportingFormat === "pdf" ? "Exportando..." : "Exportar PDF"}
-      </button>
+      <div>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-water-700">
+          Período y exportación
+        </p>
+        <h2 className="mt-1 text-lg font-semibold text-slate-950">
+          Ajusta el rango del panel
+        </h2>
+      </div>
+      <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(180px,1fr)_minmax(180px,1fr)_auto_auto_auto_auto] xl:items-end">
+        <DateInput
+          disabled={disabled}
+          label="Fecha desde"
+          onChange={(value) => onChange({ ...filters, date_from: value })}
+          value={filters.date_from ?? ""}
+        />
+        <DateInput
+          disabled={disabled}
+          label="Fecha hasta"
+          onChange={(value) => onChange({ ...filters, date_to: value })}
+          value={filters.date_to ?? ""}
+        />
+        <button
+          className="min-h-11 rounded-xl bg-water-700 px-5 text-sm font-semibold text-white shadow-water transition hover:bg-water-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+          disabled={disabled}
+          type="submit"
+        >
+          Consultar
+        </button>
+        <button
+          className="min-h-11 rounded-xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:border-water-500 hover:text-water-700 disabled:cursor-not-allowed disabled:text-slate-400"
+          disabled={disabled}
+          onClick={onCurrentMonth}
+          type="button"
+        >
+          Mes actual
+        </button>
+        <button
+          className="min-h-11 rounded-xl border border-water-200 bg-water-50 px-5 text-sm font-semibold text-water-800 transition hover:border-water-500 hover:bg-water-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+          disabled={disabled}
+          onClick={() => onExport("xlsx")}
+          type="button"
+        >
+          {exportingFormat === "xlsx" ? "Exportando..." : "Exportar Excel"}
+        </button>
+        <button
+          className="min-h-11 rounded-xl border border-slate-300 bg-slate-50 px-5 text-sm font-semibold text-slate-800 transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+          disabled={disabled}
+          onClick={() => onExport("pdf")}
+          type="button"
+        >
+          {exportingFormat === "pdf" ? "Exportando..." : "Exportar PDF"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -322,10 +341,10 @@ function DateInput({
   value: string;
 }) {
   return (
-    <label className="block">
-      <span className="text-sm font-medium text-slate-700">{label}</span>
+    <label className="block min-w-0">
+      <span className="text-sm font-semibold text-slate-800">{label}</span>
       <input
-        className="mt-1 h-10 w-full rounded-md border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+        className="mt-2 h-11 w-full min-w-0 rounded-xl border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         type="date"
@@ -360,31 +379,31 @@ function ManagementDashboardContent({
       label: "Cobros recibidos",
       value: formatMoney(report.receivables.payments_total),
       note: "Cobros activos del período",
-      tone: "emerald",
+      tone: "neutral",
     },
     {
       label: "Cartera pendiente",
       value: formatMoney(report.receivables.pending_balance_total),
       note: `${report.receivables.customers_with_balance_count} cliente(s) con saldo`,
-      tone: "amber",
+      tone: "warning",
     },
     {
       label: "Caja final",
       value: formatMoney(report.cash.cash_final_total),
       note: `${report.cash.cash_sessions_count} cuadre(s)`,
-      tone: "slate",
+      tone: "neutral",
     },
     {
       label: "Gastos operativos",
       value: formatMoney(report.operating_expenses.operating_expenses_total),
       note: `${report.operating_expenses.voided_expenses_count} anulado(s) excluido(s)`,
-      tone: "rose",
+      tone: "neutral",
     },
     {
       label: "Compras",
       value: formatMoney(report.purchases.purchases_total),
       note: `${report.purchases.active_purchases_count} compra(s) activa(s)`,
-      tone: "indigo",
+      tone: "neutral",
     },
     {
       label: "Producción total",
@@ -392,33 +411,33 @@ function ManagementDashboardContent({
         report.production.production_items_total_quantity,
       ),
       note: `${report.production.production_batches_count} producción(es) activa(s)`,
-      tone: "cyan",
+      tone: "neutral",
     },
     {
       label: "Nómina neta calculada",
       value: formatMoney(report.payroll.net_pay_total),
       note: `${report.payroll.payroll_runs_count} rol(es) activo(s)`,
-      tone: "violet",
+      tone: "neutral",
     },
   ] as const;
 
   return (
-    <div className="space-y-9">
-      <div className="flex flex-col gap-1 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-w-0 space-y-9">
+      <div className="flex flex-col gap-2 rounded-2xl border border-water-100 bg-water-50 px-4 py-3 text-sm text-water-900 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <span>
           Período:{" "}
-          <strong className="font-semibold text-slate-900">
+          <strong className="font-semibold">
             {formatDate(report.period.date_from)} —{" "}
             {formatDate(report.period.date_to)}
           </strong>
         </span>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs font-medium text-water-700">
           Montos informativos en dólares
         </span>
       </div>
 
       {!hasPeriodActivity ? (
-        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center">
+        <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-9 text-center">
           <p className="font-semibold text-slate-900">
             No hay movimientos en el período seleccionado
           </p>
@@ -429,18 +448,24 @@ function ManagementDashboardContent({
         </div>
       ) : null}
 
-      <section aria-labelledby="management-summary-title" className="space-y-4">
-        <SectionHeading
-          eyebrow="Resumen ejecutivo"
-          id="management-summary-title"
-          title="Indicadores principales"
-        />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <ReportSection
+        description="Valores consolidados de las áreas incluidas en el panel."
+        eyebrow="Resumen ejecutivo"
+        id="management-summary-title"
+        title="Indicadores principales"
+      >
+        <MetricGrid>
           {primaryCards.map((card) => (
-            <PrimaryMetricCard key={card.label} {...card} />
+            <StatCard
+              hint={card.note}
+              key={card.label}
+              label={card.label}
+              tone={card.tone}
+              value={card.value}
+            />
           ))}
-        </div>
-      </section>
+        </MetricGrid>
+      </ReportSection>
 
       <ManagementAlerts alerts={report.alerts} />
       <ManagementChartsSection report={report} />
@@ -449,64 +474,22 @@ function ManagementDashboardContent({
   );
 }
 
-function PrimaryMetricCard({
-  label,
-  value,
-  note,
-  tone,
-}: {
-  label: string;
-  value: string;
-  note: string;
-  tone:
-    | "water"
-    | "emerald"
-    | "amber"
-    | "slate"
-    | "rose"
-    | "indigo"
-    | "cyan"
-    | "violet";
-}) {
-  const toneClasses = {
-    water: "border-water-100 bg-water-50 text-water-900",
-    emerald: "border-emerald-100 bg-emerald-50 text-emerald-950",
-    amber: "border-amber-100 bg-amber-50 text-amber-950",
-    slate: "border-slate-200 bg-white text-slate-950",
-    rose: "border-rose-100 bg-rose-50 text-rose-950",
-    indigo: "border-indigo-100 bg-indigo-50 text-indigo-950",
-    cyan: "border-cyan-100 bg-cyan-50 text-cyan-950",
-    violet: "border-violet-100 bg-violet-50 text-violet-950",
-  };
-  return (
-    <article
-      className={`rounded-xl border p-4 shadow-sm ${toneClasses[tone]}`}
-    >
-      <p className="text-sm font-medium opacity-75">{label}</p>
-      <p className="mt-2 break-words text-2xl font-semibold tracking-tight">
-        {value}
-      </p>
-      <p className="mt-2 text-xs leading-5 opacity-70">{note}</p>
-    </article>
-  );
-}
-
 function ManagementAlerts({ alerts }: { alerts: ManagementAlert[] }) {
   return (
-    <section aria-labelledby="management-alerts-title" className="space-y-4">
-      <SectionHeading
-        eyebrow="Atención"
-        id="management-alerts-title"
-        title="Alertas gerenciales"
-      />
+    <ReportSection
+      description="Indicadores reales que requieren seguimiento en los datos consultados."
+      eyebrow="Atención"
+      id="management-alerts-title"
+      title="Alertas gerenciales"
+    >
       {alerts.length ? (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {alerts.map((alert) => (
             <article
               className={
                 alert.type === "warning"
-                  ? "rounded-xl border border-amber-200 bg-amber-50 p-4"
-                  : "rounded-xl border border-sky-200 bg-sky-50 p-4"
+                  ? "rounded-2xl border border-amber-200 bg-amber-50 p-5"
+                  : "rounded-2xl border border-water-100 bg-water-50 p-5"
               }
               key={alert.title}
             >
@@ -515,7 +498,7 @@ function ManagementAlerts({ alerts }: { alerts: ManagementAlert[] }) {
                   className={
                     alert.type === "warning"
                       ? "font-semibold text-amber-950"
-                      : "font-semibold text-sky-950"
+                      : "font-semibold text-water-900"
                   }
                 >
                   {alert.title}
@@ -524,7 +507,7 @@ function ManagementAlerts({ alerts }: { alerts: ManagementAlert[] }) {
                   className={
                     alert.type === "warning"
                       ? "rounded-full bg-amber-200 px-2.5 py-1 text-xs font-bold text-amber-950"
-                      : "rounded-full bg-sky-200 px-2.5 py-1 text-xs font-bold text-sky-950"
+                      : "rounded-full bg-water-100 px-2.5 py-1 text-xs font-bold text-water-900"
                   }
                 >
                   {alert.count}
@@ -534,7 +517,7 @@ function ManagementAlerts({ alerts }: { alerts: ManagementAlert[] }) {
                 className={
                   alert.type === "warning"
                     ? "mt-2 text-sm leading-6 text-amber-900"
-                    : "mt-2 text-sm leading-6 text-sky-900"
+                    : "mt-2 text-sm leading-6 text-water-800"
                 }
               >
                 {alert.message}
@@ -543,11 +526,14 @@ function ManagementAlerts({ alerts }: { alerts: ManagementAlert[] }) {
           ))}
         </div>
       ) : (
-        <p className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-5 text-sm text-emerald-900">
-          No se detectaron alertas gerenciales para los datos consultados.
-        </p>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+          <p className="font-semibold">Sin alertas gerenciales</p>
+          <p className="mt-1 leading-6 text-emerald-800">
+            No se detectaron alertas para los datos consultados.
+          </p>
+        </div>
       )}
-    </section>
+    </ReportSection>
   );
 }
 
@@ -557,26 +543,26 @@ function ManagementChartsSection({
   report: ManagementDashboard;
 }) {
   return (
-    <section aria-labelledby="management-charts-title" className="space-y-4">
-      <SectionHeading
-        eyebrow="Tendencias"
-        id="management-charts-title"
-        title="Gráficos del período"
-      />
-      <div className="grid gap-5 xl:grid-cols-2">
+    <ReportSection
+      description="Series del período y distribuciones disponibles en el reporte gerencial."
+      eyebrow="Tendencias"
+      id="management-charts-title"
+      title="Gráficos del período"
+    >
+      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <GroupedBarChart
           labels={[
-            ["cash_sales_total", "Contado", "bg-water-700"],
-            ["credit_sales_total", "Crédito", "bg-indigo-500"],
-            ["payments_total", "Cobros", "bg-emerald-500"],
+            ["cash_sales_total", "Contado", "bg-water-800"],
+            ["credit_sales_total", "Crédito", "bg-water-500"],
+            ["payments_total", "Cobros", "bg-slate-400"],
           ]}
           points={report.charts.daily_sales}
           title="Ventas y cobros por día"
         />
         <GroupedBarChart
           labels={[
-            ["cash_total_counted", "Contado", "bg-water-700"],
-            ["cash_final_total", "Caja final", "bg-sky-400"],
+            ["cash_total_counted", "Contado", "bg-water-800"],
+            ["cash_final_total", "Caja final", "bg-water-500"],
           ]}
           points={report.charts.daily_cash}
           title="Caja por día"
@@ -586,9 +572,9 @@ function ManagementChartsSection({
             [
               "operating_expenses_total",
               "Gastos operativos",
-              "bg-rose-500",
+              "bg-water-700",
             ],
-            ["cash_expenses_total", "Gastos de caja", "bg-amber-500"],
+            ["cash_expenses_total", "Gastos de caja", "bg-slate-400"],
           ]}
           points={report.charts.daily_expenses}
           title="Gastos por día"
@@ -602,7 +588,7 @@ function ManagementChartsSection({
           title="Producción por producto"
           valueFormatter={formatQuantity}
         />
-        <div className="xl:col-span-2">
+        <div className="min-w-0 xl:col-span-2">
           <HorizontalBarChart
             items={report.charts.purchases_by_supplier.map((item) => ({
               id: item.supplier_id,
@@ -614,7 +600,7 @@ function ManagementChartsSection({
           />
         </div>
       </div>
-    </section>
+    </ReportSection>
   );
 }
 
@@ -634,7 +620,7 @@ function GroupedBarChart({
   );
   const maximum = Math.max(...values, 0);
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:p-5">
       <h3 className="font-semibold text-slate-950">{title}</h3>
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
         {labels.map(([, label, color]) => (
@@ -695,7 +681,7 @@ function HorizontalBarChart({
 }) {
   const maximum = Math.max(...items.map((item) => toChartNumber(item.value)), 0);
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-card sm:p-5">
       <h3 className="font-semibold text-slate-950">{title}</h3>
       {items.length ? (
         <div className="mt-5 space-y-4">
@@ -739,13 +725,13 @@ function ChartEmptyState() {
 
 function ManagementDetails({ report }: { report: ManagementDashboard }) {
   return (
-    <section aria-labelledby="management-details-title" className="space-y-4">
-      <SectionHeading
-        eyebrow="Detalle"
-        id="management-details-title"
-        title="Indicadores por módulo"
-      />
-      <div className="grid gap-5 xl:grid-cols-2">
+    <ReportSection
+      description="Desglose de los mismos datos consolidados, organizado por área del ERP."
+      eyebrow="Detalle"
+      id="management-details-title"
+      title="Indicadores por módulo"
+    >
+      <div className="grid min-w-0 gap-5 xl:grid-cols-2">
         <DetailPanel title="Caja">
           <DetailGrid>
             <DetailMetric
@@ -905,7 +891,7 @@ function ManagementDetails({ report }: { report: ManagementDashboard }) {
           </DetailGrid>
         </DetailPanel>
       </div>
-    </section>
+    </ReportSection>
   );
 }
 
@@ -917,7 +903,7 @@ function DetailPanel({
   title: string;
 }) {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="min-w-0 rounded-2xl border border-slate-200 bg-white p-5 shadow-card">
       <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
       <div className="mt-4">{children}</div>
     </article>
@@ -932,7 +918,9 @@ function DetailMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="text-xs leading-5 text-slate-500">{label}</dt>
-      <dd className="mt-1 break-words font-semibold text-slate-900">{value}</dd>
+      <dd className="mt-1 break-words font-semibold tabular-nums text-slate-900">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -1011,25 +999,6 @@ function LowStockList({ items }: { items: ManagementLowStockItem[] }) {
   );
 }
 
-function SectionHeading({
-  eyebrow,
-  id,
-  title,
-}: {
-  eyebrow: string;
-  id: string;
-  title: string;
-}) {
-  return (
-    <div>
-      <p className="text-sm font-medium text-water-700">{eyebrow}</p>
-      <h2 className="mt-1 text-xl font-semibold text-slate-950" id={id}>
-        {title}
-      </h2>
-    </div>
-  );
-}
-
 function getCurrentMonthFilters(): ManagementDashboardFilters {
   const now = new Date();
   const year = now.getFullYear();
@@ -1074,6 +1043,14 @@ function formatDate(value: string): string {
 function formatShortDate(value: string): string {
   const [, month, day] = value.split("-");
   return month && day ? `${day}/${month}` : value;
+}
+
+function formatTopbarDate(value: Date): string {
+  return new Intl.DateTimeFormat("es-EC", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(value);
 }
 
 function getErrorMessage(possibleError: unknown): string {

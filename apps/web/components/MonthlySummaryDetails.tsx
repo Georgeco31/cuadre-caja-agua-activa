@@ -2,6 +2,7 @@ import {
   formatMoney,
   formatQuantity,
 } from "@/components/DailySummaryCards";
+import { ReportSection } from "@/components/ui/ReportSection";
 import type {
   MonthlyOperationalDailyRow,
   MonthlyOperationalSummary,
@@ -26,19 +27,14 @@ export function MonthlySummaryDetails({
   report,
 }: MonthlySummaryDetailsProps) {
   return (
-    <div className="space-y-8">
-      <section aria-labelledby="monthly-products-title" className="space-y-4">
-        <div>
-          <p className="text-sm font-medium text-water-700">Productos</p>
-          <h2
-            className="mt-1 text-xl font-semibold text-slate-950"
-            id="monthly-products-title"
-          >
-            Producción y ventas por producto
-          </h2>
-        </div>
-
-        <div className="grid gap-5 xl:grid-cols-2">
+    <div className="min-w-0 space-y-8">
+      <ReportSection
+        description="Desglose de cantidades producidas y ventas registradas durante el mes."
+        eyebrow="Productos"
+        id="monthly-products-title"
+        title="Producción y ventas por producto"
+      >
+        <div className="grid min-w-0 gap-5 xl:grid-cols-2">
           <ProductPanel title="Productos producidos">
             {report.production_summary.products.length ? (
               <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
@@ -97,30 +93,21 @@ export function MonthlySummaryDetails({
             )}
           </ProductPanel>
         </div>
-      </section>
+      </ReportSection>
 
-      <section aria-labelledby="monthly-days-title" className="space-y-4">
-        <div>
-          <p className="text-sm font-medium text-water-700">Detalle diario</p>
-          <h2
-            className="mt-1 text-xl font-semibold text-slate-950"
-            id="monthly-days-title"
-          >
-            Comportamiento por día
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">
-            El reporte incluye los {report.period.days_in_month} días del mes,
-            incluso cuando no hubo registros.
-          </p>
-        </div>
-
+      <ReportSection
+        description={`El reporte incluye los ${report.period.days_in_month} días del mes, incluso cuando no hubo registros.`}
+        eyebrow="Detalle diario"
+        id="monthly-days-title"
+        title="Comportamiento por día"
+      >
         <div className="space-y-3 md:hidden">
           {report.daily_rows.map((row) => (
             <DailyCard key={row.date} row={row} />
           ))}
         </div>
 
-        <div className="hidden overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm md:block">
+        <div className="hidden max-w-full overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-card md:block">
           <table className="w-full min-w-[1480px] border-collapse text-left text-sm">
             <thead className="bg-slate-100 text-slate-700">
               <tr>
@@ -162,14 +149,14 @@ export function MonthlySummaryDetails({
             </tbody>
           </table>
         </div>
-      </section>
+      </ReportSection>
     </div>
   );
 }
 
 function DailyCard({ row }: { row: MonthlyOperationalDailyRow }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-semibold text-slate-950">
@@ -223,9 +210,11 @@ function DailyCard({ row }: { row: MonthlyOperationalDailyRow }) {
 
 function DailyMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="min-w-0">
       <dt className="text-xs text-slate-500">{label}</dt>
-      <dd className="mt-0.5 font-medium text-slate-900">{value}</dd>
+      <dd className="mt-0.5 break-words font-medium tabular-nums text-slate-900">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -257,11 +246,11 @@ function ProductPanel({
   children: React.ReactNode;
 }) {
   return (
-    <article className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
-      <h3 className="border-b border-slate-200 px-4 py-3 font-semibold text-slate-950">
+    <article className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card">
+      <h3 className="border-b border-slate-200 bg-slate-50/80 px-4 py-3.5 font-semibold text-slate-950">
         {title}
       </h3>
-      <div className="overflow-x-auto">{children}</div>
+      <div className="max-w-full overflow-x-auto">{children}</div>
     </article>
   );
 }
@@ -285,11 +274,20 @@ function Cell({
 }
 
 function MoneyCell({ value }: { value: string }) {
-  return <Cell className="whitespace-nowrap">{formatMoney(value)}</Cell>;
+  return (
+    <Cell className="whitespace-nowrap text-right tabular-nums">
+      {formatMoney(value)}
+    </Cell>
+  );
 }
 
 function EmptyState({ message }: { message: string }) {
-  return <p className="px-4 py-6 text-sm text-slate-600">{message}</p>;
+  return (
+    <div className="px-4 py-7 text-center">
+      <p className="text-sm font-medium text-slate-700">Sin registros</p>
+      <p className="mt-1 text-sm text-slate-500">{message}</p>
+    </div>
+  );
 }
 
 function formatDate(value: string): string {
