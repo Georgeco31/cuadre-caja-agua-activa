@@ -15,6 +15,10 @@ actual en
 [`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
 Ambos checklists deben coincidir antes de autorizar el Día 1.
 
+Transición posterior: George autorizó y el Bloque 60A inició de forma
+controlada el Día 1 el 2026-07-28. El seguimiento está en
+[`53-piloto-dia-1-inicio-controlado.md`](53-piloto-dia-1-inicio-controlado.md).
+
 | Dato | Registro |
 | --- | --- |
 | Fecha del Día 0 | |
@@ -300,7 +304,7 @@ Marcar una sola decisión:
 | Riesgos aceptados | Riesgo DHCP aceptado temporalmente |
 | Controles de cada riesgo | Verificar IP; detener y actualizar si cambia |
 | Bloqueadores restantes | Ninguno para preparar el inicio |
-| Fecha autorizada para el Día 1 | Se ejecutará en el bloque siguiente |
+| Fecha autorizada para el Día 1 | 2026-07-28; inicio controlado en Bloque 60A |
 | Nombre de George | George |
 | Firma o confirmación escrita | Confirmación escrita recibida |
 | Fecha y hora de confirmación | 2026-07-28 |
@@ -308,4 +312,6 @@ Marcar una sola decisión:
 La firma de este checklist autoriza únicamente el inicio controlado del Día 1
 en paralelo con el método actual. No autoriza producción definitiva. La fecha,
 el horario y el alcance exacto de módulos deben registrarse en el bloque de
-inicio antes de crear la primera operación del piloto.
+inicio antes de crear la primera operación del piloto. El Bloque 60A registró
+la apertura técnica; los datos reales y el cierre se completan en el documento
+53.

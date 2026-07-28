@@ -318,6 +318,25 @@ siguiente. Evidencia y checklist:
 - [`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md);
 - [`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
 
+## Estado del Bloque 60A
+
+George autorizó el inicio controlado del piloto Día 1 el 2026-07-28. El control
+de apertura aprobó:
+
+- health productivo con cero fallos y advertencias;
+- LAN en `192.168.100.220`;
+- `db`, `api` y `web` saludables;
+- Alembic `0026_user_roles`;
+- PostgreSQL `5432` no publicado;
+- tarea `AguaActivaERP-BackupDiario` en `Ready`;
+- `LastTaskResult = 0` y backup reciente con `.dump`, `.sha256` y `.json`;
+- método manual actual disponible en paralelo.
+
+El piloto queda iniciado, pero Codex no ingresó datos del negocio. La operación,
+los módulos usados, las incidencias y el cierre del Día 1 se registran en
+[`53-piloto-dia-1-inicio-controlado.md`](53-piloto-dia-1-inicio-controlado.md).
+La reserva DHCP sigue activa y no se declara producción definitiva.
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -410,7 +429,10 @@ Bloque 59D: cierre humano aprobado; listo con reserva DHCP, piloto no iniciado
 Completar y firmar el Día 0 de los documentos 48, 49, 51 y 52
   |
   v
-Piloto controlado de cinco días, solo con autorización de George
+Bloque 60A: Día 1 iniciado de forma controlada; operación y cierre en documento 53
+  |
+  v
+Continuar piloto controlado de cinco días según conciliación e incidencias
 ```
 
 ## Guardas obligatorias para el Bloque 54

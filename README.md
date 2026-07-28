@@ -343,6 +343,11 @@ cuadre-caja-agua-activa/
   responsables operativos y la decisión temporal DHCP. Decisión:
   **listo con reservas para piloto controlado**; la reserva DHCP sigue pendiente
   y el piloto no se inicia hasta el bloque siguiente.
+- Bloque 60A: George autorizó e inició de forma controlada el Día 1 el
+  2026-07-28. Health, IP LAN, backup y método manual paralelo aprobaron. Codex
+  no ingresó datos del negocio; la operación y el cierre quedan a cargo de los
+  participantes. El piloto está iniciado, no cerrado, y no equivale a
+  producción definitiva.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -434,6 +439,8 @@ de gastos, cookies ni refresh tokens.
   accesos, servidor, DHCP, backup, reservas y decisión del Bloque 59D.
 - `docs/52-confirmacion-dia-0-pre-piloto.md`: checklist de confirmación y firma
   anterior al Día 1.
+- `docs/53-piloto-dia-1-inicio-controlado.md`: apertura técnica, alcance,
+  checklists, incidencias, método paralelo y cierre pendiente del Día 1.
 
 ## Antes de usar datos reales
 
@@ -444,7 +451,8 @@ la decisión **no listo** por bloqueadores operativos. El Bloque 59C resuelve el
 fallo técnico del backup diario, pero no los demás bloqueadores. Todavía no se
 autoriza declarar producción definitiva. El Bloque 59D cierra los controles
 humanos y deja el sistema listo con reserva DHCP aceptada, pero no inicia el
-piloto; el Día 1 debe comenzar en un bloque posterior. Leer en este orden:
+piloto. El Bloque 60A registra posteriormente el inicio controlado del Día 1,
+sin declarar producción definitiva. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -472,6 +480,8 @@ piloto; el Día 1 debe comenzar en un bloque posterior. Leer en este orden:
 24. `docs/52-confirmacion-dia-0-pre-piloto.md`.
 25. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
     obligatorios y aprobar el Día 0.
+26. `docs/53-piloto-dia-1-inicio-controlado.md`, registro activo del inicio,
+    operación, incidencias y cierre del Día 1.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni

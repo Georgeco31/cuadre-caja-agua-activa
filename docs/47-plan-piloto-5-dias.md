@@ -43,6 +43,20 @@ registrar el comienzo efectivo usando
 [`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md) y
 [`52-confirmacion-dia-0-pre-piloto.md`](52-confirmacion-dia-0-pre-piloto.md).
 
+## Estado del Bloque 60A
+
+George autorizó el inicio controlado del Día 1 el **2026-07-28**. A las 08:22,
+hora local, aprobaron el health, la IP LAN `192.168.100.220`, la tarea de backup
+con `LastTaskResult = 0`, el backup reciente y la disponibilidad del método
+manual paralelo.
+
+El piloto queda **INICIADO DE FORMA CONTROLADA**. Codex no ingresó datos del
+negocio; la operación real corresponde a la persona `operator` y la supervisión
+a George. El registro de apertura, operación, incidencias y cierre está en
+[`53-piloto-dia-1-inicio-controlado.md`](53-piloto-dia-1-inicio-controlado.md).
+
+La jornada todavía no está cerrada y no se ha declarado producción definitiva.
+
 ## Reglas para los cinco días
 
 1. Registrar en el ERP y en el método actual todas las operaciones incluidas.
@@ -60,7 +74,7 @@ registrar el comienzo efectivo usando
 | Día | Objetivo | Tareas principales | Responsable | Evidencia | Criterio de aprobación | Riesgos principales |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0 | Dejar personas, acceso y continuidad listos | Usuarios, contraseñas, LAN/Tailscale, servidor, Docker, backup y práctica | George; secretaria participa | Checklist 43 completo, accesos y backup comprobados | Todas las condiciones obligatorias cerradas y autorización de George | Inicio prematuro, cuenta compartida, IP cambiante, backup no comprobado |
-| 1 | Validar el flujo básico diario | Login, dashboard, caja y gastos | Secretaria opera; George revisa | Cuadre, gastos, conciliación e incidencias | Flujo completo y totales conciliados sin incidente crítico | Cierre anticipado, gasto en etapa incorrecta, diferencia de caja |
+| 1 | Validar el inicio real controlado | Login, dashboard, caja y gastos; clientes, ventas, cobros, producción e inventario solo si aplican | Secretaria opera; George revisa | Módulos usados, conciliación e incidencias | Flujos usados conciliados sin incidente crítico | Inicio prematuro, duplicados, diferencia de caja o alcance excesivo |
 | 2 | Validar el flujo comercial | Clientes, ventas, cobros y crédito si fue aprobado | Secretaria opera; George concilia | Referencias de clientes, ventas/cobros y comparación manual | Operaciones del día completas, sin duplicados y con saldos coherentes | Cliente incorrecto, duplicado, crédito no preparado |
 | 3 | Validar producción e inventario operativo | Producción diaria y movimientos `entry`/`exit` | Secretaria registra; George revisa | Producción, movimientos y soportes paralelos | Cantidades conciliadas; sin costos, ajustes ni consumos | Ubicación o cantidad incorrecta, confundir producción con movimiento de stock |
 | 4 | Validar control administrativo y permisos | Reportes, exportaciones y revisión de permisos; operación base continúa | George; secretaria confirma su vista | Excel/PDF controlados, reporte diario, incidencias de permisos | Solo admin accede a información sensible; reportes coherentes | Exposición de datos, préstamo de cuenta, interpretar reporte como asiento automático |
@@ -127,6 +141,9 @@ vacía mueve el Día 1 y no se considera un fallo del piloto.
 
 ## Día 1 - Login, dashboard, caja y gastos
 
+Estado: **iniciado el 2026-07-28; operación y cierre pendientes de registro en
+el documento 53**.
+
 ### Objetivo
 
 Completar el flujo básico de una jornada y validar el cuadre diario.
@@ -137,6 +154,9 @@ Completar el flujo básico de una jornada y validar el cuadre diario.
 - revisar fecha, rol y dashboard;
 - abrir o consultar el cuadre del día;
 - registrar conteos y gastos reales;
+- registrar únicamente los clientes necesarios del día, si aplica;
+- registrar ventas de contado o crédito, solo si aplican al negocio real;
+- registrar cobros, producción o inventario `entry`/`exit`, solo si aplican;
 - mantener el registro en el método actual;
 - comparar totales antes del cierre;
 - cerrar el cuadre solo si corresponde y no hay diferencias;
@@ -151,6 +171,7 @@ Completar el flujo básico de una jornada y validar el cuadre diario.
 
 - referencia del cuadre;
 - cantidad de gastos registrados;
+- relación de módulos realmente usados, sin publicar datos sensibles;
 - comparación de totales sin publicar datos sensibles;
 - checklist de fin de jornada;
 - incidencias del Día 1.

@@ -39,7 +39,7 @@ frases indicadas en la sección 2.
 - [x] La tarea de backup existe y su `LastTaskResult` actual es `0`.
 - [x] El último backup de la tarea tiene `.dump`, `.sha256` y `.json` y fue
   validado sin ejecutar restore.
-- [x] El piloto todavía no se ha iniciado.
+- [x] Al cierre de 59D el piloto todavía no se había iniciado.
 
 Referencia técnica:
 [`51-usuarios-accesos-pre-piloto.md`](51-usuarios-accesos-pre-piloto.md).
@@ -210,11 +210,12 @@ diagnosticarlo.
 | DHCP | Riesgo aceptado temporalmente; reserva pendiente |
 | Método paralelo | Confirmado; conciliación e incidencias asignadas |
 | Plantilla de incidencias | Disponible |
-| Piloto iniciado | No |
+| Piloto iniciado | No al cierre de 59D; sí posteriormente en 60A |
 
 Decisión final 59D: **LISTO CON RESERVAS PARA PILOTO CONTROLADO**. La reserva
-DHCP continúa pendiente con riesgo aceptado temporalmente. El piloto no inicia
-hasta ejecutar el bloque siguiente.
+DHCP continúa pendiente con riesgo aceptado temporalmente. Posteriormente, el
+Bloque 60A inició de forma controlada el Día 1 el 2026-07-28; ver
+[`53-piloto-dia-1-inicio-controlado.md`](53-piloto-dia-1-inicio-controlado.md).
 
 ## 11. Decisión final de George
 
@@ -230,10 +231,10 @@ Marcar una sola opción después de completar las secciones anteriores:
 | Decisión | Listo para piloto controlado, con reserva DHCP |
 | Riesgos aceptados | Riesgo DHCP aceptado temporalmente |
 | Bloqueadores restantes | Ninguno para preparar el inicio; reserva DHCP pendiente |
-| Fecha autorizada para el Día 1 | Se definirá/ejecutará en el bloque siguiente |
+| Fecha autorizada para el Día 1 | 2026-07-28; ejecutada en Bloque 60A |
 | Nombre de George | George |
 | Firma o confirmación escrita | Confirmación escrita recibida |
 | Fecha y hora | 2026-07-28 |
 
-La firma autoriza únicamente el inicio controlado y paralelo del Día 1. No
-autoriza producción definitiva.
+La firma autorizó únicamente el inicio controlado y paralelo del Día 1. El
+Bloque 60A registró la apertura técnica; no autoriza producción definitiva.
