@@ -30,6 +30,32 @@ Al cierre de los Bloques 55A a 58D-2:
 Estas evidencias demuestran preparación técnica, pero no reemplazan las
 confirmaciones del Día 0 ni autorizan todavía el uso piloto.
 
+## Corte operativo del Bloque 59B
+
+El 2026-07-28 se ejecutó el cierre de pendientes previo al piloto. El resultado
+detallado está en
+[`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md) y el
+checklist práctico del Día 0 en
+[`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
+
+| Control | Resultado del corte |
+| --- | --- |
+| Cuentas | `admin`/`admin_auditor` y `estherdelgado31`/`operator`, activas |
+| Contraseñas definitivas | Sin rotación ni confirmación segura; bloqueador |
+| Docker | `db`, `api` y `web` saludables |
+| Red desde el servidor | API y Web por LAN y Tailscale, OK |
+| Dispositivos reales | Pruebas actuales de secretaria y George pendientes |
+| Alembic | `0026_user_roles` |
+| PostgreSQL | `5432` no publicado |
+| Backup existente | Dump, checksum, JSON y `pg_restore --list`, OK |
+| Tarea diaria | Existe y está `Ready`, pero la última ejecución desatendida terminó con resultado `1` |
+| DHCP | Pendiente y sin aceptación temporal de George |
+| Decisión | **No listo; no iniciar el piloto** |
+
+La disponibilidad técnica actual no cierra la titularidad de cuentas, el uso sin
+compartir, las contraseñas, los accesos desde dispositivos reales ni los
+compromisos de disponibilidad del servidor.
+
 ## Qué ya está listo
 
 | Área | Estado listo para preparación |
@@ -150,6 +176,11 @@ La comprobación debe seguir
 [`30-backup-diario-programado-windows.md`](30-backup-diario-programado-windows.md).
 No se deben adjuntar dumps, checksums con rutas sensibles, variables ni
 credenciales a este documento.
+
+En el corte 59B, la tarea existía y su próxima ejecución estaba programada, pero
+la ejecución desatendida del 2026-07-27 23:30:30 terminó con resultado `1`. Un
+backup existente posterior aprobó checksum, metadata y `pg_restore --list`, pero
+no sustituye una ejecución por disparador con resultado `0`.
 
 ## Checklist de red y acceso
 
@@ -300,16 +331,21 @@ Detener nuevas entradas en el ERP cuando:
 - George: [`45-guia-piloto-george-admin.md`](45-guia-piloto-george-admin.md).
 - Incidencias: [`46-registro-incidencias-piloto.md`](46-registro-incidencias-piloto.md).
 - Cronograma: [`47-plan-piloto-5-dias.md`](47-plan-piloto-5-dias.md).
+- Cierre de pendientes:
+  [`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md).
+- Checklist ejecutable del Día 0:
+  [`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
 - Permisos vigentes:
   [`42-guia-operativa-permisos-usuarios.md`](42-guia-operativa-permisos-usuarios.md).
 
 ## Conclusión
 
-Agua Activa ERP está técnicamente preparado para completar el Día 0, pero
-**todavía no está autorizado el inicio del piloto**. La autorización depende de
-cerrar todos los pendientes obligatorios, especialmente el primer backup diario
-desatendido real, las credenciales definitivas, las cuentas personales, la
-reserva DHCP y las pruebas desde los dispositivos reales.
+Agua Activa ERP está técnicamente preparado para continuar el Día 0, pero el
+corte 59B lo clasifica como **no listo** y **todavía no está autorizado el
+inicio del piloto**. La autorización depende de corregir y comprobar el backup
+diario desatendido, cerrar las credenciales definitivas y reglas de cuentas,
+resolver o aceptar expresamente el riesgo DHCP, confirmar el servidor y probar
+los accesos desde los dispositivos reales.
 
 El eventual piloto será limitado, reversible en lo operativo mediante el
 método actual y evaluado al final de cinco días. Su cierre no equivale

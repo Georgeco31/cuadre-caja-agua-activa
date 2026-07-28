@@ -325,6 +325,11 @@ cuadre-caja-agua-activa/
 - Bloque 59A: preparación documental del piloto interno paralelo de cinco días,
   con checklist previo, guías por rol, registro de incidencias y criterios de
   inicio, pausa y detención. El piloto todavía no se inicia.
+- Bloque 59B: cierre operativo de pendientes pre-piloto. Docker, red desde el
+  servidor, cuentas activas y un backup existente fueron validados; la última
+  tarea desatendida terminó con resultado `1` y siguen pendientes credenciales,
+  dispositivos reales, servidor y DHCP. Decisión actual: **no listo**; el
+  piloto no se inicia.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -406,14 +411,18 @@ de gastos, cookies ni refresh tokens.
   de incidencias.
 - `docs/47-plan-piloto-5-dias.md`: Día 0 y cinco jornadas de operación en
   paralelo.
+- `docs/48-cierre-pendientes-pre-piloto.md`: evidencia actual, riesgos,
+  bloqueadores y decisión del Bloque 59B.
+- `docs/49-checklist-dia-0-piloto.md`: checklist práctico de personas, accesos,
+  respaldo, módulos, contingencia y confirmación de George.
 
 ## Antes de usar datos reales
 
 Los Bloques 54 a 58D-2 resuelven la separación de roles, preparan Docker de
 producción local y demuestran backup/restore aislado, tarea diaria y permisos
-en el despliegue actual. El Bloque 59A prepara el plan, pero **todavía no
-autoriza iniciar el piloto ni declarar producción definitiva**. Leer en este
-orden:
+en el despliegue actual. El Bloque 59A prepara el plan y el corte 59B conserva
+la decisión **no listo** por bloqueadores operativos. Todavía no se autoriza
+iniciar el piloto ni declarar producción definitiva. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -434,7 +443,9 @@ orden:
 17. `docs/44-guia-piloto-secretaria-operador.md`.
 18. `docs/45-guia-piloto-george-admin.md`.
 19. `docs/46-registro-incidencias-piloto.md`.
-20. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
+20. `docs/48-cierre-pendientes-pre-piloto.md`.
+21. `docs/49-checklist-dia-0-piloto.md`.
+22. `docs/47-plan-piloto-5-dias.md`, solo después de cerrar los pendientes
     obligatorios y aprobar el Día 0.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,

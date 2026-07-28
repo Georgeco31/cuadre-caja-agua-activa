@@ -242,6 +242,32 @@ La lista completa y las guías de ejecución están en:
 - [`46-registro-incidencias-piloto.md`](46-registro-incidencias-piloto.md);
 - [`47-plan-piloto-5-dias.md`](47-plan-piloto-5-dias.md).
 
+## Estado del Bloque 59B
+
+El corte operativo del 2026-07-28 verificó la infraestructura sin iniciar el
+piloto ni modificar código o datos:
+
+- `db`, `api` y `web` están `healthy`;
+- API y Web responden por LAN y Tailscale desde KERNELOS-PC;
+- PostgreSQL `5432` no está publicado;
+- Alembic continúa en `0026_user_roles`;
+- `admin` está activo con rol `admin_auditor`;
+- `estherdelgado31` está activa con rol `operator`;
+- el backup existente más reciente tiene checksum y metadata válidos y aprobó
+  `pg_restore --list`;
+- la tarea `AguaActivaERP-BackupDiario` existe, pero su última ejecución
+  desatendida terminó con resultado `1`.
+
+La decisión es **no listo**. Continúan como bloqueadores las contraseñas
+definitivas, la prueba desatendida con resultado `0`, las confirmaciones de
+cuentas personales y servidor, los recorridos actuales desde los dispositivos
+reales, DHCP o su aceptación temporal expresa, y la firma del Día 0.
+
+Evidencia y checklist:
+
+- [`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md);
+- [`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -255,7 +281,7 @@ La lista completa y las guías de ejecución están en:
 | P0-07 | 55A | Rotar contraseña PostgreSQL y secretos productivos | George + infraestructura | Crítica | No hay defaults; health/login pasan; secretos no se publican |
 | P0-08 | 55B-1 | Resolver URL de API, CORS, IP/DNS y firewall LAN (comprobado desde cliente LAN; reserva DHCP pendiente antes del piloto) | Infraestructura | Crítica | Login y módulos cargan desde PC cliente; origen no autorizado falla |
 | P0-09 | 55A | Definir zona `America/Guayaquil` | Desarrollo/infraestructura | Alta | Host, API y reglas de negocio usan fecha esperada antes/después de 19:00 |
-| P0-10 | 56A/56C y posteriores | Backup manual comprobado y tarea diaria registrada con inicio manual exitoso; faltan seguimiento de ejecuciones desatendidas, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada de forma sostenida y alerta de fallo |
+| P0-10 | 56A/56C/59B y posteriores | Backup manual comprobado y tarea diaria registrada; el corte 59B encontró resultado `1` en la última ejecución desatendida; faltan ejecución con resultado `0`, seguimiento, retención, cifrado, alertas y copia externa | Infraestructura + George | Crítica | Ejecución diaria comprobada de forma sostenida y alerta de fallo |
 | P0-11 | 56B | Restauración real en ambiente aislado (demostrada; faltan pruebas integrales de login y muestras) | Infraestructura + George | Crítica | Restore, tablas, conteos, Alembic, health y cleanup aprobados; login y muestras pasan en pruebas integrales |
 | P0-12 | 55B | Manual de recuperación y responsables | George + infraestructura | Alta | Documento puede seguirse de principio a fin y registra RPO/RTO |
 | P0-13 | 58D-2 | Sincronizar las imágenes productivas con las protecciones 58B y el frontend 58C (cerrado) | Desarrollo + George | Crítica | Aprobado: rebuild autorizado; `operator` recibe `403` en familias sensibles; dashboard 22/33, Excel/PDF, LAN, Tailscale y health pasan sobre las imágenes nuevas |
@@ -322,7 +348,10 @@ Bloque 58D-2 aprobado: rebuild y smoke productivo integral por rol
 Bloque 59A: checklist, guías, incidencias y plan paralelo documentados
   |
   v
-Cerrar pendientes obligatorios del documento 43 y completar el Día 0
+Bloque 59B: corte no listo; cerrar backup, credenciales, accesos, servidor y DHCP
+  |
+  v
+Completar y firmar el Día 0 de los documentos 48 y 49
   |
   v
 Piloto controlado de cinco días, solo con autorización de George

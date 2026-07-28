@@ -17,11 +17,24 @@ No comenzar el Día 1 hasta que George haya aprobado todas las condiciones de
 - primer backup diario realmente desatendido;
 - contraseñas definitivas;
 - usuarios reales e individuales;
-- reserva DHCP;
+- reserva DHCP o aceptación temporal explícita de George con controles;
 - disponibilidad del servidor y Docker;
 - acceso real de la secretaria por LAN;
 - acceso real de George por Tailscale;
 - prohibición de cuentas compartidas.
+
+## Estado al cierre del Bloque 59B
+
+El corte del 2026-07-28 concluyó **no listo**. Docker, Alembic, PostgreSQL, los
+endpoints y las cuentas activas aprobaron, pero la última tarea desatendida de
+backup terminó con resultado `1`. También faltan contraseñas definitivas,
+pruebas actuales desde los dispositivos reales, confirmaciones de titularidad y
+continuidad de KERNELOS-PC, y la decisión DHCP.
+
+No se inicia el Día 1. Para continuar se deben cerrar
+[`48-cierre-pendientes-pre-piloto.md`](48-cierre-pendientes-pre-piloto.md) y
+completar
+[`49-checklist-dia-0-piloto.md`](49-checklist-dia-0-piloto.md).
 
 ## Reglas para los cinco días
 
@@ -56,9 +69,12 @@ sin registrar operación real del piloto.
 ### Tareas
 
 - cerrar todas las casillas obligatorias del documento 43;
+- cerrar los bloqueadores del documento 48;
+- completar y firmar el checklist práctico del documento 49;
 - rotar las contraseñas definitivas por un canal seguro;
 - confirmar cuentas individuales activas y roles correctos;
-- configurar y probar la reserva DHCP;
+- configurar y probar la reserva DHCP o registrar la aceptación temporal de
+  George con control diario de la IP y criterio de detención;
 - confirmar horario de encendido de KERNELOS-PC;
 - comprobar el inicio correcto de Docker Desktop;
 - probar el acceso de la secretaria con `operator` desde su equipo;
@@ -78,9 +94,11 @@ sin registrar operación real del piloto.
 ### Evidencia
 
 - checklist 43 completo;
+- documento 48 sin bloqueadores;
+- checklist 49 firmado;
 - fecha y resultado del backup desatendido;
 - pruebas de acceso sin contraseñas;
-- dirección estable del servidor;
+- dirección estable del servidor o aceptación temporal documentada;
 - nombre y rol de cada cuenta;
 - decisión sobre ventas a crédito;
 - autorización de inicio.
@@ -95,6 +113,7 @@ vacía mueve el Día 1 y no se considera un fallo del piloto.
 - usar una prueba manual como si fuera ejecución desatendida;
 - probar desde un dispositivo distinto al de la operación;
 - compartir la cuenta admin para ahorrar tiempo;
+- aceptar verbalmente el riesgo DHCP sin controles ni registro;
 - empezar sin método manual disponible.
 
 ## Día 1 - Login, dashboard, caja y gastos
