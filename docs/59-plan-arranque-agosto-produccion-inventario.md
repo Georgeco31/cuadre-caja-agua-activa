@@ -146,8 +146,10 @@ ubicación correcta.
 7. Vincular ventas/cobros a la carga cuando corresponda.
 8. Contar sobrante físico.
 9. Registrar el retorno a bodega.
-10. Comparar manualmente cargado, vendido, retornado y diferencia.
-11. No cerrar financieramente hasta revisar la hoja física.
+10. Consultar la liquidación simple por carga y producto.
+11. Comparar cargado, retornado, vendido físico y vendido registrado.
+12. Comparar la liquidación simple contra la hoja física.
+13. No cerrar financieramente hasta revisar ambas fuentes.
 
 ### Evidencia
 
@@ -157,14 +159,16 @@ ubicación correcta.
 | Vehículo y ubicación verificados | Sí / No |
 | Stock previo suficiente | Sí / No |
 | Referencia de retorno | |
-| Comparación física completada | Sí / No |
-| Diferencia | |
+| Estado de liquidación simple | Pendiente / Cuadrada / Con diferencia |
+| Diferencia de producto | |
+| Diferencia de dinero | |
+| Comparación manual completada | Sí / No |
 | Decisión de George | |
 
 ### Criterio de aprobación
 
-No se forzó stock, los traslados coinciden con el físico y toda diferencia
-quedó registrada.
+No se forzó stock, los traslados coinciden con el físico, el resumen fue
+revisado y toda diferencia quedó registrada.
 
 ## Día 3 - Revisión de diferencias
 
@@ -179,8 +183,9 @@ Encontrar el origen de cualquier diferencia sin cambiar datos a ciegas.
 3. Revisar producción, consumo y aplicación.
 4. Revisar entradas/salidas manuales.
 5. Revisar carga, ventas y retorno.
-6. Confirmar fechas y ubicaciones.
-7. Clasificar cada diferencia:
+6. Revisar la liquidación simple por producto y dinero.
+7. Confirmar fechas y ubicaciones.
+8. Clasificar cada diferencia:
    - conteo;
    - digitación;
    - movimiento duplicado;
@@ -190,7 +195,7 @@ Encontrar el origen de cualquier diferencia sin cambiar datos a ciegas.
    - retorno incompleto;
    - regla de envase no definida;
    - otra.
-8. Definir responsable y decisión.
+9. Definir responsable y decisión.
 
 ### Registro
 
@@ -311,6 +316,7 @@ Marcar una:
 - [ ] Bodega conciliada.
 - [ ] Vehículos conciliados.
 - [ ] Ventas/cobros conciliados.
+- [ ] Liquidaciones simples de rutas revisadas.
 - [ ] Caja conciliada.
 - [ ] Diferencias registradas.
 - [ ] Decisión del día confirmada.

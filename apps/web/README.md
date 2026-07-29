@@ -307,7 +307,9 @@ http://localhost:3000/login
 - Despues de crear o anular un retorno, la pantalla vuelve a consultar retornos, cargas y stock oficial. No registra ventas, cobros, caja, dinero entregado, diferencias, liquidaciones ni cierres de ruta.
 - La pantalla `/dashboard/route-activity` consulta `GET /api/v1/route-loads/{id}/commercial-activity`, muestra ventas de contado, ventas a credito, cobros, productos agrupados y los totales oficiales del backend.
 - Las ventas y los cobros pueden asociarse opcionalmente a una carga activa, pero no modifican automaticamente caja, inventario, rutas o bancos. La actividad de ruta no liquida dinero ni cierra la ruta.
-- La pantalla `/dashboard/route-closures` permite seleccionar una carga activa sin cierre financiero, consultar su actividad comercial oficial, ingresar el efectivo entregado y registrar el cierre mediante `POST /api/v1/route-closures`.
+- La pantalla `/dashboard/route-closures` permite seleccionar una carga activa y consulta `GET /api/v1/route-loads/{id}/settlement-summary` para mostrar carga, retorno, vendido físico, vendido registrado, diferencias por producto, ventas, cobros y dinero.
+- El resumen usa estados pendiente, cuadrada y con diferencia. `operator` puede consultarlo; solo `admin_auditor` puede ingresar el efectivo entregado y registrar el cierre mediante `POST /api/v1/route-closures`.
+- Cuando la interfaz detecta una diferencia física o una diferencia estimada de dinero, exige una observación antes de enviar el cierre.
 - La diferencia mostrada durante la captura es solo una estimacion visual. El efectivo esperado, la diferencia y los snapshots persistidos siempre son calculados por el backend.
 - El historial permite filtrar por texto, fecha, estado, ruta y vehiculo, consultar el detalle de importes congelados y anular un cierre con motivo. Un cierre anulado se conserva y la carga vuelve a quedar disponible para otro cierre.
 - El cierre financiero bloquea operaciones comerciales vinculadas a la carga mientras esta activo. No crea cuadres, gastos, movimientos de caja o inventario, ventas ni cobros.

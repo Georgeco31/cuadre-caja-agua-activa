@@ -90,6 +90,8 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
 - Salida y entrada vinculadas a ruta, vehiculo y carga, con anulacion reversible.
 - Retorno trazable de productos desde el vehiculo hacia una ubicacion no vehicular.
 - Asociacion opcional de ventas y cobros a una carga activa y consulta de sus totales comerciales.
+- Liquidacion simple de solo lectura por carga y producto, con cargado,
+  retornado, vendido fisico, vendido registrado y diferencia.
 - Cierre financiero de una carga con importes oficiales congelados, efectivo entregado y diferencia.
 - Historial y anulacion trazable del cierre, con bloqueo de operaciones vinculadas mientras permanezca activo.
 - Comparacion informativa, por fecha o rango, entre cierres activos de ruta y el cuadre general de caja.
@@ -108,7 +110,8 @@ Quedan fuera del MVP:
 - Descuento automatico de inventario por ventas.
 - Conciliacion automatica de cobros con caja o bancos.
 - Ingreso automatico o conciliacion contable del cierre de ruta con caja o bancos.
-- Liquidacion fisica del inventario restante de una ruta.
+- Liquidacion automatica del inventario restante de una ruta; el resumen simple
+  actual no crea movimientos.
 - Mantenimiento, combustible, kilometraje y rentabilidad por vehiculo.
 - WhatsApp.
 - BI, rentabilidad y comparativos gerenciales avanzados.
@@ -367,11 +370,20 @@ cuadre-caja-agua-activa/
   flujo, las plantillas, la guía de operador y el plan de cinco jornadas, sin
   modificar código ni datos reales. La liquidación física automática de ruta y
   el control avanzado de envases retornables quedan para bloques posteriores.
+- Bloque 60E: resumen de liquidación simple por carga y producto sobre las
+  tablas existentes. Compara carga, retorno, vendido físico/registrado, ventas,
+  cobros y dinero, con estados pendiente, cuadrada y con diferencia. No requiere
+  migración, no mueve inventario y no carga stock inicial de agosto.
+- Bloque 60E-2: despliegue productivo controlado del resumen. Se recrearon solo
+  `api` y `web`; PostgreSQL no se reinició, Alembic siguió en 0027 y el health
+  localhost/LAN/Tailscale aprobó. El humo por rol, exportaciones, restricciones,
+  `404` y no mutación aprobó. Como producción aún no tiene cargas, la prueba
+  `200` y la revisión visual autenticada con una ruta real siguen pendientes.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
 denominaciones o conciliacion contable del cierre de ruta con caja o bancos,
-descuento de inventario por ventas, liquidacion fisica del inventario de ruta,
+descuento de inventario por ventas, liquidacion automatica del inventario de ruta,
 recepcion de compras en inventario, pagos reales a proveedores, cuentas por
 pagar avanzadas, conciliacion de gastos operativos con caja o bancos, pago real
 de nomina, IESS, décimos, vacaciones avanzadas, horas extras, comisiones,
@@ -473,6 +485,8 @@ de gastos, cookies ni refresh tokens.
   producción, entradas/salidas, faltantes, cargas y escalamiento a George.
 - `docs/59-plan-arranque-agosto-produccion-inventario.md`: Día 0 y cinco
   jornadas de arranque controlado de producción e inventario.
+- `docs/60-bloque-60e-liquidacion-simple-rutas.md`: alcance, cálculos, reglas,
+  permisos, pruebas y brechas del resumen simple de rutas.
 
 ## Antes de usar datos reales
 
@@ -486,7 +500,9 @@ humanos y deja el sistema listo con reserva DHCP aceptada, pero no inicia el
 piloto. El Bloque 60A registra posteriormente el inicio controlado del Día 1,
 y 60B/60B-2 corrige la incidencia de anulación sin declarar producción
 definitiva. El Bloque 60D prepara producción e inventario para agosto sin
-registrar stock real. Leer en este orden:
+registrar stock real y el Bloque 60E agrega el resumen simple sin cargar stock
+inicial. El Bloque 60E-2 lo despliega sin reiniciar PostgreSQL ni modificar
+datos; la conciliación con una ruta real sigue pendiente. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -528,6 +544,8 @@ registrar stock real. Leer en este orden:
     use producción o inventario.
 32. `docs/59-plan-arranque-agosto-produccion-inventario.md`, para ejecutar el
     Día 0 y las cinco jornadas con autorización de George.
+33. `docs/60-bloque-60e-liquidacion-simple-rutas.md`, para revisar carga,
+    retorno, ventas y dinero sin confundir el resumen con inventario automático.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni

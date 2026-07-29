@@ -450,3 +450,56 @@ El stock inicial recomendado se registra con movimientos `entry`, una fila por
 producto y ubicación, usando el motivo
 `Stock inicial agosto 2026 - conteo físico`. Las cantidades deben provenir de
 la hoja firmada; Codex no las registra ni las estima.
+
+## Seguimiento Bloque 60E
+
+Se implementó una liquidación simple y de solo lectura por carga de ruta. El
+nuevo resumen reúne carga, retorno, vendido físico, vendido registrado, ventas,
+cobros, dinero esperado, dinero entregado y diferencias por producto y dinero.
+Reutiliza el retorno y el cierre financiero existentes, por lo que no requiere
+migración posterior a `0027_sale_date_corrections`.
+
+La consulta está disponible para `operator` y `admin_auditor`; registrar o
+anular el cierre financiero sigue reservado al administrador auditor. Consultar
+el resumen no modifica ventas, cobros, caja ni inventario. Las ventas asociadas
+todavía no descuentan el stock del vehículo y el control avanzado de bidones
+retornables sigue pendiente.
+
+El bloque no cargó stock inicial de agosto, no inventó cantidades y no ingresó
+datos reales por George. El método manual permanece obligatorio hasta validar
+el resumen en operación y cerrar julio.
+
+Referencia:
+
+- [`60-bloque-60e-liquidacion-simple-rutas.md`](60-bloque-60e-liquidacion-simple-rutas.md).
+
+## Seguimiento Bloque 60E-2
+
+El 2026-07-29 la liquidación simple quedó desplegada en producción local. Se
+reconstruyeron y recrearon solo `api` y `web`; `db` conservó el mismo
+contenedor, la misma hora de inicio y `RestartCount = 0`. No se tocaron
+volúmenes, entorno, migraciones ni datos. Alembic continuó en
+`0027_sale_date_corrections`.
+
+El health final aprobó contenedores, localhost, LAN, Tailscale y PostgreSQL 5432
+no publicado. El humo de solo lectura aprobó módulos operativos, panel y
+exportación administrativa, los `403` de `operator` sobre acciones
+restringidas y el `404` controlado de `settlement-summary`. La huella completa
+de 49 tablas y 705 filas no cambió.
+
+El login incorrecto mostró un mensaje claro y liberó el botón en localhost,
+LAN y Tailscale, sin errores de consola; el formulario tampoco desbordó a
+390 px. Producción todavía no tiene cargas de ruta, y no había sesiones reales
+disponibles para revisar visualmente la pantalla autenticada por rol. No se
+crearon datos ni se cambiaron credenciales para forzar esas pruebas.
+
+Quedan como comprobación operativa de George, cuando exista una carga real:
+
+- abrir el resumen con ambos roles;
+- conciliar carga, retorno, ventas, cobros y dinero entregado;
+- confirmar la presentación de escritorio y móvil;
+- confirmar visualmente acciones ocultas para `operator` y disponibles para
+  `admin_auditor`.
+
+El método manual paralelo y la prohibición de inventar stock o cantidades
+siguen vigentes.

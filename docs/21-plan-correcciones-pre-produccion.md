@@ -383,6 +383,34 @@ Guías:
 - [`58-guia-produccion-inventario-operador.md`](58-guia-produccion-inventario-operador.md);
 - [`59-plan-arranque-agosto-produccion-inventario.md`](59-plan-arranque-agosto-produccion-inventario.md).
 
+## Estado del Bloque 60E
+
+Se agregó el resumen de liquidación simple por carga y producto sobre los
+modelos existentes. Calcula cargado, retornado, vendido físico, vendido
+registrado, diferencias, ventas, cobros, dinero esperado y dinero entregado,
+sin modificar registros ni inventario. No fue necesaria una migración 0028.
+
+El resumen queda disponible para ambos roles; crear o anular cierres permanece
+restringido a `admin_auditor`. Esto cubre la visibilidad mínima de P1-13, pero
+no cierra todavía la liquidación física automática: siguen pendientes la salida
+de inventario por venta, la persistencia de incidencias, el detalle agrupado por
+precio y la regla avanzada de retornables.
+
+Documento de cierre:
+
+- [`60-bloque-60e-liquidacion-simple-rutas.md`](60-bloque-60e-liquidacion-simple-rutas.md).
+
+En 60E-2 se desplegó el resumen recreando únicamente `api` y `web`. PostgreSQL
+no se reinició, Alembic permaneció en `0027_sale_date_corrections` y el health
+final aprobó localhost, LAN y Tailscale. Un humo por rol comprobó lecturas,
+exportación administrativa, restricciones `403`, `404` del nuevo endpoint y
+ausencia de mutaciones mediante una huella idéntica de todas las tablas.
+
+Producción no contiene todavía cargas de ruta. Por ello P1-13 conserva como
+pendiente la conciliación de un `200` con una ruta real y la revisión visual
+autenticada en escritorio/móvil con ambos roles. No se fabricaron datos ni se
+modificaron credenciales para cerrar artificialmente esa evidencia.
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -417,7 +445,7 @@ Guías:
 | P1-10 | 56/58D/59A | Guía de secretaria preparada en el documento 44; capacitación y práctica del Día 0 pendientes | George | Alta | Operador completa flujo diario sin acceso administrativo |
 | P1-11 | 60B/60B-2/60B-3/60B-4 | Anulación de ventas: corregido el lock PostgreSQL que devolvía `500`. Login remoto: corregida la llamada productiva de `buildApiUrl` que, sin `location`, usaba el fallback Tailscale en navegadores LAN; se conserva timeout, liberación del loading y errores claros. Comprobación física real pendiente | Desarrollo + George | Alta | Contado y crédito se anulan con motivo por `admin_auditor`; `operator` recibe `403`; una venta con abonos muestra `409`; login `admin_auditor`/`operator` funciona desde MacBook/iPhone por WiFi/LAN, localhost y Tailscale; el flujo real autorizado queda comprobado |
 | P1-12 | 60C/60C-2 | Corrección administrativa auditada de `sale_date` para ventas reales registradas con fecha incorrecta, sin anular, duplicar ni editar otros datos. Backup y migración productiva a 0027 aprobados; falta validación operativa real por rol | Desarrollo + George | Alta | `admin_auditor` corrige contado/crédito con motivo; `operator` recibe `403`; cierres y anuladas devuelven `409`; auditoría, pagos inmutables, reportes y frontend quedan comprobados con una venta real autorizada |
-| P1-13 | Siguiente bloque de rutas | Liquidación física de carga por producto: cargado, vendido, retornado y diferencia | Desarrollo + George | Alta | Una ruta no cierra físicamente con cantidades incompatibles; diferencias quedan trazadas |
+| P1-13 | 60E/60E-2 + siguiente bloque de rutas | Resumen simple implementado y desplegado: cargado, retornado, vendido físico/registrado y diferencias por producto y dinero. Humo productivo de permisos y no mutación aprobado; pendiente una ruta real, automatización de inventario e incidencia persistida | Desarrollo + George | Alta | Una ruta real concilia el resumen con la revisión manual; no cierra físicamente con cantidades incompatibles; diferencias quedan trazadas y los movimientos por venta son reversibles |
 | P1-14 | Siguiente bloque de inventario | Conciliación de apertura/cierre por ubicación y reporte de inventario esperado vs físico | Desarrollo + George | Alta | Bodega y carros muestran apertura, movimientos, cierre, conteo y diferencia |
 | P1-15 | Siguiente bloque de producción | Alertar lotes sin consumo o aplicación y validar vigencia de fórmula al confirmar consumo | Desarrollo + George | Alta | El cierre diario identifica lotes incompletos y una fórmula fuera de vigencia no se consume |
 

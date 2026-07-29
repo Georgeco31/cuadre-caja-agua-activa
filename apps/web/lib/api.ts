@@ -176,6 +176,7 @@ import type {
   RouteReturnFilters,
   RouteReturnPayload,
 } from "@/types/routeReturn";
+import type { RouteSettlement } from "@/types/routeSettlement";
 import type {
   CustomerStatement,
   CustomerStatementFilters,
@@ -2609,6 +2610,16 @@ export async function getRouteLoadFinancialClosure(
 ): Promise<RouteLoadFinancialClosure> {
   return request<RouteLoadFinancialClosure>(
     `/route-loads/${loadId}/financial-closure`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getRouteSettlementSummary(
+  token: string,
+  loadId: number,
+): Promise<RouteSettlement> {
+  return request<RouteSettlement>(
+    `/route-loads/${loadId}/settlement-summary`,
     { headers: authHeaders(token) },
   );
 }

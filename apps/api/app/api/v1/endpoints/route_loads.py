@@ -13,9 +13,11 @@ from app.schemas.route_load import (
 )
 from app.schemas.route_activity import RouteCommercialActivityRead
 from app.schemas.route_closure import RouteLoadFinancialClosureRead
+from app.schemas.route_settlement import RouteSettlementRead
 from app.services import route_activity as route_activity_service
 from app.services import route_closures as route_closures_service
 from app.services import route_loads as route_loads_service
+from app.services import route_settlements as route_settlements_service
 
 router = APIRouter(
     prefix="/route-loads",
@@ -99,6 +101,20 @@ def get_route_load_financial_closure(
 ):
     try:
         return route_closures_service.get_financial_closure_for_load(db, load_id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/{load_id}/settlement-summary",
+    response_model=RouteSettlementRead,
+)
+def get_route_load_settlement_summary(
+    load_id: int,
+    db: Session = Depends(get_db),
+):
+    try:
+        return route_settlements_service.get_route_settlement(db, load_id)
     except ValueError as error:
         raise _http_error(error) from error
 

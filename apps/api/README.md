@@ -757,11 +757,19 @@ La migracion `0014_route_loads` crea `route_loads` y `route_load_items`. Endpoin
 - `GET /api/v1/route-loads`
 - `GET /api/v1/route-loads/{load_id}`
 - `GET /api/v1/route-loads/{load_id}/commercial-activity`
+- `GET /api/v1/route-loads/{load_id}/settlement-summary`
 - `POST /api/v1/route-loads/{load_id}/void`
 
 Una carga exige fecha, ruta activa, vehiculo activo, origen activo, destino activo de tipo `vehicle` y al menos un producto activo. Si el destino esta vinculado a un vehiculo, debe coincidir con el seleccionado. Cada item crea una salida en el origen y una entrada en el destino usando `Numeric(14, 3)` y la logica transaccional de inventario. El listado acepta `date_from`, `date_to`, `status`, `route_id`, `vehicle_id`, `product_id` y `search`.
 
 La anulacion exige motivo, anula ambos movimientos y revierte el traslado sin permitir stock negativo en el destino. La carga, sus items y movimientos se conservan; los movimientos de una carga activa no pueden anularse manualmente. Una carga con retorno activo exige anular primero ese retorno y una carga con ventas o cobros activos asociados no puede anularse. La consulta `commercial-activity` separa ventas de contado, ventas a credito y cobros, agrupa productos y calcula el efectivo esperado como ventas de contado mas cobros. Una carga con cierre financiero activo no admite nuevas ventas, cobros o retornos asociados, ni la anulacion de esas operaciones o de la propia carga.
+
+La consulta `settlement-summary` reutiliza la carga, el retorno activo, la
+actividad comercial y el cierre financiero activo. Calcula cargado, retornado,
+vendido fisico, vendido registrado y diferencias por producto; tambien expone
+ventas, cobros, efectivo esperado, entregado, diferencia y estado `pending`,
+`balanced` o `with_difference`. Es de solo lectura y no mueve inventario,
+ventas, cobros ni caja. No requiere una migracion adicional a 0027.
 
 ## Retorno de ruta
 

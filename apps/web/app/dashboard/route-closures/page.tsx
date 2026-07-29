@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { AccessRestricted } from "@/components/AccessRestricted";
@@ -16,7 +16,7 @@ import {
 import {
   ApiError,
   createRouteClosure,
-  getRouteCommercialActivity,
+  getRouteSettlementSummary,
   listDeliveryRoutes,
   listRouteClosures,
   listRouteLoads,
@@ -26,13 +26,13 @@ import {
 import { getToken, removeToken } from "@/lib/auth";
 import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { DeliveryRoute } from "@/types/deliveryRoute";
-import type { RouteCommercialActivity } from "@/types/routeActivity";
 import type {
   RouteClosure,
   RouteClosureFilters,
   RouteClosurePayload,
 } from "@/types/routeClosure";
 import type { RouteLoad } from "@/types/routeLoad";
+import type { RouteSettlement } from "@/types/routeSettlement";
 import type { Vehicle } from "@/types/vehicle";
 
 const emptyFilters: RouteClosureFilterValues = {
@@ -50,30 +50,20 @@ export default function RouteClosuresPage() {
   const [token, setToken] = useState<string | null>(null);
   const [loads, setLoads] = useState<RouteLoad[]>([]);
   const [closures, setClosures] = useState<RouteClosure[]>([]);
-  const [allClosures, setAllClosures] = useState<RouteClosure[]>([]);
   const [routes, setRoutes] = useState<DeliveryRoute[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedLoadId, setSelectedLoadId] = useState("");
-  const [activity, setActivity] = useState<RouteCommercialActivity | null>(null);
+  const [settlement, setSettlement] = useState<RouteSettlement | null>(null);
   const [filters, setFilters] = useState<RouteClosureFilterValues>(emptyFilters);
   const [appliedFilters, setAppliedFilters] =
     useState<RouteClosureFilterValues>(emptyFilters);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingActivity, setIsLoadingActivity] = useState(false);
+  const [isLoadingSettlement, setIsLoadingSettlement] = useState(false);
   const [isFiltering, setIsFiltering] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [voidingClosureId, setVoidingClosureId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-
-  const availableLoads = useMemo(() => {
-    const closedLoadIds = new Set(
-      allClosures
-        .filter((closure) => closure.status === "active")
-        .map((closure) => closure.route_load_id),
-    );
-    return loads.filter((load) => !closedLoadIds.has(load.id));
-  }, [allClosures, loads]);
 
   useEffect(() => {
     const storedToken = getToken();
@@ -98,7 +88,6 @@ export default function RouteClosuresPage() {
         ]);
       setLoads(loadedLoads);
       setClosures(loadedClosures);
-      setAllClosures(loadedClosures);
       setRoutes(loadedRoutes);
       setVehicles(loadedVehicles);
     } catch (loadError) {
@@ -110,19 +99,19 @@ export default function RouteClosuresPage() {
 
   async function handleLoadChange(loadId: string) {
     setSelectedLoadId(loadId);
-    setActivity(null);
+    setSettlement(null);
     setError("");
     setMessage("");
     if (!token || !loadId) {
       return;
     }
-    setIsLoadingActivity(true);
+    setIsLoadingSettlement(true);
     try {
-      setActivity(await getRouteCommercialActivity(token, Number(loadId)));
+      setSettlement(await getRouteSettlementSummary(token, Number(loadId)));
     } catch (loadError) {
       handleError(loadError);
     } finally {
-      setIsLoadingActivity(false);
+      setIsLoadingSettlement(false);
     }
   }
 
@@ -137,9 +126,10 @@ export default function RouteClosuresPage() {
       setMessage(
         `Cierre ${saved.closure_number} registrado. Diferencia oficial: ${formatSignedMoney(saved.difference_amount)}.`,
       );
-      setSelectedLoadId("");
-      setActivity(null);
       await refreshData(token, appliedFilters);
+      setSettlement(
+        await getRouteSettlementSummary(token, payload.route_load_id),
+      );
       return true;
     } catch (saveError) {
       handleError(saveError);
@@ -170,6 +160,11 @@ export default function RouteClosuresPage() {
       const voided = await voidRouteClosure(token, closure.id, normalizedReason);
       setMessage(`Cierre ${voided.closure_number} anulado.`);
       await refreshData(token, appliedFilters);
+      if (selectedLoadId === String(closure.route_load_id)) {
+        setSettlement(
+          await getRouteSettlementSummary(token, closure.route_load_id),
+        );
+      }
     } catch (voidError) {
       handleError(voidError);
     } finally {
@@ -181,14 +176,12 @@ export default function RouteClosuresPage() {
     activeToken: string,
     activeFilters: RouteClosureFilterValues,
   ) {
-    const [loadedLoads, loadedClosures, loadedAllClosures] = await Promise.all([
+    const [loadedLoads, loadedClosures] = await Promise.all([
       listRouteLoads(activeToken, { status: "active" }),
       listRouteClosures(activeToken, toApiFilters(activeFilters)),
-      listRouteClosures(activeToken),
     ]);
     setLoads(loadedLoads);
     setClosures(loadedClosures);
-    setAllClosures(loadedAllClosures);
   }
 
   async function loadFilteredClosures(
@@ -242,11 +235,11 @@ export default function RouteClosuresPage() {
               Volver al dashboard
             </Link>
             <h1 className="mt-2 text-2xl font-semibold text-slate-950">
-              Cierre financiero de ruta
+              Liquidación simple y cierre de ruta
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-              Compara el efectivo esperado de una ruta contra el efectivo
-              realmente entregado. Este módulo no modifica caja general todavía.
+              Compara carga, retorno, venta física, ventas y cobros registrados,
+              dinero esperado y dinero entregado por cada ruta.
             </p>
           </div>
           <LogoutButton />
@@ -254,8 +247,8 @@ export default function RouteClosuresPage() {
 
         <div className="flex flex-col gap-3 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            El cierre congela los totales comerciales de la carga. No mueve
-            caja, inventario ni el estado físico de la ruta.
+            El resumen es informativo. El cierre congela los totales comerciales,
+            pero no modifica ventas, cobros, caja ni inventario.
           </p>
           <Link
             className="shrink-0 font-semibold text-water-700 hover:text-water-500"
@@ -278,17 +271,16 @@ export default function RouteClosuresPage() {
           <LoadingState label="Cargando cierres financieros..." />
         ) : (
           <>
-            {canVoid ? (
-              <RouteClosureForm
-                loads={availableLoads}
-                selectedLoadId={selectedLoadId}
-                activity={activity}
-                isLoadingActivity={isLoadingActivity}
-                isSubmitting={isSaving}
-                onLoadChange={handleLoadChange}
-                onSubmit={handleCreate}
-              />
-            ) : null}
+            <RouteClosureForm
+              loads={loads}
+              selectedLoadId={selectedLoadId}
+              settlement={settlement}
+              canCreate={canVoid}
+              isLoadingSettlement={isLoadingSettlement}
+              isSubmitting={isSaving}
+              onLoadChange={handleLoadChange}
+              onSubmit={handleCreate}
+            />
             <RouteClosureList
               canVoid={canVoid}
               closures={closures}

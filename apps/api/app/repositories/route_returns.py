@@ -15,7 +15,9 @@ def get_active_return_for_load(
     route_load_id: int,
 ) -> RouteReturn | None:
     return db.scalar(
-        select(RouteReturn).where(
+        select(RouteReturn)
+        .options(*_return_options())
+        .where(
             RouteReturn.route_load_id == route_load_id,
             RouteReturn.status == "active",
         ),

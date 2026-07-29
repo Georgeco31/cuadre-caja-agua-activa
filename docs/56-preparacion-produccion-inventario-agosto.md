@@ -75,8 +75,9 @@ comercial, cierres y reportes.
 | Carga de vehículo | Traslado bodega → ubicación de vehículo, con ruta, carro, partidas y movimientos relacionados | Lista bajo control admin | Requiere stock previo; `operator` solo consulta |
 | Retorno | Traslado vehículo → ubicación no vehicular, ligado a una carga, trazable y reversible | Listo bajo control admin | Solo un retorno activo por carga; no calcula automáticamente lo vendido |
 | Ventas/cobros por carga | Asociación opcional a carga activa y actividad comercial consolidada | Lista para conciliación financiera | Una venta no descuenta stock del vehículo |
-| Cierre de ruta | Efectivo esperado, entregado y diferencia; bloquea cambios comerciales posteriores | Listo como cierre financiero | No exige retorno previo ni liquida físicamente carga − venta − retorno |
-| Reportes | Stock en pantalla, resumen diario, resumen mensual y Excel de inventario/producción/rutas | Útiles para revisión | No existe reporte oficial de inventario inicial vs final ni diferencia física por ruta |
+| Liquidación simple de ruta | Resumen por carga y producto de cargado, retornado, vendido físico, vendido registrado, ventas, cobros y dinero | Lista como apoyo de conciliación | Es de solo lectura; no crea salidas por venta ni reemplaza el conteo físico |
+| Cierre de ruta | Efectivo esperado, entregado y diferencia; bloquea cambios comerciales posteriores | Listo como cierre financiero | No exige retorno previo ni liquida inventario automáticamente |
+| Reportes | Stock en pantalla, resumen diario, resumen mensual y Excel de inventario/producción/rutas | Útiles para revisión | No existe reporte oficial de inventario inicial vs final por ubicación |
 
 ## Modelo de inventario auditado
 
@@ -171,22 +172,30 @@ suficiente. No se debe usar el retorno para registrar envases vacíos
 retornables sin una regla aprobada: el flujo actual está pensado para productos
 de la carga.
 
-### Ventas y cierre
+### Ventas, liquidación simple y cierre
 
 Las ventas y cobros pueden asociarse a una carga. El cierre financiero congela
 ventas de contado, ventas a crédito, cobros, efectivo esperado, efectivo
 entregado y diferencia.
 
-El cierre actual **no**:
+El resumen de liquidación simple compara por producto:
+
+`cargado − retornado = vendido físico`
+
+y presenta la diferencia contra las cantidades de ventas asociadas. También
+muestra ventas registradas, cobros, efectivo esperado, dinero entregado y
+diferencia de dinero. Si falta retorno o dinero entregado, queda pendiente.
+
+El flujo actual **no**:
 
 - descuenta las ventas del inventario del carro;
 - exige que exista un retorno;
-- compara automáticamente cargado, vendido y retornado por producto;
-- registra diferencias físicas de ruta;
+- crea automáticamente movimientos por lo vendido;
+- persiste una incidencia de diferencia física independiente;
 - controla el ciclo del bidón retornable.
 
 Por eso, en agosto se debe conciliar físicamente cada ruta con el método manual
-y no presentar el cierre financiero como liquidación completa de inventario.
+y usar el resumen como apoyo, no como liquidación automática de inventario.
 
 ## Flujo recomendado para agosto
 
@@ -221,14 +230,15 @@ y no presentar el cierre financiero como liquidación completa de inventario.
 10. Registrar ventas y cobros, vinculados a la carga cuando corresponda.
 11. Contar y registrar el retorno físico.
 12. Registrar gastos y cerrar caja según el flujo vigente.
-13. Realizar el cierre financiero de ruta cuando la información esté completa.
-14. Comparar ERP, físico y método manual.
-15. Registrar toda diferencia como incidencia; no ocultarla con ajustes.
+13. Consultar la liquidación simple y revisar las diferencias por producto.
+14. Realizar el cierre financiero de ruta cuando la información esté completa.
+15. Comparar ERP, físico y método manual.
+16. Registrar toda diferencia como incidencia; no ocultarla con ajustes.
 
 ### C. Al cierre
 
 - comparar inventario esperado con conteo físico por ubicación;
-- comparar carga, ventas y retorno manualmente por producto;
+- comparar carga, ventas y retorno en la liquidación simple y en el método manual;
 - comparar dinero esperado con dinero contado;
 - revisar lotes sin consumo o sin aplicación a inventario;
 - revisar cargas sin retorno o sin cierre;
@@ -359,7 +369,8 @@ el conteo físico manual de envases, pero no debe inventar consumo automático.
 - [ ] Stock del vehículo disminuyó.
 - [ ] Stock de destino aumentó.
 - [ ] Envases vacíos retornables se controlaron por separado.
-- [ ] Diferencia contra ventas/carga registrada manualmente.
+- [ ] Diferencia contra ventas/carga revisada en la liquidación simple.
+- [ ] Resultado comparado con el método manual.
 
 ## Checklist de cierre diario
 
@@ -369,6 +380,7 @@ el conteo físico manual de envases, pero no debe inventar consumo automático.
 - [ ] Lotes pendientes de aplicación identificados.
 - [ ] Cargas y retornos revisados.
 - [ ] Ventas y cobros conciliados.
+- [ ] Liquidación simple revisada por producto.
 - [ ] Cierre financiero de ruta revisado, si aplica.
 - [ ] Caja cerrada según el flujo vigente.
 - [ ] Inventario esperado comparado con físico.
@@ -398,10 +410,10 @@ automático de ese producto y se registra el pendiente.
 | Brecha | Efecto | Control temporal para agosto | Prioridad posterior |
 | --- | --- | --- | --- |
 | Ventas no descuentan stock del vehículo | El saldo del carro no representa automáticamente lo vendido | Conciliación manual cargado − vendido − retornado y conteo físico | Alta |
-| Cierre financiero no exige retorno ni cuadra cantidades | Puede cerrarse dinero sin liquidar producto | Completar retorno y hoja física antes del cierre | Alta |
+| Cierre financiero no exige retorno | Puede cerrarse dinero antes de completar el producto | Completar retorno y revisar la liquidación simple antes del cierre | Alta |
 | Producción puede quedar sin consumo o sin aplicación | Insumos y terminado pueden desalinearse | Checklist diario de tres pasos y revisión de George | Alta |
 | No existe reporte inicial vs final por ubicación | La diferencia diaria requiere cálculo manual | Guardar plantilla de apertura/cierre | Alta |
-| No existe reporte de diferencia física por ruta | No hay liquidación simple de carro | Hoja manual por carga | Alta |
+| Resumen simple no mueve inventario ni persiste incidencias | La diferencia es visible, pero no se liquida automáticamente | Revisar resumen y conservar hoja manual por carga | Alta |
 | Envase retornable solo tiene una marca básica | No hay ciclo lleno/vacío/prestado/devuelto | Conteo manual separado; no consumir como tapa | Alta |
 | Motivo de `entry`/`exit` es opcional técnicamente | Puede perderse explicación operativa | Motivo obligatorio por procedimiento | Media |
 | Costos aparecen en respuestas API de lectura autenticada | El backend no aplica la misma ocultación que el frontend | No usar API directa con operador; endurecer en bloque separado | Media |
@@ -411,7 +423,7 @@ automático de ese producto y se registra el pendiente.
 
 ## Qué no debe usarse aún como control oficial
 
-- liquidación física automática de ruta;
+- liquidación física automática de ruta; el resumen simple es solo informativo;
 - control avanzado de envases retornables;
 - inventario descontado automáticamente por ventas;
 - producción totalmente automática desde fórmula hasta stock;
@@ -424,8 +436,8 @@ automático de ese producto y se registra el pendiente.
 
 Los nombres son propuestas y no autorizan implementación:
 
-1. **Liquidación física de ruta:** cargado, vendido, retornado, diferencia y
-   condición obligatoria antes del cierre.
+1. **Liquidación automática completa de ruta:** convertir ventas en salidas
+   reversibles, persistir incidencias y definir condición obligatoria de retorno.
 2. **Inventario por venta de ruta:** salida del vehículo transaccional y
    reversible al registrar/anular la venta.
 3. **Envases retornables:** lleno, vacío, entregado, devuelto, pérdida,

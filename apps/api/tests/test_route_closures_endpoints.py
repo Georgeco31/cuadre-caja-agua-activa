@@ -505,6 +505,327 @@ def test_voided_closure_reopens_route_for_commercial_activity(
     assert response.status_code == 201, response.json()
 
 
+def test_settlement_summary_is_pending_without_return_or_delivered_cash(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    setup = _setup_route(client, api_auth_headers)
+
+    response = client.get(
+        f"/api/v1/route-loads/{setup['load']['id']}/settlement-summary",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200, response.json()
+    summary = response.json()
+    assert summary["load_number"] == setup["load"]["load_number"]
+    assert summary["route_name"] == setup["route"]["name"]
+    assert summary["vehicle_name"] == setup["vehicle"]["name"]
+    assert Decimal(summary["total_loaded_quantity"]) == Decimal("20.000")
+    assert summary["total_returned_quantity"] is None
+    assert summary["physical_sold_quantity"] is None
+    assert Decimal(summary["registered_sold_quantity"]) == Decimal("0.000")
+    assert summary["physical_vs_registered_difference"] is None
+    assert Decimal(summary["registered_sales_amount"]) == Decimal("0.00")
+    assert Decimal(summary["registered_payments_amount"]) == Decimal("0.00")
+    assert Decimal(summary["expected_cash_amount"]) == Decimal("0.00")
+    assert summary["delivered_cash_amount"] is None
+    assert summary["cash_difference"] is None
+    assert summary["status"] == "pending"
+    assert summary["messages"] == [
+        "No hay retorno registrado todavia.",
+        "No hay dinero entregado registrado todavia.",
+    ]
+
+
+def test_settlement_summary_calculates_physical_and_registered_quantities(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    setup = _setup_route(client, api_auth_headers)
+    route_return = _create_return(
+        client,
+        api_auth_headers,
+        setup,
+        quantity="5",
+    )
+    sale = _create_cash_sale(
+        client,
+        api_auth_headers,
+        setup,
+        route_load_id=setup["load"]["id"],
+        quantity="12",
+        unit_price="2.00",
+    )
+    assert route_return.status_code == 201, route_return.json()
+    assert sale.status_code == 201, sale.json()
+
+    response = client.get(
+        f"/api/v1/route-loads/{setup['load']['id']}/settlement-summary",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200, response.json()
+    summary = response.json()
+    assert Decimal(summary["total_loaded_quantity"]) == Decimal("20.000")
+    assert Decimal(summary["total_returned_quantity"]) == Decimal("5.000")
+    assert Decimal(summary["physical_sold_quantity"]) == Decimal("15.000")
+    assert Decimal(summary["registered_sold_quantity"]) == Decimal("12.000")
+    assert Decimal(summary["physical_vs_registered_difference"]) == Decimal(
+        "3.000",
+    )
+    assert Decimal(summary["registered_sales_amount"]) == Decimal("24.00")
+    assert Decimal(summary["expected_cash_amount"]) == Decimal("24.00")
+    assert summary["delivered_cash_amount"] is None
+    assert summary["status"] == "pending"
+    assert "La ruta tiene diferencia de producto." in summary["messages"]
+    assert len(summary["items"]) == 1
+    assert Decimal(summary["items"][0]["loaded_quantity"]) == Decimal("20.000")
+    assert Decimal(summary["items"][0]["returned_quantity"]) == Decimal("5.000")
+    assert Decimal(summary["items"][0]["physical_sold_quantity"]) == Decimal(
+        "15.000",
+    )
+
+
+def test_settlement_summary_marks_balanced_and_cash_differences(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    setup = _setup_route(client, api_auth_headers)
+    route_return = _create_return(
+        client,
+        api_auth_headers,
+        setup,
+        quantity="5",
+    )
+    sale = _create_cash_sale(
+        client,
+        api_auth_headers,
+        setup,
+        route_load_id=setup["load"]["id"],
+        quantity="15",
+        unit_price="2.00",
+    )
+    assert route_return.status_code == 201, route_return.json()
+    assert sale.status_code == 201, sale.json()
+    closure = _create_closure(
+        client,
+        api_auth_headers,
+        setup["load"]["id"],
+        delivered="30.00",
+    )
+    assert closure.status_code == 201, closure.json()
+
+    balanced_response = client.get(
+        f"/api/v1/route-loads/{setup['load']['id']}/settlement-summary",
+        headers=api_auth_headers,
+    )
+
+    assert balanced_response.status_code == 200, balanced_response.json()
+    balanced = balanced_response.json()
+    assert balanced["status"] == "balanced"
+    assert Decimal(balanced["cash_difference"]) == Decimal("0.00")
+    assert balanced["messages"] == ["La ruta esta cuadrada."]
+
+    _void_closure(client, api_auth_headers, closure.json()["id"])
+    different_closure = _create_closure(
+        client,
+        api_auth_headers,
+        setup["load"]["id"],
+        delivered="25.00",
+        notes="Faltante informado por el conductor",
+    )
+    assert different_closure.status_code == 201, different_closure.json()
+
+    different_response = client.get(
+        f"/api/v1/route-loads/{setup['load']['id']}/settlement-summary",
+        headers=api_auth_headers,
+    )
+
+    assert different_response.status_code == 200, different_response.json()
+    different = different_response.json()
+    assert different["status"] == "with_difference"
+    assert Decimal(different["cash_difference"]) == Decimal("-5.00")
+    assert different["difference_reason"] == "Faltante informado por el conductor"
+    assert different["messages"] == ["La ruta tiene diferencia de dinero."]
+
+
+def test_settlement_summary_does_not_cancel_opposite_product_differences(
+    api_client,
+    api_auth_headers,
+) -> None:
+    client, _ = api_client
+    setup = _setup_route(client, api_auth_headers)
+    second_product = _post(
+        client,
+        "/api/v1/products",
+        api_auth_headers,
+        {
+            "sku": "PROD-CLOSE-OFFSET",
+            "name": "Producto cierre offset",
+            "category": "water",
+            "unit": "container",
+            "presentation": "10 L",
+            "default_price": "1.00",
+            "cost_estimate": "0.20",
+        },
+    )
+    stock_entry = client.post(
+        "/api/v1/inventory/movements",
+        headers=api_auth_headers,
+        json={
+            "movement_date": "2026-07-18",
+            "movement_type": "entry",
+            "product_id": second_product["id"],
+            "location_id": setup["source"]["id"],
+            "quantity": "20",
+            "reason": "Stock controlado para diferencia por producto",
+        },
+    )
+    assert stock_entry.status_code == 201, stock_entry.json()
+    load = _post(
+        client,
+        "/api/v1/route-loads",
+        api_auth_headers,
+        {
+            "load_date": "2026-07-18",
+            "route_id": setup["route"]["id"],
+            "vehicle_id": setup["vehicle"]["id"],
+            "source_location_id": setup["source"]["id"],
+            "destination_location_id": setup["destination"]["id"],
+            "items": [
+                {
+                    "product_id": setup["product"]["id"],
+                    "quantity_loaded": "10",
+                },
+                {
+                    "product_id": second_product["id"],
+                    "quantity_loaded": "10",
+                },
+            ],
+        },
+    )
+    route_return = client.post(
+        "/api/v1/route-returns",
+        headers=api_auth_headers,
+        json={
+            "return_date": "2026-07-18",
+            "route_load_id": load["id"],
+            "destination_location_id": setup["source"]["id"],
+            "items": [
+                {
+                    "route_load_item_id": load["items"][0]["id"],
+                    "quantity_returned": "5",
+                },
+                {
+                    "route_load_item_id": load["items"][1]["id"],
+                    "quantity_returned": "5",
+                },
+            ],
+        },
+    )
+    sale = client.post(
+        "/api/v1/sales/cash",
+        headers=api_auth_headers,
+        json={
+            "sale_date": "2026-07-18",
+            "customer_id": setup["customer"]["id"],
+            "route_load_id": load["id"],
+            "payment_method": "cash",
+            "items": [
+                {
+                    "product_id": setup["product"]["id"],
+                    "quantity": "4",
+                    "unit_price": "1.00",
+                },
+                {
+                    "product_id": second_product["id"],
+                    "quantity": "6",
+                    "unit_price": "1.00",
+                },
+            ],
+        },
+    )
+    closure = _create_closure(
+        client,
+        api_auth_headers,
+        load["id"],
+        delivered="10.00",
+        notes="Diferencias opuestas por producto",
+    )
+    assert route_return.status_code == 201, route_return.json()
+    assert sale.status_code == 201, sale.json()
+    assert closure.status_code == 201, closure.json()
+
+    response = client.get(
+        f"/api/v1/route-loads/{load['id']}/settlement-summary",
+        headers=api_auth_headers,
+    )
+
+    assert response.status_code == 200, response.json()
+    summary = response.json()
+    assert Decimal(summary["physical_vs_registered_difference"]) == Decimal(
+        "0.000",
+    )
+    assert {
+        Decimal(item["physical_vs_registered_difference"])
+        for item in summary["items"]
+    } == {Decimal("-1.000"), Decimal("1.000")}
+    assert summary["status"] == "with_difference"
+    assert "La ruta tiene diferencia de producto." in summary["messages"]
+
+
+def test_settlement_summary_is_read_only_and_visible_to_operator(
+    api_client,
+    api_auth_headers,
+    api_operator_auth_headers,
+) -> None:
+    client, testing_session_local = api_client
+    setup = _setup_route(client, api_auth_headers)
+    sale = _create_cash_sale(
+        client,
+        api_auth_headers,
+        setup,
+        route_load_id=setup["load"]["id"],
+    ).json()
+    credit_sale = _create_credit_sale(
+        client,
+        api_auth_headers,
+        setup,
+        route_load_id=setup["load"]["id"],
+    ).json()
+    payment = _create_payment(
+        client,
+        api_auth_headers,
+        credit_sale["id"],
+        route_load_id=setup["load"]["id"],
+    ).json()
+    with testing_session_local() as session:
+        before = _operational_snapshot(session, sale["id"], payment["id"])
+        before_counts = (
+            session.query(Sale).count(),
+            session.query(CreditPayment).count(),
+            session.query(RouteClosure).count(),
+        )
+
+    response = client.get(
+        f"/api/v1/route-loads/{setup['load']['id']}/settlement-summary",
+        headers=api_operator_auth_headers,
+    )
+
+    assert response.status_code == 200, response.json()
+    with testing_session_local() as session:
+        assert _operational_snapshot(session, sale["id"], payment["id"]) == before
+        assert (
+            session.query(Sale).count(),
+            session.query(CreditPayment).count(),
+            session.query(RouteClosure).count(),
+        ) == before_counts
+
+
 @pytest.mark.parametrize(
     ("method", "path", "payload"),
     [
@@ -520,6 +841,7 @@ def test_voided_closure_reopens_route_for_commercial_activity(
         ("GET", "/api/v1/route-closures", None),
         ("GET", "/api/v1/route-closures/1", None),
         ("GET", "/api/v1/route-loads/1/financial-closure", None),
+        ("GET", "/api/v1/route-loads/1/settlement-summary", None),
         (
             "POST",
             "/api/v1/route-closures/1/void",
@@ -828,7 +1150,13 @@ def _void_load(client, headers, load_id: int) -> None:
     assert response.status_code == 200, response.json()
 
 
-def _create_return(client, headers, setup: dict):
+def _create_return(
+    client,
+    headers,
+    setup: dict,
+    *,
+    quantity: str = "1",
+):
     return client.post(
         "/api/v1/route-returns",
         headers=headers,
@@ -839,7 +1167,7 @@ def _create_return(client, headers, setup: dict):
             "items": [
                 {
                     "route_load_item_id": setup["load"]["items"][0]["id"],
-                    "quantity_returned": "1",
+                    "quantity_returned": quantity,
                 }
             ],
         },
