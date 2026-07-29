@@ -74,7 +74,12 @@ def test_operator_receives_403_on_critical_endpoints(
     )
 
     assert response.status_code == 403, (path, response.text)
-    assert response.json()["detail"] == PERMISSION_DENIED_DETAIL
+    expected_detail = (
+        "No tienes permiso para gestionar roles de pago."
+        if path.startswith("/api/v1/payroll/")
+        else PERMISSION_DENIED_DETAIL
+    )
+    assert response.json()["detail"] == expected_detail
 
 
 @pytest.mark.parametrize(

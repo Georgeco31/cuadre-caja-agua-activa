@@ -234,15 +234,19 @@ http://localhost:3000/login
   oficiales del backend. Este módulo no modifica caja, bancos o gastos.
 - La pantalla `/dashboard/payroll` permite seleccionar período y empleados
   activos, capturar bonos, otros ingresos y descuentos, elegir anticipos y
-  definir descuentos parciales de préstamos.
+  definir descuentos parciales de préstamos. También permite crear un borrador
+  vacío y agregar empleados después.
 - La vista previa y los totales oficiales se calculan en
-  `POST /api/v1/payroll/runs/preview`. La creación congela datos del empleado,
-  asistencia e importes mediante `POST /api/v1/payroll/runs`.
-- El historial permite filtrar, consultar detalle y anular con motivo. Anular
-  libera anticipos y préstamos para un rol futuro porque solo los roles activos
-  bloquean su reutilización.
-- El módulo base no paga nómina, no cambia anticipos o saldos de préstamos y no
-  crea movimientos de caja, banco o gastos operativos.
+  `POST /api/v1/payroll/runs/preview`. La creación inicia un rol `draft`; solo
+  ese estado admite adiciones o correcciones con motivo.
+- El historial permite filtrar y consultar el detalle, totales y auditoría.
+  Las acciones visibles respetan `draft → approved → paid`; cancelar un
+  borrador o aprobado libera sus reservas. Antes de marcar pagado se muestra
+  una confirmación explícita porque se aplicarán anticipos y abonos de préstamo.
+- Solo `admin` ve y usa la pantalla. `operator` no tiene entrada de menú y la
+  ruta directa muestra el acceso restringido acordado.
+- `paid` registra la aplicación administrativa de saldos, pero no transfiere
+  dinero ni crea movimientos de caja, banco o gastos operativos.
 - La pantalla `/dashboard/delivery-routes` lista rutas desde `GET /api/v1/delivery-routes` y permite buscar por nombre, codigo, zona, sector o dias de atencion.
 - El alta usa `POST /api/v1/delivery-routes` y la edicion usa `PATCH /api/v1/delivery-routes/{id}`.
 - La inactivacion y reactivacion usan `PATCH /api/v1/delivery-routes/{id}/deactivate` y `PATCH /api/v1/delivery-routes/{id}/activate`; no se eliminan rutas fisicamente.

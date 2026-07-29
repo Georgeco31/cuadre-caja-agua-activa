@@ -26,6 +26,7 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "inventory_stocks",
         "operating_expense_categories",
         "operating_expenses",
+        "payroll_audit_logs",
         "payroll_item_advance_deductions",
         "payroll_item_loan_deductions",
         "payroll_items",

@@ -59,6 +59,7 @@ class PayrollItemAdvanceDeduction(Base):
         nullable=False,
         server_default=func.now(),
     )
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     payroll_item: Mapped["PayrollItem"] = relationship(
         "PayrollItem",

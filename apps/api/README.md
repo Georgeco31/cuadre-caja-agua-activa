@@ -530,29 +530,37 @@ cuadre o gastos operativos.
 ## Roles de pago base
 
 Las tablas `payroll_runs`, `payroll_items`,
-`payroll_item_advance_deductions` y `payroll_item_loan_deductions` congelan el
-cálculo administrativo del Bloque 49. Los endpoints autenticados son:
+`payroll_item_advance_deductions`, `payroll_item_loan_deductions` y
+`payroll_audit_logs` conservan el cálculo y la trazabilidad administrativa del
+Bloque 61A. Solo `admin` puede usar estos endpoints:
 
 - `POST /api/v1/payroll/runs/preview`
 - `POST /api/v1/payroll/runs`
 - `GET /api/v1/payroll/runs`
 - `GET /api/v1/payroll/runs/{payroll_run_id}`
-- `POST /api/v1/payroll/runs/{payroll_run_id}/void`
-- `GET /api/v1/employees/{employee_id}/payroll-summary`
+- `POST /api/v1/payroll/runs/{payroll_run_id}/items`
+- `PATCH /api/v1/payroll/items/{payroll_item_id}`
+- `POST /api/v1/payroll/runs/{payroll_run_id}/approve`
+- `POST /api/v1/payroll/runs/{payroll_run_id}/mark-paid`
+- `POST /api/v1/payroll/runs/{payroll_run_id}/cancel`
+- `GET /api/v1/payroll/employees/{employee_id}/summary`
 
-El preview no persiste datos. Al crear, el backend usa el sueldo base completo
-del empleado sin prorratearlo, conserva la asistencia del período como
-referencia y calcula ingresos, descuentos y neto con `Decimal`/`Numeric`. El
-neto negativo se bloquea.
+El preview no persiste datos. Un rol nace `draft`, incluso vacío, y permite
+agregar o corregir empleados con motivo auditable. El backend usa el sueldo
+base completo sin prorratearlo, conserva la asistencia como referencia y
+calcula ingresos, descuentos y neto con `Decimal`/`Numeric`; bloquea importes o
+netos negativos.
 
 Los anticipos seleccionados se descuentan completos. Los préstamos admiten un
-monto parcial, pero la regla simple del MVP impide usar el mismo préstamo en
-más de un rol activo. Los anticipos tampoco pueden repetirse en roles activos.
-Anular el rol libera ambas referencias para roles futuros.
+monto parcial que no puede superar el saldo. Un descuento no se reserva dos
+veces entre roles `draft` o `approved`; cancelar libera la reserva. Aprobar
+congela el rol. Marcarlo `paid` aplica una sola vez los anticipos y los abonos
+de préstamo, con actor y fecha. El rol pagado es inmutable y no se revierte.
 
-Crear o anular un rol no modifica `employee_advances`, `employee_loans`, no
-crea `employee_loan_payments`, no paga sueldos y no crea movimientos de caja,
-banco, gastos del cuadre o gastos operativos.
+`mark-paid` es una confirmación administrativa: no transfiere dinero ni crea
+movimientos de caja, banco, gastos del cuadre o gastos operativos. La guía
+completa, riesgos y despliegue diferido están en
+`docs/61-bloque-61a-roles-pago-base.md`.
 
 ## Rutas de entrega
 

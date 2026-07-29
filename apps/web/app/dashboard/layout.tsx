@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AccessRestricted } from "@/components/AccessRestricted";
 import { LoadingState } from "@/components/LoadingState";
 import { canAccessDashboardPath } from "@/lib/frontendPermissions";
+import { PAYROLL_PERMISSION_MESSAGE } from "@/lib/payrollWorkflow";
 import { useCurrentRole } from "@/lib/useCurrentRole";
 
 export default function DashboardLayout({
@@ -25,9 +26,17 @@ export default function DashboardLayout({
   }
 
   if (!canAccessDashboardPath(role, pathname)) {
-    return <AccessRestricted />;
+    return (
+      <AccessRestricted
+        message={
+          pathname === "/dashboard/payroll" ||
+          pathname.startsWith("/dashboard/payroll/")
+            ? PAYROLL_PERMISSION_MESSAGE
+            : undefined
+        }
+      />
+    );
   }
 
   return children;
 }
-

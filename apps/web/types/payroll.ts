@@ -1,8 +1,10 @@
-export type PayrollStatus = "active" | "voided";
+export type PayrollStatus = "draft" | "approved" | "paid" | "cancelled";
 
 export const PAYROLL_STATUS_LABELS: Record<PayrollStatus, string> = {
-  active: "Activo",
-  voided: "Anulado",
+  draft: "Borrador",
+  approved: "Aprobado",
+  paid: "Pagado",
+  cancelled: "Cancelado",
 };
 
 export type PayrollLoanDeductionPayload = {
@@ -10,14 +12,22 @@ export type PayrollLoanDeductionPayload = {
   amount_deducted: string;
 };
 
-export type PayrollItemPayload = {
-  employee_id: number;
+export type PayrollItemValuesPayload = {
+  base_salary_amount?: string | null;
   bonus_amount: string;
   other_income_amount: string;
   other_deductions_amount: string;
   advance_ids: number[];
   loan_deductions: PayrollLoanDeductionPayload[];
   notes?: string | null;
+};
+
+export type PayrollItemPayload = PayrollItemValuesPayload & {
+  employee_id: number;
+};
+
+export type PayrollItemUpdatePayload = PayrollItemValuesPayload & {
+  correction_reason: string;
 };
 
 export type PayrollPreviewPayload = {
@@ -27,9 +37,14 @@ export type PayrollPreviewPayload = {
   items: PayrollItemPayload[];
 };
 
-export type PayrollRunPayload = PayrollPreviewPayload & {
-  payroll_date: string;
+export type PayrollRunPayload = {
+  period_start: string;
+  period_end: string;
+  payroll_date?: string | null;
+  label: string;
   notes?: string | null;
+  employee_ids?: number[];
+  items?: PayrollItemPayload[];
 };
 
 export type PayrollAdvanceDeduction = {
@@ -40,6 +55,7 @@ export type PayrollAdvanceDeduction = {
   advance_number_snapshot: string;
   advance_date_snapshot: string;
   reason_snapshot: string;
+  applied_at?: string | null;
   created_at?: string;
 };
 
@@ -52,6 +68,8 @@ export type PayrollLoanDeduction = {
   loan_date_snapshot: string;
   loan_balance_snapshot: string;
   reason_snapshot: string;
+  loan_payment_id?: number | null;
+  applied_at?: string | null;
   created_at?: string;
 };
 
@@ -101,9 +119,20 @@ export type PayrollPreview = {
   items: PayrollCalculatedItem[];
 };
 
+export type PayrollAuditLog = {
+  id: number;
+  payroll_run_id: number;
+  action: string;
+  actor_id: number;
+  reason: string | null;
+  details: string | null;
+  created_at: string;
+};
+
 export type PayrollRunSummary = {
   id: number;
   payroll_number: string;
+  label: string;
   period_start: string;
   period_end: string;
   payroll_date: string;
@@ -117,15 +146,21 @@ export type PayrollRunSummary = {
   total_deductions: string;
   net_pay_total: string;
   notes: string | null;
-  void_reason: string | null;
-  voided_at: string | null;
   created_by: number;
   created_at: string;
   updated_at: string;
+  approved_by: number | null;
+  approved_at: string | null;
+  paid_by: number | null;
+  paid_at: string | null;
+  cancelled_by: number | null;
+  cancelled_at: string | null;
+  cancellation_reason: string | null;
 };
 
 export type PayrollRun = PayrollRunSummary & {
   items: PayrollCalculatedItem[];
+  audit_logs: PayrollAuditLog[];
 };
 
 export type PayrollRunFilters = {
@@ -136,14 +171,44 @@ export type PayrollRunFilters = {
   search?: string;
 };
 
+export type EmployeePayrollAdvanceSummary = {
+  id: number;
+  advance_number: string;
+  advance_date: string;
+  amount: string;
+  reserved_amount: string;
+  estimated_balance: string;
+  available_for_payroll: boolean;
+};
+
+export type EmployeePayrollLoanSummary = {
+  id: number;
+  loan_number: string;
+  loan_date: string;
+  principal_amount: string;
+  paid_amount: string;
+  balance_amount: string;
+  reserved_amount: string;
+  estimated_balance: string;
+  available_for_payroll: boolean;
+};
+
 export type EmployeePayrollSummary = {
   employee_id: number;
   employee_name: string;
-  payroll_runs_count: number;
-  gross_total: string;
+  base_salary: string;
+  active_advances_total: string;
+  active_loans_balance_total: string;
+  reserved_advances_total: string;
+  reserved_loans_total: string;
+  estimated_pending_balance_after_reserved: string;
+  advances: EmployeePayrollAdvanceSummary[];
+  loans: EmployeePayrollLoanSummary[];
+  paid_payroll_runs_count: number;
+  gross_paid_total: string;
   advances_deducted_total: string;
   loan_deductions_total: string;
   other_deductions_total: string;
-  net_pay_total: string;
-  latest_payroll_items: PayrollCalculatedItem[];
+  net_paid_total: string;
+  latest_paid_payroll_items: PayrollCalculatedItem[];
 };

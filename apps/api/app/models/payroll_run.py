@@ -27,16 +27,20 @@ class PayrollRun(Base):
             name="ck_payroll_runs_number_not_blank",
         ),
         CheckConstraint(
+            "length(trim(label)) > 0",
+            name="ck_payroll_runs_label_not_blank",
+        ),
+        CheckConstraint(
             "period_end >= period_start",
             name="ck_payroll_runs_period_valid",
         ),
         CheckConstraint(
-            "status IN ('active', 'voided')",
+            "status IN ('draft', 'approved', 'paid', 'cancelled')",
             name="ck_payroll_runs_status",
         ),
         CheckConstraint(
-            "employees_count > 0",
-            name="ck_payroll_runs_employees_count_positive",
+            "employees_count >= 0",
+            name="ck_payroll_runs_employees_count_nonnegative",
         ),
         CheckConstraint(
             "gross_total >= 0 AND bonuses_total >= 0 "
@@ -47,10 +51,33 @@ class PayrollRun(Base):
             name="ck_payroll_runs_totals_nonnegative",
         ),
         CheckConstraint(
-            "(status = 'active' AND void_reason IS NULL AND voided_at IS NULL) "
-            "OR (status = 'voided' AND length(trim(void_reason)) > 0 "
-            "AND voided_at IS NOT NULL)",
-            name="ck_payroll_runs_void_state",
+            "("
+            "status = 'draft' "
+            "AND approved_by IS NULL AND approved_at IS NULL "
+            "AND paid_by IS NULL AND paid_at IS NULL "
+            "AND cancelled_by IS NULL AND cancelled_at IS NULL "
+            "AND cancellation_reason IS NULL"
+            ") OR ("
+            "status = 'approved' "
+            "AND approved_by IS NOT NULL AND approved_at IS NOT NULL "
+            "AND paid_by IS NULL AND paid_at IS NULL "
+            "AND cancelled_by IS NULL AND cancelled_at IS NULL "
+            "AND cancellation_reason IS NULL"
+            ") OR ("
+            "status = 'paid' "
+            "AND approved_by IS NOT NULL AND approved_at IS NOT NULL "
+            "AND paid_by IS NOT NULL AND paid_at IS NOT NULL "
+            "AND cancelled_by IS NULL AND cancelled_at IS NULL "
+            "AND cancellation_reason IS NULL"
+            ") OR ("
+            "status = 'cancelled' "
+            "AND paid_by IS NULL AND paid_at IS NULL "
+            "AND cancelled_by IS NOT NULL AND cancelled_at IS NOT NULL "
+            "AND length(trim(cancellation_reason)) > 0 "
+            "AND ((approved_by IS NULL AND approved_at IS NULL) "
+            "OR (approved_by IS NOT NULL AND approved_at IS NOT NULL))"
+            ")",
+            name="ck_payroll_runs_workflow_state",
         ),
     )
 
@@ -61,13 +88,14 @@ class PayrollRun(Base):
         unique=True,
         index=True,
     )
+    label: Mapped[str] = mapped_column(String(160), nullable=False)
     period_start: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     period_end: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     payroll_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
-        server_default="active",
+        server_default="draft",
         index=True,
     )
     employees_count: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -97,13 +125,29 @@ class PayrollRun(Base):
         nullable=False,
     )
     notes: Mapped[str | None] = mapped_column(Text)
-    void_reason: Mapped[str | None] = mapped_column(Text)
-    voided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
         nullable=False,
         index=True,
     )
+    approved_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"),
+        index=True,
+    )
+    approved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    paid_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"),
+        index=True,
+    )
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    cancelled_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"),
+        index=True,
+    )
+    cancelled_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+    )
+    cancellation_reason: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -121,4 +165,24 @@ class PayrollRun(Base):
         back_populates="payroll_run",
         order_by="PayrollItem.id",
     )
-    creator: Mapped["User"] = relationship("User")
+    audit_logs: Mapped[list["PayrollAuditLog"]] = relationship(
+        "PayrollAuditLog",
+        back_populates="payroll_run",
+        order_by="PayrollAuditLog.id",
+    )
+    creator: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[created_by],
+    )
+    approver: Mapped["User | None"] = relationship(
+        "User",
+        foreign_keys=[approved_by],
+    )
+    payer: Mapped["User | None"] = relationship(
+        "User",
+        foreign_keys=[paid_by],
+    )
+    canceller: Mapped["User | None"] = relationship(
+        "User",
+        foreign_keys=[cancelled_by],
+    )

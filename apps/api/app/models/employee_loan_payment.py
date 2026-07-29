@@ -58,6 +58,10 @@ class EmployeeLoanPayment(Base):
         nullable=False,
         index=True,
     )
+    payroll_run_id: Mapped[int | None] = mapped_column(
+        ForeignKey("payroll_runs.id"),
+        index=True,
+    )
     payment_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text)

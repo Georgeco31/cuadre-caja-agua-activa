@@ -16,6 +16,7 @@ from app.models.inventory_movement import InventoryMovement
 from app.models.inventory_stock import InventoryStock
 from app.models.operating_expense import OperatingExpense
 from app.models.operating_expense_category import OperatingExpenseCategory
+from app.models.payroll_audit_log import PayrollAuditLog
 from app.models.payroll_item import PayrollItem
 from app.models.payroll_item_advance_deduction import (
     PayrollItemAdvanceDeduction,
@@ -76,6 +77,7 @@ __all__ = [
     "InventoryStock",
     "OperatingExpense",
     "OperatingExpenseCategory",
+    "PayrollAuditLog",
     "PayrollItem",
     "PayrollItemAdvanceDeduction",
     "PayrollItemLoanDeduction",

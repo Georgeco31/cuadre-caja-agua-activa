@@ -34,13 +34,20 @@ class EmployeeAdvance(Base):
             name="ck_employee_advances_reason_not_blank",
         ),
         CheckConstraint(
-            "status IN ('active', 'voided')",
+            "status IN ('active', 'deducted', 'voided')",
             name="ck_employee_advances_status",
         ),
         CheckConstraint(
-            "(status = 'active' AND void_reason IS NULL AND voided_at IS NULL) OR "
+            "(status = 'active' AND void_reason IS NULL AND voided_at IS NULL "
+            "AND deducted_at IS NULL AND deducted_by IS NULL "
+            "AND deducted_payroll_run_id IS NULL) OR "
+            "(status = 'deducted' AND void_reason IS NULL "
+            "AND voided_at IS NULL AND deducted_at IS NOT NULL "
+            "AND deducted_by IS NOT NULL "
+            "AND deducted_payroll_run_id IS NOT NULL) OR "
             "(status = 'voided' AND length(trim(void_reason)) > 0 "
-            "AND voided_at IS NOT NULL)",
+            "AND voided_at IS NOT NULL AND deducted_at IS NULL "
+            "AND deducted_by IS NULL AND deducted_payroll_run_id IS NULL)",
             name="ck_employee_advances_void_state",
         ),
     )
@@ -69,6 +76,12 @@ class EmployeeAdvance(Base):
     notes: Mapped[str | None] = mapped_column(Text)
     void_reason: Mapped[str | None] = mapped_column(Text)
     voided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    deducted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    deducted_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    deducted_payroll_run_id: Mapped[int | None] = mapped_column(
+        ForeignKey("payroll_runs.id"),
+        index=True,
+    )
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -83,7 +96,14 @@ class EmployeeAdvance(Base):
     )
 
     employee: Mapped["Employee"] = relationship("Employee")
-    creator: Mapped["User"] = relationship("User")
+    creator: Mapped["User"] = relationship(
+        "User",
+        foreign_keys=[created_by],
+    )
+    deductor: Mapped["User | None"] = relationship(
+        "User",
+        foreign_keys=[deducted_by],
+    )
 
     @property
     def employee_name(self) -> str:

@@ -9,6 +9,10 @@ export function AccessRestricted({
   compact = false,
   message,
 }: AccessRestrictedProps) {
+  const resolvedMessage =
+    message ??
+    "No tienes permiso para realizar esta acción. Solicita autorización a George para cambios críticos.";
+
   if (compact) {
     return (
       <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
@@ -29,8 +33,7 @@ export function AccessRestricted({
             Esta sección está disponible solo para administrador/auditor.
           </h1>
           <p className="mt-3 text-sm leading-6 text-slate-600">
-            No tienes permiso para realizar esta acción. Solicita autorización
-            a George para cambios críticos.
+            {resolvedMessage}
           </p>
           <Link
             className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl bg-water-700 px-5 text-sm font-semibold text-white transition hover:bg-water-600"

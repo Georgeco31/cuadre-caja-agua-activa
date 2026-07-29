@@ -50,10 +50,10 @@ else
 fi
 
 if alembic_current="$(prod_compose exec --no-TTY api alembic current 2>&1)"; then
-  if [[ "$alembic_current" == *"0026_user_roles"* ]]; then
-    echo "OK: Alembic esta en 0026_user_roles."
+  if [[ "$alembic_current" == *"0028_payroll_base"* ]]; then
+    echo "OK: Alembic esta en 0028_payroll_base."
   else
-    prod_error "Alembic responde, pero no esta en 0026_user_roles: ${alembic_current}"
+    prod_error "Alembic responde, pero no esta en 0028_payroll_base: ${alembic_current}"
     status=1
   fi
 else

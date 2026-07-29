@@ -682,20 +682,20 @@ def _build_routes_summary(
 def _build_payroll_summary(
     selected_payroll_runs: list[PayrollRun],
 ) -> ManagementPayrollSummary:
-    active_runs = [
+    finalized_runs = [
         payroll_run
         for payroll_run in selected_payroll_runs
-        if payroll_run.status == "active"
+        if payroll_run.status in {"approved", "paid"}
     ]
     return ManagementPayrollSummary(
-        payroll_runs_count=len(active_runs),
-        gross_pay_total=_sum_money(run.gross_total for run in active_runs),
+        payroll_runs_count=len(finalized_runs),
+        gross_pay_total=_sum_money(run.gross_total for run in finalized_runs),
         deductions_total=_sum_money(
-            run.total_deductions for run in active_runs
+            run.total_deductions for run in finalized_runs
         ),
-        net_pay_total=_sum_money(run.net_pay_total for run in active_runs),
+        net_pay_total=_sum_money(run.net_pay_total for run in finalized_runs),
         voided_payroll_runs_count=sum(
-            run.status == "voided" for run in selected_payroll_runs
+            run.status == "cancelled" for run in selected_payroll_runs
         ),
     )
 
@@ -880,8 +880,8 @@ def _build_alerts(
                 type="info",
                 title="Nómina calculada",
                 message=(
-                    "Hay roles calculados en el período. El módulo no registra "
-                    "un estado de pago, por lo que esta nota es informativa."
+                    "Hay roles aprobados o pagados en el período. Consulta "
+                    "nómina para revisar su estado y auditoría."
                 ),
                 count=payroll.payroll_runs_count,
             )

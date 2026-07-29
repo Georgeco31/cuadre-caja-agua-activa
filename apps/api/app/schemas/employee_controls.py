@@ -12,7 +12,7 @@ AttendanceStatus = Literal[
     "vacation",
     "sick",
 ]
-EmployeeAdvanceStatus = Literal["active", "voided"]
+EmployeeAdvanceStatus = Literal["active", "deducted", "voided"]
 EmployeeLoanStatus = Literal["active", "paid", "voided"]
 EmployeeLoanPaymentStatus = Literal["active", "voided"]
 
@@ -120,6 +120,9 @@ class EmployeeAdvanceRead(BaseModel):
     notes: str | None
     void_reason: str | None
     voided_at: datetime | None
+    deducted_at: datetime | None
+    deducted_by: int | None
+    deducted_payroll_run_id: int | None
     created_by: int
     created_at: datetime
     updated_at: datetime
@@ -195,6 +198,7 @@ class EmployeeLoanPaymentRead(BaseModel):
     loan_number: str
     employee_id: int
     employee_name: str
+    payroll_run_id: int | None
     payment_date: date
     amount: Decimal
     notes: str | None

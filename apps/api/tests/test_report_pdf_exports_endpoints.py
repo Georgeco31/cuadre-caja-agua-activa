@@ -215,7 +215,7 @@ def test_receivables_pdf_excludes_voided_activity_from_main_totals(
     assert values["Saldo pendiente"] == "$40.00"
 
 
-def test_payroll_pdf_excludes_voided_runs_from_main_totals(
+def test_payroll_pdf_excludes_cancelled_runs_from_main_totals(
     api_client,
     api_auth_headers,
 ) -> None:
@@ -238,8 +238,8 @@ def test_payroll_pdf_excludes_voided_runs_from_main_totals(
     values = dict(summary_table.call_args_list[0].args[1])
     assert values["Total bruto"] == "$1,000.00"
     assert values["Neto total"] == "$900.00"
-    assert values["Roles activos"] == 1
-    assert values["Roles anulados"] == 1
+    assert values["Roles aprobados/pagados"] == 1
+    assert values["Roles cancelados"] == 1
 
 
 def test_empty_period_pdf_contains_no_data_message(

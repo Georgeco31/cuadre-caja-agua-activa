@@ -6,7 +6,7 @@ export type AttendanceStatus =
   | "vacation"
   | "sick";
 
-export type EmployeeAdvanceStatus = "active" | "voided";
+export type EmployeeAdvanceStatus = "active" | "deducted" | "voided";
 export type EmployeeLoanStatus = "active" | "paid" | "voided";
 export type EmployeeLoanPaymentStatus = "active" | "voided";
 
@@ -24,6 +24,7 @@ export const EMPLOYEE_CONTROL_STATUS_LABELS: Record<
   string
 > = {
   active: "Activo",
+  deducted: "Descontado",
   paid: "Pagado",
   voided: "Anulado",
 };
@@ -69,6 +70,9 @@ export type EmployeeAdvance = {
   notes: string | null;
   void_reason: string | null;
   voided_at: string | null;
+  deducted_at: string | null;
+  deducted_by: number | null;
+  deducted_payroll_run_id: number | null;
   created_by: number;
   created_at: string;
   updated_at: string;
@@ -116,6 +120,7 @@ export type EmployeeLoanPayment = {
   loan_number: string;
   employee_id: number;
   employee_name: string;
+  payroll_run_id: number | null;
   payment_date: string;
   amount: string;
   notes: string | null;

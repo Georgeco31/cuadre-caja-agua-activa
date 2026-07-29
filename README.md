@@ -278,9 +278,9 @@ cuadre-caja-agua-activa/
   automáticos en caja, bancos, compras o inventario.
 - Bloque 48: asistencia, anticipos, préstamos, abonos y saldos por empleado,
   con anulación lógica y sin movimientos automáticos de caja, bancos o gastos.
-- Bloque 49: roles de pago base por período con snapshots, asistencia de
-  referencia, deducciones de anticipos y préstamos, preview, detalle y
-  anulación, sin pago real ni movimientos de caja, bancos o gastos.
+- Bloque 49: primera base de roles de pago por período con snapshots,
+  asistencia de referencia, deducciones de anticipos y préstamos, preview,
+  detalle y anulación, sin pago real ni movimientos de caja, bancos o gastos.
 - Bloque 50: clasificacion productiva, formulas con items y snapshots, costos
   estimados y escalamiento por cantidad, sin consumo automatico ni
   integracion automatica con produccion existente.
@@ -379,6 +379,18 @@ cuadre-caja-agua-activa/
   localhost/LAN/Tailscale aprobó. El humo por rol, exportaciones, restricciones,
   `404` y no mutación aprobó. Como producción aún no tiene cargas, la prueba
   `200` y la revisión visual autenticada con una ruta real siguen pendientes.
+- Bloque 61A: flujo interno de roles con estados `draft`, `approved`, `paid` y
+  `cancelled`; sueldo, ingresos, descuentos y neto calculados por backend;
+  edición de borrador auditada; reservas de anticipos/préstamos y aplicación
+  trazable solo al marcar pagado. `operator` no puede ver ni usar nómina. La
+  migración 0028 fue validada en PostgreSQL desechable.
+- Bloque 61A-2: despliegue productivo controlado de nómina base. Se creó y
+  validó el backup previo, se aplicó `0028_payroll_base` y se recrearon solo
+  `api` y `web`; PostgreSQL no se reinició. Health localhost/LAN/Tailscale y
+  los conteos/saldos aprobaron sin crear roles ni marcar `paid`. El humo
+  autenticado aprobó con `admin_auditor` y `operator` en localhost, LAN/WiFi y
+  Tailscale: administrador ve nómina y operador recibe el bloqueo frontend
+  esperado. No se modificaron credenciales.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por

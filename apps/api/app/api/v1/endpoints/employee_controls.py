@@ -325,6 +325,7 @@ def _http_error(error: ValueError) -> HTTPException:
         or "ya esta" in detail
         or "pagos activos" in detail
         or "prestamo anulado" in detail
+        or "rol pagado" in detail
     ):
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)

@@ -89,6 +89,8 @@ import type {
 } from "@/types/operatingExpense";
 import type {
   EmployeePayrollSummary,
+  PayrollItemPayload,
+  PayrollItemUpdatePayload,
   PayrollPreview,
   PayrollPreviewPayload,
   PayrollRun,
@@ -940,6 +942,30 @@ export async function createPayrollRun(
   });
 }
 
+export async function addPayrollItem(
+  token: string,
+  payrollRunId: number,
+  payload: PayrollItemPayload,
+): Promise<PayrollRun> {
+  return request<PayrollRun>(`/payroll/runs/${payrollRunId}/items`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updatePayrollItem(
+  token: string,
+  payrollItemId: number,
+  payload: PayrollItemUpdatePayload,
+): Promise<PayrollRun> {
+  return request<PayrollRun>(`/payroll/items/${payrollItemId}`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function listPayrollRuns(
   token: string,
   filters: PayrollRunFilters = {},
@@ -976,12 +1002,32 @@ export async function getPayrollRun(
   });
 }
 
-export async function voidPayrollRun(
+export async function approvePayrollRun(
+  token: string,
+  payrollRunId: number,
+): Promise<PayrollRun> {
+  return request<PayrollRun>(`/payroll/runs/${payrollRunId}/approve`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function markPayrollRunPaid(
+  token: string,
+  payrollRunId: number,
+): Promise<PayrollRun> {
+  return request<PayrollRun>(`/payroll/runs/${payrollRunId}/mark-paid`, {
+    method: "POST",
+    headers: authHeaders(token),
+  });
+}
+
+export async function cancelPayrollRun(
   token: string,
   payrollRunId: number,
   reason: string,
 ): Promise<PayrollRun> {
-  return request<PayrollRun>(`/payroll/runs/${payrollRunId}/void`, {
+  return request<PayrollRun>(`/payroll/runs/${payrollRunId}/cancel`, {
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),
@@ -1002,7 +1048,7 @@ export async function getEmployeePayrollSummary(
   }
   const query = searchParams.toString();
   return request<EmployeePayrollSummary>(
-    `/employees/${employeeId}/payroll-summary${query ? `?${query}` : ""}`,
+    `/payroll/employees/${employeeId}/summary${query ? `?${query}` : ""}`,
     { headers: authHeaders(token) },
   );
 }

@@ -411,6 +411,42 @@ pendiente la conciliación de un `200` con una ruta real y la revisión visual
 autenticada en escritorio/móvil con ambos roles. No se fabricaron datos ni se
 modificaron credenciales para cerrar artificialmente esa evidencia.
 
+## Estado del Bloque 61A: roles de pago base
+
+61A completa la nómina interna sobre las tablas del Bloque 49. Los roles ahora
+recorren `draft`, `approved`, `paid` y `cancelled`; el borrador permite agregar
+y corregir empleados con motivo, el backend calcula el neto y la auditoría
+conserva creador, aprobador, pagador y cancelador.
+
+Anticipos y préstamos se reservan en borrador/aprobado, pero solo afectan sus
+saldos al marcar pagado. El anticipo pasa a `deducted`; el préstamo recibe un
+abono enlazado al rol. Cancelar antes del pago libera reservas sin modificar
+saldos. `operator` no ve el módulo y recibe `403`.
+
+`0028_payroll_base` se probó con datos sintéticos en PostgreSQL 16 desechable
+mediante `0027 -> 0028 -> 0027 -> 0028`. Los históricos `active` pasan a
+`approved`, nunca a `paid`.
+
+61A-2 fue autorizado y desplegado el 29 de julio de 2026. Se creó y validó el
+backup previo, se aplicó 0028, se recrearon solo `api` y `web` y el health
+final aprobó localhost, LAN y Tailscale con cero fallos. PostgreSQL no se
+reinició. Los conteos de 7 empleados, 9 anticipos por 1460,00 y cero
+préstamos, abonos, roles e ítems permanecieron iguales. No se creó ningún rol
+ni se marcó `paid`.
+
+La revisión autenticada por rol aprobó con ingreso manual de George, sin
+compartir ni cambiar credenciales, en localhost, LAN/WiFi y Tailscale.
+`admin_auditor` mostró 33 destinos, abrió nómina con los 7 empleados y recorrió
+los módulos críticos sin errores. `operator` mostró 22 destinos, no vio nómina
+y recibió el bloqueo frontend esperado por URL directa en los tres orígenes.
+Queda como brecha de evidencia manual únicamente el `403` productivo específico
+de nómina con token real; no se extrajo ni fabricó un token para forzarlo y la
+frontera backend permanece cubierta por la suite automatizada aprobada.
+
+Documento y procedimiento 61A-2:
+
+- [`61-bloque-61a-roles-pago-base.md`](61-bloque-61a-roles-pago-base.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -448,6 +484,7 @@ modificaron credenciales para cerrar artificialmente esa evidencia.
 | P1-13 | 60E/60E-2 + siguiente bloque de rutas | Resumen simple implementado y desplegado: cargado, retornado, vendido físico/registrado y diferencias por producto y dinero. Humo productivo de permisos y no mutación aprobado; pendiente una ruta real, automatización de inventario e incidencia persistida | Desarrollo + George | Alta | Una ruta real concilia el resumen con la revisión manual; no cierra físicamente con cantidades incompatibles; diferencias quedan trazadas y los movimientos por venta son reversibles |
 | P1-14 | Siguiente bloque de inventario | Conciliación de apertura/cierre por ubicación y reporte de inventario esperado vs físico | Desarrollo + George | Alta | Bodega y carros muestran apertura, movimientos, cierre, conteo y diferencia |
 | P1-15 | Siguiente bloque de producción | Alertar lotes sin consumo o aplicación y validar vigencia de fórmula al confirmar consumo | Desarrollo + George | Alta | El cierre diario identifica lotes incompletos y una fórmula fuera de vigencia no se consume |
+| P1-16 | 61A/61A-2 | Roles de pago internos con borrador, aprobación, pago, cancelación, auditoría y aplicación trazable de anticipos/préstamos; 0028 desplegada | Desarrollo + George | Alta | Backup, migración, saldos y humo visual por ambos roles aprobados; falta evidencia manual del `403` backend productivo específico de nómina; ningún rol real se marca pagado sin autorización |
 
 ## Mejoras que pueden esperar
 

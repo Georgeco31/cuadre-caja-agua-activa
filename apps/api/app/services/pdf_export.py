@@ -878,7 +878,9 @@ def build_payroll_pdf(
         employee_id=employee_id,
         status=status,
     )
-    active_runs = [run for run in runs if run.status == "active"]
+    finalized_runs = [
+        run for run in runs if run.status in {"approved", "paid"}
+    ]
     document, buffer, story = create_pdf_document(
         "Roles de pago base",
         _optional_period(date_from, date_to),
@@ -894,7 +896,7 @@ def build_payroll_pdf(
                 "Total bruto",
                 format_money(
                     sum(
-                        (run.gross_total for run in active_runs),
+                        (run.gross_total for run in finalized_runs),
                         start=Decimal("0.00"),
                     )
                 ),
@@ -903,7 +905,7 @@ def build_payroll_pdf(
                 "Total descuentos",
                 format_money(
                     sum(
-                        (run.total_deductions for run in active_runs),
+                        (run.total_deductions for run in finalized_runs),
                         start=Decimal("0.00"),
                     )
                 ),
@@ -912,15 +914,15 @@ def build_payroll_pdf(
                 "Neto total",
                 format_money(
                     sum(
-                        (run.net_pay_total for run in active_runs),
+                        (run.net_pay_total for run in finalized_runs),
                         start=Decimal("0.00"),
                     )
                 ),
             ),
-            ("Roles activos", len(active_runs)),
+            ("Roles aprobados/pagados", len(finalized_runs)),
             (
-                "Roles anulados",
-                sum(run.status == "voided" for run in runs),
+                "Roles cancelados",
+                sum(run.status == "cancelled" for run in runs),
             ),
         ),
     )

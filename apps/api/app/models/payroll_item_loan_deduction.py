@@ -62,14 +62,22 @@ class PayrollItemLoanDeduction(Base):
         nullable=False,
     )
     reason_snapshot: Mapped[str] = mapped_column(Text, nullable=False)
+    loan_payment_id: Mapped[int | None] = mapped_column(
+        ForeignKey("employee_loan_payments.id"),
+        unique=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
     )
+    applied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     payroll_item: Mapped["PayrollItem"] = relationship(
         "PayrollItem",
         back_populates="loan_deductions",
     )
     employee_loan: Mapped["EmployeeLoan"] = relationship("EmployeeLoan")
+    loan_payment: Mapped["EmployeeLoanPayment | None"] = relationship(
+        "EmployeeLoanPayment",
+    )

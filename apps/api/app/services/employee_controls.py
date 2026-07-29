@@ -152,6 +152,10 @@ def void_advance(
         raise ValueError("El anticipo no existe.")
     if advance.status == "voided":
         raise ValueError("El anticipo ya esta anulado.")
+    if advance.status == "deducted":
+        raise ValueError(
+            "No se puede anular un anticipo descontado en un rol pagado.",
+        )
     control_repository.mark_advance_voided(
         db,
         advance,
@@ -327,6 +331,10 @@ def void_loan_payment(
         raise ValueError("El abono al prestamo no existe.")
     if payment.status == "voided":
         raise ValueError("El abono al prestamo ya esta anulado.")
+    if payment.payroll_run_id is not None:
+        raise ValueError(
+            "No se puede anular un abono generado por un rol pagado.",
+        )
     if loan.status == "voided":
         raise ValueError("No se puede modificar un prestamo anulado.")
     if payment.amount > loan.paid_amount:
