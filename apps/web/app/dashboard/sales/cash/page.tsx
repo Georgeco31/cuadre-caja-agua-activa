@@ -176,7 +176,7 @@ export default function CashSalesPage() {
       if (redirectIfUnauthorized(voidError)) {
         return;
       }
-      setError(getErrorMessage(voidError));
+      setError(getSaleVoidErrorMessage(voidError));
     } finally {
       setVoidingSaleId(null);
     }
@@ -286,6 +286,13 @@ function getErrorMessage(possibleError: unknown): string {
     return possibleError.message;
   }
   return "No se pudo completar la solicitud.";
+}
+
+function getSaleVoidErrorMessage(possibleError: unknown): string {
+  if (possibleError instanceof ApiError && possibleError.status === 403) {
+    return "No tienes permiso para anular ventas. Solicita autorización a George.";
+  }
+  return getErrorMessage(possibleError);
 }
 
 function formatMoney(value: string): string {

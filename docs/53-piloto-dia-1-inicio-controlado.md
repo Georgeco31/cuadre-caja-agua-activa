@@ -281,3 +281,26 @@ El ingreso de datos reales y el cierre de la jornada permanecen bajo
 responsabilidad de George y de la persona operadora. Este documento no declara
 el Día 1 cerrado, no reemplaza el método manual y no declara producción
 definitiva.
+
+## Seguimiento Bloque 60B
+
+El 2026-07-29 se documentó una incidencia al intentar anular ventas de contado
+y a crédito con rol `admin_auditor`: la interfaz mostró `Load failed`.
+
+El diagnóstico confirmó el contrato `POST /api/v1/sales/{id}/void`, el motivo
+obligatorio, la anulación lógica y la restricción de `operator`. El intento
+reportado no llegó al API y el frontend dejaba visible el mensaje nativo del
+navegador ante un fallo de transporte.
+
+Se ajustó el frontend para mostrar un mensaje operativo claro, conservar los
+mensajes `409` del backend y presentar el texto de autorización acordado ante
+un `403`. No se cambiaron datos reales, backend, permisos, caja, cartera,
+inventario, rutas ni entorno productivo.
+
+El detalle técnico y operativo está en
+[`54-incidencia-60b-anulacion-ventas.md`](54-incidencia-60b-anulacion-ventas.md).
+La imagen frontend se actualizó recreando únicamente `web`; `api`, `db` y los
+volúmenes no se reiniciaron. El health posterior aprobó sin fallos ni
+advertencias. Hasta comprobar el flujo con una operación real autorizada, la
+incidencia permanece **en revisión** y el método manual paralelo continúa
+activo.

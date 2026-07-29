@@ -14,6 +14,7 @@ otros secretos. Una captura debe mostrar solo la información necesaria.
 | Fecha | Hora | Usuario | Módulo | Acción realizada | Resultado esperado | Resultado obtenido | Captura o evidencia si existe | Gravedad (baja/media/alta/crítica) | Acción tomada | Responsable | Estado (abierto/en revisión/resuelto) | Observaciones |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | AAAA-MM-DD | HH:MM | Usuario individual | Módulo | Describir el paso realizado | Describir qué debía ocurrir | Describir qué ocurrió, sin secretos | Nombre o ubicación controlada de la evidencia | Baja / Media / Alta / Crítica | Acción segura realizada o “ninguna” | Nombre | Abierto / En revisión / Resuelto | Punto de corte, registro relacionado o seguimiento |
+| 2026-07-29 | No registrada | Rol `admin_auditor` | Ventas de contado y a crédito | Intentar anular una venta con motivo | Anulación lógica permitida o regla de negocio clara | `Load failed`; el intento no aparece en los logs del API | [`54-incidencia-60b-anulacion-ventas.md`](54-incidencia-60b-anulacion-ventas.md) | Alta | Se corrigió el manejo frontend de errores de transporte y `403`; imagen `web` actualizada y health aprobado sin cambiar datos reales | Desarrollo + George | En revisión | Método manual paralelo activo; falta comprobación humana con una operación real autorizada |
 
 Agregar filas debajo de la fila de ejemplo. No borrar una incidencia resuelta:
 cambiar su estado y conservar la explicación.

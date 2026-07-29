@@ -245,11 +245,13 @@ export function getApiBaseUrl(): string {
 
 export class ApiError extends Error {
   status: number;
+  cause?: unknown;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, cause?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.cause = cause;
   }
 }
 
@@ -2044,11 +2046,22 @@ export async function voidCashSale(
   saleId: number,
   reason: string,
 ): Promise<CashSale> {
-  return request<CashSale>(`/sales/${saleId}/void`, {
-    method: "POST",
-    headers: authHeaders(token),
-    body: JSON.stringify({ reason }),
-  });
+  try {
+    return await request<CashSale>(`/sales/${saleId}/void`, {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ reason }),
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      "No se pudo contactar al servidor para anular la venta. Verifica la conexión e inténtalo nuevamente; si continúa, usa el método manual y avisa a George.",
+      0,
+      error,
+    );
+  }
 }
 
 export async function createCreditPayment(
