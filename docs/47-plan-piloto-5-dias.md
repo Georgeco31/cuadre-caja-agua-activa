@@ -57,6 +57,39 @@ a George. El registro de apertura, operación, incidencias y cierre está en
 
 La jornada todavía no está cerrada y no se ha declarado producción definitiva.
 
+## Ajuste de alcance del Bloque 60D
+
+El intento de cargar un camión sin stock disponible confirmó que producción,
+inventario y rutas no deben incorporarse al piloto como acciones aisladas. La
+regla operativa desde este bloque es:
+
+> No se registra una carga si antes el producto no existe en la ubicación de
+> inventario de origen.
+
+Antes de continuar con el Día 3 original o con cualquier carga real de agosto,
+se debe completar un conteo físico por ubicación y registrar el stock inicial
+con el procedimiento del documento
+[`56-preparacion-produccion-inventario-agosto.md`](56-preparacion-produccion-inventario-agosto.md).
+La plantilla práctica está en
+[`57-checklist-stock-inicial-agosto.md`](57-checklist-stock-inicial-agosto.md).
+
+El alcance ampliado conserva estas separaciones:
+
+- registrar producción no aumenta inventario;
+- el consumo de insumos requiere fórmula, stock y confirmación administrativa;
+- aplicar producción a bodega es una acción administrativa separada;
+- una aplicación de producción no se duplica con una entrada manual;
+- cargas y retornos son administrativos durante este arranque;
+- las ventas asociadas a una carga todavía no descuentan stock del vehículo;
+- el cierre financiero no sustituye la liquidación física de ruta;
+- el bidón retornable no se trata como una tapa consumida.
+
+La operadora seguirá la guía
+[`58-guia-produccion-inventario-operador.md`](58-guia-produccion-inventario-operador.md).
+George dirigirá el arranque específico de cinco jornadas con
+[`59-plan-arranque-agosto-produccion-inventario.md`](59-plan-arranque-agosto-produccion-inventario.md).
+El método manual permanece obligatorio.
+
 ## Reglas para los cinco días
 
 1. Registrar en el ERP y en el método actual todas las operaciones incluidas.
@@ -234,8 +267,11 @@ las diferencias están explicadas y no hay incidentes críticos.
 
 ### Objetivo
 
-Validar producción diaria y movimientos operativos de inventario sin entrar en
-costos, fórmulas, ajustes ni consumo de insumos.
+Validar producción diaria y movimientos operativos de inventario. Si el
+arranque ampliado de agosto ya fue autorizado, las fórmulas, el consumo y la
+aplicación a inventario se ejecutan únicamente por `admin_auditor` y siguiendo
+los documentos 56 y 59; la operadora no entra en costos, fórmulas, ajustes ni
+consumos.
 
 ### Tareas
 
@@ -244,6 +280,8 @@ costos, fórmulas, ajustes ni consumo de insumos.
 - confirmar producto, ubicación y cantidad;
 - mantener el soporte paralelo;
 - comparar cantidades al cierre;
+- confirmar que ninguna producción aplicada se duplicó con una entrada manual;
+- no intentar cargas si el stock de origen no está conciliado;
 - registrar incidencias.
 
 ### Responsables
@@ -260,8 +298,10 @@ costos, fórmulas, ajustes ni consumo de insumos.
 
 ### Criterio de aprobación
 
-Las cantidades coinciden con el método actual o están explicadas; no se usaron
-ajustes, costos, fórmulas, anulaciones ni consumo de insumos.
+Las cantidades coinciden con el método actual o están explicadas; la operadora
+no usó ajustes, costos, fórmulas, anulaciones ni consumo de insumos. Cualquier
+consumo o aplicación administrativa autorizada conserva su trazabilidad y
+revisión separada.
 
 ### Riesgos
 

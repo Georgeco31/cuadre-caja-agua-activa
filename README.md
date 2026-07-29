@@ -360,6 +360,13 @@ cuadre-caja-agua-activa/
   a cierres se bloquean. El backup y la migración productiva 0027 aprobaron sin
   reiniciar PostgreSQL; sigue pendiente una operación real expresamente
   autorizada y conciliada.
+- Bloque 60D: auditoría y preparación documental del arranque de producción,
+  inventario e insumos para agosto. La carga de vehículos exige stock previo,
+  el stock inicial parte de conteo físico por ubicación y producción, consumo y
+  aplicación permanecen como confirmaciones separadas. Se documentaron el
+  flujo, las plantillas, la guía de operador y el plan de cinco jornadas, sin
+  modificar código ni datos reales. La liquidación física automática de ruta y
+  el control avanzado de envases retornables quedan para bloques posteriores.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -458,6 +465,14 @@ de gastos, cookies ni refresh tokens.
   Tailscale y localhost.
 - `docs/55-bloque-60c-correccion-fecha-ventas.md`: reglas, endpoint, auditoría,
   bloqueos, pruebas y despliegue controlado de la corrección de fecha de ventas.
+- `docs/56-preparacion-produccion-inventario-agosto.md`: auditoría de módulos,
+  regla de stock, flujo operativo, checklists, riesgos y brechas para agosto.
+- `docs/57-checklist-stock-inicial-agosto.md`: plantilla de conteo físico de
+  producto terminado, insumos, vehículos, pendientes y conciliación.
+- `docs/58-guia-produccion-inventario-operador.md`: instrucciones de
+  producción, entradas/salidas, faltantes, cargas y escalamiento a George.
+- `docs/59-plan-arranque-agosto-produccion-inventario.md`: Día 0 y cinco
+  jornadas de arranque controlado de producción e inventario.
 
 ## Antes de usar datos reales
 
@@ -470,7 +485,8 @@ autoriza declarar producción definitiva. El Bloque 59D cierra los controles
 humanos y deja el sistema listo con reserva DHCP aceptada, pero no inicia el
 piloto. El Bloque 60A registra posteriormente el inicio controlado del Día 1,
 y 60B/60B-2 corrige la incidencia de anulación sin declarar producción
-definitiva. Leer en este orden:
+definitiva. El Bloque 60D prepara producción e inventario para agosto sin
+registrar stock real. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -504,12 +520,22 @@ definitiva. Leer en este orden:
     técnica y validación pendiente de una operación real autorizada.
 28. `docs/55-bloque-60c-correccion-fecha-ventas.md`, corrección administrativa
     auditada, despliegue productivo y validación operativa pendiente.
+29. `docs/56-preparacion-produccion-inventario-agosto.md`, estado auditado,
+    reglas, flujo recomendado y brechas.
+30. `docs/57-checklist-stock-inicial-agosto.md`, para completar el conteo
+    físico antes de registrar cantidades.
+31. `docs/58-guia-produccion-inventario-operador.md`, antes de que la operadora
+    use producción o inventario.
+32. `docs/59-plan-arranque-agosto-produccion-inventario.md`, para ejecutar el
+    Día 0 y las cinco jornadas con autorización de George.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni
 crea gastos, y un cierre o recibo de ruta no modifica el conteo oficial de
-caja. El piloto deberá mantener el método actual, conciliación diaria y backups
-comprobados durante sus cinco jornadas.
+caja. El consumo de insumos también requiere una confirmación explícita y no
+queda garantizado solo por registrar producción. El piloto deberá mantener el
+método actual, conteo físico, conciliación diaria y backups comprobados durante
+sus cinco jornadas.
 
 ## Ejecucion local con Docker
 

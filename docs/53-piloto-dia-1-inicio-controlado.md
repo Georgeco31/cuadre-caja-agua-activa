@@ -399,3 +399,54 @@ visual productiva con sesiones `admin_auditor`/`operator` y una corrección real
 expresamente autorizada, conciliada contra auditoría y reportes. El detalle
 está en
 [`55-bloque-60c-correccion-fecha-ventas.md`](55-bloque-60c-correccion-fecha-ventas.md).
+
+## Seguimiento Bloque 60D
+
+Durante la preparación de producción y rutas, George intentó cargar un camión y
+el sistema no encontró stock disponible en la ubicación de origen. El rechazo
+es la protección esperada: una carga traslada inventario de bodega hacia un
+vehículo y no puede crear producto.
+
+La regla queda incorporada al piloto:
+
+> No cargar un carro hasta contar, registrar y comprobar el stock disponible
+> en la ubicación de origen.
+
+El corte técnico del 2026-07-29 confirmó Compose válido, `db`, `api` y `web`
+saludables, acceso localhost/LAN/Tailscale, Alembic
+`0027_sale_date_corrections` y PostgreSQL 5432 no publicado. También aprobaron
+342 pruebas dirigidas de inventario, producción, fórmulas, consumo, cargas,
+retornos, cierres, permisos y reportes. No se modificó código ni se ingresaron
+datos del negocio.
+
+La auditoría confirmó:
+
+- `operator` puede registrar producción y movimientos `entry`/`exit` sin costo;
+- aplicar producción, consumir insumos, cargar vehículos, registrar retornos,
+  ajustar y anular siguen bajo `admin_auditor`;
+- registrar producción no aumenta stock ni consume insumos;
+- consumo y aplicación son confirmaciones explícitas e independientes;
+- la carga rechaza de forma atómica cantidades mayores al stock;
+- el retorno mueve sobrante del vehículo a una ubicación no vehicular;
+- las ventas asociadas a carga no descuentan inventario del vehículo;
+- el cierre de ruta es financiero y todavía no liquida físicamente
+  carga − venta − retorno;
+- el bidón retornable requiere un control separado del consumo de tapas,
+  sellos o etiquetas.
+
+Antes de incorporar este flujo al piloto se debe completar el Día 0 y obtener
+la autorización de George. Documentos de ejecución:
+
+- [`56-preparacion-produccion-inventario-agosto.md`](56-preparacion-produccion-inventario-agosto.md):
+  auditoría, reglas, flujo y brechas;
+- [`57-checklist-stock-inicial-agosto.md`](57-checklist-stock-inicial-agosto.md):
+  conteo físico y registro de apertura;
+- [`58-guia-produccion-inventario-operador.md`](58-guia-produccion-inventario-operador.md):
+  instrucciones para la persona operadora;
+- [`59-plan-arranque-agosto-produccion-inventario.md`](59-plan-arranque-agosto-produccion-inventario.md):
+  Día 0 y cinco jornadas de validación.
+
+El stock inicial recomendado se registra con movimientos `entry`, una fila por
+producto y ubicación, usando el motivo
+`Stock inicial agosto 2026 - conteo físico`. Las cantidades deben provenir de
+la hoja firmada; Codex no las registra ni las estima.
