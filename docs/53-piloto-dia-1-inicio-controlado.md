@@ -308,8 +308,69 @@ volúmenes ni `.env.production.local`. El health posterior aprobó localhost,
 LAN, Tailscale, Alembic `0026_user_roles` y PostgreSQL no publicado, sin fallos
 ni advertencias.
 
-No se anuló ninguna venta real. El detalle técnico y operativo está en
+Codex no anuló ninguna venta real. El detalle técnico y operativo está en
 [`54-incidencia-60b-anulacion-ventas.md`](54-incidencia-60b-anulacion-ventas.md).
 Hasta que George autorice y compruebe una operación real con
 `admin_auditor`, la incidencia permanece **en revisión operativa** y el método
 manual paralelo continúa activo.
+
+## Seguimiento Bloque 60B-3
+
+George informó que el login desde MacBook e iPhone por WiFi/LAN quedaba en
+`Iniciando...`, incluso en navegación privada, mientras Web y health LAN
+seguían disponibles y localhost sí funcionaba. Quedaron descartados caché,
+PWA, accesos directos antiguos y caída general de red/API.
+
+Los logs mostraron que al menos un flujo alcanzaba
+`POST /api/v1/auth/login`: el preflight respondió `200`, dos intentos
+respondieron `401` y un intento posterior respondió `200`, seguido de
+`GET /api/v1/auth/me 200`. Como esos access logs no guardan `Origin`, no
+demostraban que los intentos LAN fallidos hubieran llegado. Pruebas con
+credenciales falsas confirmaron `OPTIONS 200`, `POST 401` y CORS correcto en
+LAN, Tailscale y localhost. El contrato permanece JSON; no se cambió el
+backend.
+
+El frontend ahora lee los valores reales enviados por el formulario para
+proteger el autorrelleno de Safari, limita login y `/auth/me` a 15 segundos,
+libera siempre el botón, muestra errores accesibles y usa una navegación
+completa al dashboard tras el éxito. Las pruebas, typecheck, build, prueba Web
+LAN normal/móvil y health aprobaron.
+
+Solo se recreó `web`; `api` y `db` no se reiniciaron. La comprobación física
+posterior con las cuentas reales en Safari de MacBook/iPhone y por Tailscale
+queda a cargo de George. El método manual paralelo continúa activo hasta esa
+confirmación.
+
+## Seguimiento Bloque 60B-4
+
+La prueba física posterior a 60B-3 confirmó una diferencia decisiva:
+localhost y Tailscale funcionaban, pero MacBook e iPhone por WiFi/LAN seguían
+agotando el timeout. Navegación privada también falló. En la ventana de esos
+intentos LAN no apareció el `POST /api/v1/auth/login` en el API, mientras una
+sesión por Tailscale sí dejó el flujo completo de auth y dashboard.
+
+La causa exacta estaba en el cliente central: `apiFetch` llama
+`buildApiUrl(path)` sin pasar `location`, y la implementación anterior
+interpretaba ese argumento ausente como contexto SSR. En consecuencia usaba el
+`NEXT_PUBLIC_API_URL` compilado —Tailscale en producción— incluso dentro del
+navegador. Un dispositivo LAN sin Tailscale no podía llegar a ese destino; el
+servidor y los clientes Tailscale sí podían. Las pruebas anteriores habían
+inyectado `location` y por eso no reproducían la llamada productiva.
+
+`buildApiUrl` ahora consulta `window.location` cuando se invoca sin argumento
+en navegador y reserva el fallback para SSR. La matriz automatizada comprueba,
+mediante esa misma llamada productiva, LAN, Tailscale, localhost, `127.0.0.1`,
+`::1` y SSR. No se cambió el entorno, CORS, backend, payload JSON, credenciales,
+permisos ni reglas de negocio.
+
+Aprobaron las pruebas de URL y login, typecheck, build de 38 rutas, 122 pruebas
+dirigidas de permisos/anulación, preflight y `POST` falso controlado en LAN,
+Tailscale y localhost. La UI servida por LAN y Tailscale mostró
+`Usuario o contraseña incorrectos.`, reactivó el botón y no produjo errores de
+consola. Solo se reconstruyó/recreó `web` con `--no-deps`; `api` y `db`
+conservaron sus contenedores y el health final quedó correcto.
+
+Codex no usó contraseñas reales ni anuló otra venta. La validación física final
+de ambas cuentas en MacBook/iPhone por WiFi/LAN, localhost y Tailscale queda a
+cargo de George. Hasta registrarla, la incidencia continúa **en revisión
+operativa** y el método manual paralelo permanece activo.

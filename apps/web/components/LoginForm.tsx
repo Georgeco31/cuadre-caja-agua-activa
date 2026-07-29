@@ -1,13 +1,15 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { getCurrentUser, login } from "@/lib/api";
 import { getToken, removeToken, saveToken, saveUser } from "@/lib/auth";
+import {
+  getLoginErrorMessage,
+  readLoginCredentials,
+} from "@/lib/loginForm";
 
 export function LoginForm() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,9 +17,9 @@ export function LoginForm() {
 
   useEffect(() => {
     if (getToken()) {
-      router.replace("/dashboard");
+      window.location.replace("/dashboard");
     }
-  }, [router]);
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,18 +27,17 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await login({ username, password });
+      const credentials = readLoginCredentials(
+        new FormData(event.currentTarget),
+      );
+      const response = await login(credentials);
       saveToken(response.access_token);
       const currentUser = await getCurrentUser(response.access_token);
       saveUser(currentUser);
-      router.replace("/dashboard");
+      window.location.replace("/dashboard");
     } catch (loginError) {
       removeToken();
-      setError(
-        loginError instanceof Error
-          ? loginError.message
-          : "No se pudo iniciar sesión.",
-      );
+      setError(getLoginErrorMessage(loginError));
     } finally {
       setIsSubmitting(false);
     }
@@ -70,7 +71,11 @@ export function LoginForm() {
       </label>
 
       {error ? (
-        <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p
+          aria-live="polite"
+          className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}

@@ -610,7 +610,9 @@ de `apps/web/lib/api.ts`, que construye la URL con el hostname desde el que se
 abrió la Web y el puerto `8010`. Así LAN, Tailscale y localhost usan la API del
 mismo host. `NEXT_PUBLIC_API_URL` queda como fallback para SSR o contextos sin
 `window`; no debe copiarse lógica de URL a las pantallas ni añadirse `fetch`
-directo fuera del helper.
+directo fuera del helper. Las pruebas deben cubrir `buildApiUrl(path)` sin
+inyectar `location`, que es la forma en que `apiFetch` lo invoca en producción,
+además de los casos con ubicación explícita.
 
 Para desarrollo:
 

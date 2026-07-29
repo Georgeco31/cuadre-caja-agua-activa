@@ -27,7 +27,9 @@ En el navegador, `lib/apiUrl.ts` usa el hostname actual con el puerto `8010`;
 por eso LAN, Tailscale y localhost resuelven la API del mismo host.
 `NEXT_PUBLIC_API_URL` se usa como fallback en SSR. Todas las solicitudes JSON y
 descargas pasan por el único `apiFetch` de `lib/api.ts`; no agregar `fetch`
-directo ni construir URLs en las pantallas.
+directo ni construir URLs en las pantallas. Las pruebas de URL deben incluir
+`buildApiUrl(path)` sin un `location` explícito, igual que la invocación
+productiva de `apiFetch`.
 
 ## Instalación
 

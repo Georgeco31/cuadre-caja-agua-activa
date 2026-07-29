@@ -20,7 +20,10 @@ export function resolveApiBaseUrl(location?: ApiLocation): string {
 
 export function buildApiUrl(path: string, location?: ApiLocation): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${resolveApiBaseUrl(location)}${normalizedPath}`;
+  const baseUrl = location
+    ? resolveApiBaseUrl(location)
+    : getApiBaseUrl();
+  return `${baseUrl}${normalizedPath}`;
 }
 
 export function getApiBaseUrl(): string {

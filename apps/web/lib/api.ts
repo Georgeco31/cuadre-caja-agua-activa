@@ -230,21 +230,31 @@ export class ApiError extends Error {
   }
 }
 
+const AUTH_REQUEST_TIMEOUT_MS = 15_000;
+
 export async function login(
   credentials: LoginCredentials,
 ): Promise<TokenResponse> {
-  return request<TokenResponse>("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(credentials),
-  });
+  return requestWithTimeout<TokenResponse>(
+    "/auth/login",
+    {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    },
+    AUTH_REQUEST_TIMEOUT_MS,
+  );
 }
 
 export async function getCurrentUser(token: string): Promise<CurrentUser> {
-  return request<CurrentUser>("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
+  return requestWithTimeout<CurrentUser>(
+    "/auth/me",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     },
-  });
+    AUTH_REQUEST_TIMEOUT_MS,
+  );
 }
 
 export async function listUsers(token: string): Promise<User[]> {
@@ -2847,6 +2857,33 @@ async function request<T>(
       response.status,
       error,
     );
+  }
+}
+
+async function requestWithTimeout<T>(
+  path: string,
+  options: RequestInit,
+  timeoutMs: number,
+): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await request<T>(path, {
+      ...options,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new ApiError(
+        "La autenticación tardó demasiado en responder.",
+        0,
+        error,
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

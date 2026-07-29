@@ -9,32 +9,48 @@ const scenarios = [
     name: "LAN",
     location: { hostname: "192.168.100.220", protocol: "http:" },
     expected: "http://192.168.100.220:8010/api/v1/sales/13/void",
+    expectedLogin: "http://192.168.100.220:8010/api/v1/auth/login",
   },
   {
     name: "Tailscale",
     location: { hostname: "100.121.163.126", protocol: "http:" },
     expected: "http://100.121.163.126:8010/api/v1/sales/13/void",
+    expectedLogin: "http://100.121.163.126:8010/api/v1/auth/login",
   },
   {
     name: "localhost",
     location: { hostname: "localhost", protocol: "http:" },
     expected: "http://localhost:8010/api/v1/sales/13/void",
+    expectedLogin: "http://localhost:8010/api/v1/auth/login",
   },
   {
     name: "IPv4 loopback",
     location: { hostname: "127.0.0.1", protocol: "http:" },
     expected: "http://127.0.0.1:8010/api/v1/sales/13/void",
+    expectedLogin: "http://127.0.0.1:8010/api/v1/auth/login",
   },
   {
     name: "IPv6 loopback",
     location: { hostname: "::1", protocol: "http:" },
     expected: "http://[::1]:8010/api/v1/sales/13/void",
+    expectedLogin: "http://[::1]:8010/api/v1/auth/login",
   },
 ];
 
 for (const scenario of scenarios) {
   test(`resolves ${scenario.name} from the browser host`, () => {
     assert.equal(buildApiUrl(requestPath, scenario.location), scenario.expected);
+    assert.equal(
+      buildApiUrl("/auth/login", scenario.location),
+      scenario.expectedLogin,
+    );
+    globalThis.window = { location: scenario.location };
+    try {
+      assert.equal(buildApiUrl(requestPath), scenario.expected);
+      assert.equal(buildApiUrl("/auth/login"), scenario.expectedLogin);
+    } finally {
+      delete globalThis.window;
+    }
   });
 }
 
@@ -51,4 +67,5 @@ test("uses the configured fallback only outside the browser", () => {
   ).replace(/\/+$/, "");
 
   assert.equal(resolveApiBaseUrl(), expected);
+  assert.equal(buildApiUrl("/auth/login"), `${expected}/auth/login`);
 });
