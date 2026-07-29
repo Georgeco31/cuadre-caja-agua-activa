@@ -348,6 +348,12 @@ cuadre-caja-agua-activa/
   no ingresó datos del negocio; la operación y el cierre quedan a cargo de los
   participantes. El piloto está iniciado, no cerrado, y no equivale a
   producción definitiva.
+- Bloques 60B y 60B-2: se diagnosticó la anulación de ventas durante el piloto.
+  El `POST` llegaba al API, pero PostgreSQL rechazaba un `FOR UPDATE` sobre
+  relaciones opcionales. El lock quedó limitado a `sales` y el frontend usa un
+  único helper dinámico para LAN, Tailscale, localhost, JSON y descargas. La
+  corrección está desplegada; la comprobación con una venta real autorizada
+  sigue pendiente.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -441,6 +447,9 @@ de gastos, cookies ni refresh tokens.
   anterior al Día 1.
 - `docs/53-piloto-dia-1-inicio-controlado.md`: apertura técnica, alcance,
   checklists, incidencias, método paralelo y cierre pendiente del Día 1.
+- `docs/54-incidencia-60b-anulacion-ventas.md`: diagnóstico y corrección del
+  flujo de anulación de ventas y de la resolución central de API para LAN,
+  Tailscale y localhost.
 
 ## Antes de usar datos reales
 
@@ -452,7 +461,8 @@ fallo técnico del backup diario, pero no los demás bloqueadores. Todavía no s
 autoriza declarar producción definitiva. El Bloque 59D cierra los controles
 humanos y deja el sistema listo con reserva DHCP aceptada, pero no inicia el
 piloto. El Bloque 60A registra posteriormente el inicio controlado del Día 1,
-sin declarar producción definitiva. Leer en este orden:
+y 60B/60B-2 corrige la incidencia de anulación sin declarar producción
+definitiva. Leer en este orden:
 
 1. `docs/18-auditoria-tecnica-completa.md`.
 2. `docs/19-hallazgos-riesgos-produccion.md`.
@@ -482,6 +492,8 @@ sin declarar producción definitiva. Leer en este orden:
     obligatorios y aprobar el Día 0.
 26. `docs/53-piloto-dia-1-inicio-controlado.md`, registro activo del inicio,
     operación, incidencias y cierre del Día 1.
+27. `docs/54-incidencia-60b-anulacion-ventas.md`, diagnóstico, corrección
+    técnica y validación pendiente de una operación real autorizada.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni
@@ -592,6 +604,13 @@ Variables principales:
 ```bash
 NEXT_PUBLIC_API_URL=http://localhost:8010/api/v1
 ```
+
+En el navegador, todas las solicitudes y descargas pasan por el helper central
+de `apps/web/lib/api.ts`, que construye la URL con el hostname desde el que se
+abrió la Web y el puerto `8010`. Así LAN, Tailscale y localhost usan la API del
+mismo host. `NEXT_PUBLIC_API_URL` queda como fallback para SSR o contextos sin
+`window`; no debe copiarse lógica de URL a las pantallas ni añadirse `fetch`
+directo fuera del helper.
 
 Para desarrollo:
 

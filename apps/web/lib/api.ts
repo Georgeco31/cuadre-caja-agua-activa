@@ -210,38 +210,13 @@ import type {
   UserCreatePayload,
   UserUpdatePayload,
 } from "@/types/user";
+import { buildApiUrl } from "@/lib/apiUrl";
 
-const FALLBACK_API_URL = (
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8010/api/v1"
-).replace(/\/+$/, "");
-
-type ApiLocation = {
-  hostname: string;
-  protocol: string;
-};
-
-export function resolveApiBaseUrl(location?: ApiLocation): string {
-  if (!location) {
-    return FALLBACK_API_URL;
-  }
-
-  const { hostname, protocol } = location;
-  if (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname === "::1"
-  ) {
-    return FALLBACK_API_URL;
-  }
-
-  return `${protocol}//${hostname}:8010/api/v1`;
-}
-
-export function getApiBaseUrl(): string {
-  return resolveApiBaseUrl(
-    typeof window === "undefined" ? undefined : window.location,
-  );
-}
+export {
+  buildApiUrl,
+  getApiBaseUrl,
+  resolveApiBaseUrl,
+} from "@/lib/apiUrl";
 
 export class ApiError extends Error {
   status: number;
@@ -596,7 +571,7 @@ export async function downloadFile(
   endpoint: string,
   filename: string,
 ): Promise<void> {
-  const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+  const response = await apiFetch(endpoint, {
     headers: authHeaders(token),
   });
   if (!response.ok) {
@@ -2046,22 +2021,11 @@ export async function voidCashSale(
   saleId: number,
   reason: string,
 ): Promise<CashSale> {
-  try {
-    return await request<CashSale>(`/sales/${saleId}/void`, {
-      method: "POST",
-      headers: authHeaders(token),
-      body: JSON.stringify({ reason }),
-    });
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(
-      "No se pudo contactar al servidor para anular la venta. Verifica la conexión e inténtalo nuevamente; si continúa, usa el método manual y avisa a George.",
-      0,
-      error,
-    );
-  }
+  return request<CashSale>(`/sales/${saleId}/void`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
 }
 
 export async function createCreditPayment(
@@ -2862,7 +2826,7 @@ async function request<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+  const response = await apiFetch(path, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -2875,7 +2839,30 @@ async function request<T>(
     throw new ApiError(message, response.status);
   }
 
-  return response.json() as Promise<T>;
+  try {
+    return (await response.json()) as T;
+  } catch (error) {
+    throw new ApiError(
+      "El servidor devolvió una respuesta inválida.",
+      response.status,
+      error,
+    );
+  }
+}
+
+async function apiFetch(
+  path: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  try {
+    return await fetch(buildApiUrl(path), options);
+  } catch (error) {
+    throw new ApiError(
+      "No se pudo contactar al servidor. Verifica la conexión e inténtalo nuevamente; si continúa, usa el método manual y avisa a George.",
+      0,
+      error,
+    );
+  }
 }
 
 function authHeaders(token: string): HeadersInit {
@@ -2924,8 +2911,15 @@ async function getErrorMessage(response: Response): Promise<string> {
       }
     }
   } catch {
-    return "No se pudo completar la solicitud.";
+    return getFallbackErrorMessage(response.status);
   }
 
+  return getFallbackErrorMessage(response.status);
+}
+
+function getFallbackErrorMessage(status: number): string {
+  if (status >= 500) {
+    return "El servidor no pudo completar la solicitud. Inténtalo nuevamente y, si continúa, avisa a George.";
+  }
   return "No se pudo completar la solicitud.";
 }

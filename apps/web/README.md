@@ -23,6 +23,12 @@ Si el backend se levanta con Docker en el puerto por defecto del proyecto:
 NEXT_PUBLIC_API_URL=http://localhost:8010/api/v1
 ```
 
+En el navegador, `lib/apiUrl.ts` usa el hostname actual con el puerto `8010`;
+por eso LAN, Tailscale y localhost resuelven la API del mismo host.
+`NEXT_PUBLIC_API_URL` se usa como fallback en SSR. Todas las solicitudes JSON y
+descargas pasan por el único `apiFetch` de `lib/api.ts`; no agregar `fetch`
+directo ni construir URLs en las pantallas.
+
 ## Instalación
 
 Desde `apps/web`:

@@ -1,4 +1,4 @@
-# 54 - Incidencia 60B: anulación de ventas
+# 54 - Incidencia 60B/60B-2: anulación de ventas
 
 ## Identificación
 
@@ -8,12 +8,15 @@
 | Contexto | Piloto controlado Día 1, iniciado el 2026-07-28 |
 | Módulos afectados | Ventas de contado y ventas a crédito |
 | Rol que reportó el síntoma | `admin_auditor` |
-| Síntoma visible | `Load failed` al intentar anular |
+| Síntoma inicial | `Load failed` |
+| Síntoma después de 60B | Mensaje de imposibilidad de contactar al servidor |
+| Estado de API LAN durante el incidente | `health` respondía `200` |
 | Método paralelo | Continúa activo |
 | Datos productivos modificados durante el diagnóstico | Ninguno |
 
 No se registraron ventas de prueba, no se anuló ninguna venta real y no se
-copiaron credenciales, tokens ni secretos.
+copiaron credenciales, tokens, secretos ni contenido de
+`.env.production.local`.
 
 ## Contrato confirmado
 
@@ -28,131 +31,197 @@ Las ventas de contado y a crédito comparten un único flujo de anulación:
 | Persistencia | Anulación lógica; la venta y sus ítems permanecen |
 | Trazabilidad | `status`, `void_reason`, `voided_at` y `created_by` |
 
-El backend exige un motivo no vacío. Una venta a crédito con abonos activos no
-se fuerza: responde `409` y pide anular primero los abonos. Una venta asociada
-a una carga con cierre financiero activo también responde `409`.
+El backend exige un motivo no vacío. Una venta a crédito con abonos activos
+responde `409` y pide anular primero los abonos. Una venta asociada a una carga
+con cierre financiero activo también responde `409`.
 
-## Respuestas del backend
+## Evidencia exacta y corrección del diagnóstico anterior
 
-| Caso | Respuesta |
-| --- | --- |
-| Anulación administrativa permitida | `200` |
-| Motivo ausente o vacío | `422` |
-| `operator` intenta anular | `403` |
-| Venta inexistente para un usuario autorizado | `404` |
-| Venta ya anulada, con abonos activos o con cierre financiero activo | `409` |
-| Error interno observado | Ninguno |
+Los logs ampliados demostraron que la falla no era una caída general de red ni
+una URL LAN equivocada. El navegador completó el preflight y la llamada llegó
+al API:
 
-El preflight CORS del endpoint respondió `200` desde los orígenes configurados
-de localhost, LAN y Tailscale. Una petición sin autenticación llegó al endpoint
-y respondió `401` con JSON controlado.
+```text
+OPTIONS /api/v1/sales/{id}/void 200
+POST /api/v1/sales/{id}/void 500
+```
 
-## Evidencia de ejecución y causa
+La excepción real de PostgreSQL fue:
 
-Los últimos 150 registros del API estaban ocupados por comprobaciones de
-health. La búsqueda ampliada a las últimas 24 horas mostró consultas y
-creaciones de ventas con `200` y `201`, pero no mostró ningún `OPTIONS` ni
-`POST` a `/sales/{id}/void` asociado a la incidencia.
+```text
+psycopg.errors.FeatureNotSupported:
+FOR UPDATE cannot be applied to the nullable side of an outer join
+```
 
-Por tanto, el intento que mostró `Load failed` no alcanzó el backend y no tuvo
-un código HTTP real que clasificar como `400`, `403`, `404`, `409` o `500`.
-El endpoint, método y payload definidos en el frontend sí coinciden con el
-contrato del backend.
+`get_sale_for_update` cargaba la venta junto con sus relaciones opcionales de
+carga, ruta y vehículo mediante `LEFT OUTER JOIN` y aplicaba `FOR UPDATE` sin
+indicar tabla. PostgreSQL intentaba bloquear también el lado anulable de esos
+joins y rechazaba la consulta. La suite basada en SQLite no había reproducido
+esa diferencia del motor.
 
-La causa corregible encontrada fue el manejo frontend: la función de anulación
-dejaba escapar directamente el mensaje nativo del navegador cuando `fetch`
-fallaba antes de recibir una respuesta. En Safari ese error de transporte se
-muestra como `Load failed`. La evidencia disponible no permite atribuir
-retrospectivamente la interrupción original a una causa de red más específica;
-CORS, ruta y disponibilidad actuales quedaron comprobados.
+Por tanto, la afirmación inicial de 60B de que el intento no alcanzó el API
+queda reemplazada por esta evidencia: el `POST` sí llegó, pero terminó en un
+`500` no controlado. El navegador no recibió una respuesta HTTP utilizable y
+el frontend lo clasificó como error de transporte, produciendo el falso
+mensaje de conexión.
+
+## Auditoría de arquitectura frontend
+
+La anulación de contado y crédito ya compartía `voidCashSale` y no tenía una IP
+fija ni un `fetch` dentro de las pantallas. La auditoría completa de `apps/web`
+encontró dos inconsistencias relacionadas:
+
+- la resolución anterior usaba el hostname dinámico para LAN/Tailscale, pero
+  localhost, `127.0.0.1` y `::1` heredaban el fallback compilado; en producción
+  este podía apuntar a Tailscale;
+- las descargas Excel/PDF contenían el único `fetch` alterno, separado del
+  camino normal de solicitudes JSON.
+
+No se encontró `axios`, una IP LAN/Tailscale fija en código productivo ni otro
+cliente HTTP paralelo. Después de la corrección queda un solo `fetch`, dentro
+del helper central.
 
 ## Corrección aplicada
 
-La corrección se limitó al frontend de anulación de ventas:
+### Backend mínimo
 
-- los errores HTTP del backend conservan su código y su mensaje de negocio;
-- un error de transporte se convierte en un mensaje claro que pide verificar
-  la conexión, reintentar y, si continúa, usar el método manual y avisar a
-  George;
-- la causa técnica original queda enlazada al `ApiError` para diagnóstico;
-- un `403` en cualquiera de las dos pantallas muestra:
-  `No tienes permiso para anular ventas. Solicita autorización a George.`;
-- tras una anulación exitosa se conserva el refresco de la lista y el resumen
-  visible de la venta.
+La consulta conserva la carga de relaciones, pero limita el lock a la tabla
+dueña de la operación:
 
-No se modificó el backend, el esquema, los permisos, las reglas de negocio ni
-`.env.production.local`.
+```python
+.with_for_update(of=Sale)
+```
 
-## Pruebas con `admin_auditor`
+PostgreSQL genera `FOR UPDATE OF sales`, mantiene la protección de concurrencia
+sobre la venta y ya no intenta bloquear los `LEFT JOIN`. No se cambió el
+esquema, una migración, los permisos ni las reglas de negocio.
 
-Las pruebas automatizadas aisladas confirman:
+Se agregó una prueba que compila la consulta con el dialecto PostgreSQL y exige
+simultáneamente los joins y `FOR UPDATE OF sales`, para evitar que SQLite oculte
+de nuevo esta regresión.
+
+### Frontend central
+
+La construcción de URL se separó en `apps/web/lib/apiUrl.ts` y todas las
+solicitudes pasan por `apiFetch` en `apps/web/lib/api.ts`:
+
+- en navegador se conserva el protocolo y se usa siempre
+  `window.location.hostname`, puerto `8010` y prefijo `/api/v1`;
+- en SSR o contextos sin `window` se usa `NEXT_PUBLIC_API_URL`;
+- las solicitudes JSON, anulaciones y descargas usan el mismo constructor;
+- los errores HTTP conservan su estado y mensaje de negocio;
+- solo una falla real antes de recibir respuesta se clasifica como transporte;
+- un `500` con respuesta válida muestra un mensaje de servidor, no uno de
+  autorización.
+
+También se corrigió el puerto por defecto del Dockerfile de desarrollo de
+`8000` a `8010`. No se hardcodeó ninguna IP en componentes.
+
+## Resolución comprobada por origen
+
+Las siete pruebas puras de URL aprobaron:
+
+| Acceso Web | API resuelta para la anulación |
+| --- | --- |
+| `http://192.168.100.220:3000` | `http://192.168.100.220:8010/api/v1/sales/{id}/void` |
+| `http://100.121.163.126:3000` | `http://100.121.163.126:8010/api/v1/sales/{id}/void` |
+| `http://localhost:3000` | `http://localhost:8010/api/v1/sales/{id}/void` |
+| `http://127.0.0.1:3000` | `http://127.0.0.1:8010/api/v1/sales/{id}/void` |
+| `http://[::1]:3000` | `http://[::1]:8010/api/v1/sales/{id}/void` |
+| SSR/sin `window` | `NEXT_PUBLIC_API_URL` normalizada |
+
+Esto aplica igualmente a iPhone, MacBook y navegador de oficina: la API usa el
+hostname con el que el dispositivo abrió la Web y no localhost remoto.
+
+## Comportamiento por rol y reglas
+
+Las pruebas automatizadas confirman para `admin_auditor`:
 
 - venta de contado anulable con motivo: `200`;
 - venta a crédito anulable sin abonos activos: `200`;
-- motivo obligatorio y normalizado;
-- venta e ítems conservados después de la anulación lógica;
-- segundo intento: `409`;
-- venta a crédito con abonos activos: `409` con regla clara;
-- saldo de la venta a crédito llevado a cero y estado de crédito `voided`
-  cuando la anulación es válida;
-- una venta de contado conserva `credit_status = none`.
+- motivo ausente o vacío: `422`;
+- venta inexistente: `404`;
+- segundo intento, abonos activos o cierre financiero activo: `409`;
+- venta e ítems permanecen después de la anulación lógica;
+- saldo y estado de crédito se actualizan solo cuando la anulación es válida.
 
-No se anuló una venta real con la cuenta administrativa durante el diagnóstico,
-porque no se dispuso de una sesión autenticada entregada por su titular y no se
-debía alterar información real para fabricar una prueba.
+Para `operator`:
 
-## Pruebas con `operator`
+- el endpoint devuelve `403` antes de buscar o modificar la venta;
+- el botón permanece oculto;
+- contado y crédito muestran:
+  `No tienes permiso para anular ventas. Solicita autorización a George.`
 
-El backend devuelve `403` antes de buscar o modificar la venta. La protección
-no depende del tipo de venta porque contado y crédito comparten el endpoint.
-El botón continúa oculto para `operator` y, si una interfaz desactualizada
-intenta la petición, ambas pantallas muestran el mensaje de autorización
-definido para el piloto.
+No se cambió la matriz de permisos.
 
-No se cambió la matriz de permisos y `operator` continúa sin capacidad de
-anular ventas ni cobros.
-
-## Impacto por módulo
+## Otras llamadas críticas revisadas
 
 | Área | Resultado |
 | --- | --- |
-| Caja | Sin movimientos nuevos; las ventas todavía no modifican caja automáticamente |
-| Cartera | La venta anulada deja de sumar saldo; una venta con abonos activos queda bloqueada |
-| Inventario | Sin cambio directo por la anulación de venta |
-| Rutas | Se conserva la venta vinculada y se bloquea la anulación si existe cierre financiero activo |
-| Auditoría | Venta e ítems permanecen; se conservan motivo, fecha de anulación y creador original |
+| Login y sesión | Usan el cliente central |
+| Dashboard y cuadre | Usan el cliente central |
+| Ventas contado/crédito | Comparten el cliente y `voidCashSale` |
+| Cobros y cartera | Usan el cliente central |
+| Clientes | Usa el cliente central |
+| Reportes administrativos | Usan el cliente central |
+| Exportaciones Excel/PDF | Migradas al mismo `apiFetch` |
+| Usuarios, precios, inventario, producción y nómina | Usan el cliente central |
 
-## Estado final
+No se hizo una reestructuración masiva de `api.ts`; solo se unificó el
+transporte y la URL. Dividir el cliente por dominios continúa como deuda
+postpiloto, sin duplicar la lógica de red.
 
-La causa de presentación de `Load failed` quedó corregida en el código
-frontend. El backend ya cumplía el contrato, los permisos y las reglas de
-negocio, por lo que no requirió cambios.
+## Validación y despliegue
 
-La imagen productiva de `web` se reconstruyó y se recreó sin reiniciar `api` ni
-`db` y sin tocar volúmenes. El health posterior aprobó contenedores, API
-localhost/LAN/Tailscale, Web LAN/Tailscale, Alembic y aislamiento de PostgreSQL,
-sin fallos ni advertencias. Los artefactos dentro del contenedor contienen el
-nuevo manejo de anulación.
+Validaciones aprobadas:
 
-La validación automatizada terminó con:
-
-- 121 pruebas específicas de permisos y ventas aprobadas;
-- 972 pruebas backend aprobadas, con un warning conocido de
+- 122 pruebas dirigidas de permisos, contado y crédito;
+- 973 pruebas backend completas, con un warning conocido de
   `TestClient/httpx`;
-- `npm run typecheck` aprobado;
-- `npm run build` aprobado localmente y dentro de la imagen Docker;
-- `docker compose config --quiet` aprobado;
-- health productivo aprobado después del despliegue.
+- 7 pruebas de URL para LAN, Tailscale, localhost y SSR;
+- preflight `POST` con `status=200` y `Access-Control-Allow-Origin` correcto
+  para LAN, Tailscale y localhost;
+- `npm run typecheck`;
+- `npm run build`, con 38 rutas;
+- build Docker productivo de `api` y `web`;
+- `docker compose config --quiet`;
+- consulta real contra PostgreSQL con ID inexistente y rollback:
+  `POSTGRES_LOCK_QUERY_OK`.
 
-La comprobación humana sobre una venta real autorizada queda pendiente para
-George; por eso la incidencia se mantiene en revisión operativa. El piloto
-mantiene el método manual paralelo. Si vuelve a ocurrir un error de conexión,
-se debe conservar la referencia de la venta, la hora, el origen de acceso (LAN
-o Tailscale) y el mensaje visible, sin repetir a ciegas la operación.
+El despliegue se hizo con `--no-deps` y recreó únicamente `api` y `web`.
+El contenedor `db` conservó su identidad y tiempo de ejecución; no se reinició,
+no se ejecutaron migraciones y no se tocaron volúmenes.
+
+El health posterior confirmó:
+
+- `db`, `api` y `web` en estado `healthy`;
+- API localhost, LAN y Tailscale: `status=ok`;
+- Web LAN y Tailscale disponible;
+- Alembic en `0026_user_roles`;
+- PostgreSQL `5432` no publicado;
+- cero fallos críticos y cero advertencias informativas.
+
+Después del despliegue se envió un `POST` no autenticado y sin posibilidad de
+modificar datos a un ID inexistente. El API lo registró y respondió `401`, como
+corresponde; no apareció `500`. La ejecución PostgreSQL separada con rollback
+confirmó que la consulta corregida sí es aceptada por el motor productivo.
+
+## Estado operativo
+
+La causa técnica está corregida y desplegada. No se anuló una venta real porque
+no hubo autorización explícita de George para alterar una operación productiva.
+La comprobación humana con `admin_auditor`, motivo real y una venta cuya
+anulación esté autorizada continúa pendiente; hasta entonces la incidencia se
+mantiene **en revisión operativa** y el método manual paralelo sigue activo.
+
+Si la regla de negocio responde `409`, se debe conservar su mensaje y resolver
+primero el vínculo indicado. Si surge otra incidencia, registrar hora, usuario,
+origen LAN/Tailscale, referencia de venta y mensaje visible sin reintentar a
+ciegas.
 
 ## Bloque posterior: corrección de fechas
 
-La corrección de fechas no forma parte de 60B. Debe ejecutarse en un bloque
-posterior y separado, con casos de borde para la zona `America/Guayaquil`,
-fechas de venta y vencimiento, reportes y operaciones alrededor de medianoche.
-No se debe mezclar ese cambio con la anulación ni con producción/insumos.
+La corrección de fechas no forma parte de 60B-2. Debe ejecutarse en un bloque
+posterior y separado, con casos de borde para `America/Guayaquil`, fechas de
+venta y vencimiento, reportes y operaciones alrededor de medianoche. No debe
+mezclarse con anulación ni con producción/insumos.

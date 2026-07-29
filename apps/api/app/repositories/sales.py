@@ -25,7 +25,7 @@ def get_sale_for_update(db: Session, sale_id: int) -> Sale | None:
         select(Sale)
         .options(*_sale_options())
         .where(Sale.id == sale_id)
-        .with_for_update()
+        .with_for_update(of=Sale)
     )
     return db.scalar(statement)
 

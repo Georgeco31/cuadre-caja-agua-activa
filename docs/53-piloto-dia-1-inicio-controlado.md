@@ -282,25 +282,34 @@ responsabilidad de George y de la persona operadora. Este documento no declara
 el Día 1 cerrado, no reemplaza el método manual y no declara producción
 definitiva.
 
-## Seguimiento Bloque 60B
+## Seguimiento Bloques 60B y 60B-2
 
 El 2026-07-29 se documentó una incidencia al intentar anular ventas de contado
-y a crédito con rol `admin_auditor`: la interfaz mostró `Load failed`.
+y a crédito con rol `admin_auditor`: primero la interfaz mostró `Load failed` y
+después el mensaje operativo de imposibilidad de contactar al servidor.
 
-El diagnóstico confirmó el contrato `POST /api/v1/sales/{id}/void`, el motivo
-obligatorio, la anulación lógica y la restricción de `operator`. El intento
-reportado no llegó al API y el frontend dejaba visible el mensaje nativo del
-navegador ante un fallo de transporte.
+La revisión ampliada corrigió el diagnóstico inicial. El `OPTIONS` y el
+`POST /api/v1/sales/{id}/void` sí llegaron al API; el `POST` devolvió `500`
+porque PostgreSQL no permite aplicar `FOR UPDATE` al lado anulable de los
+`LEFT JOIN` usados para cargar la venta, su carga, ruta y vehículo. El health
+LAN permaneció en `200`, por lo que no era una caída general de la API.
 
-Se ajustó el frontend para mostrar un mensaje operativo claro, conservar los
-mensajes `409` del backend y presentar el texto de autorización acordado ante
-un `403`. No se cambiaron datos reales, backend, permisos, caja, cartera,
-inventario, rutas ni entorno productivo.
+En 60B-2 se limitó el lock a la tabla `sales` con `FOR UPDATE OF sales`. También
+se centralizó la construcción de URL y el único `fetch` frontend: LAN usa el
+host LAN en `8010`, Tailscale usa el host Tailscale en `8010`, localhost usa
+localhost en `8010` y solo SSR conserva `NEXT_PUBLIC_API_URL`. Las descargas
+Excel/PDF quedaron en el mismo camino que login, dashboard, ventas, cobros,
+clientes, reportes y demás módulos.
 
-El detalle técnico y operativo está en
+Las 973 pruebas backend, las 7 pruebas de URL, typecheck, build y la consulta
+real PostgreSQL con rollback aprobaron. Se reconstruyeron y recrearon solo
+`api` y `web` con `--no-deps`; `db` mantuvo su contenedor y no se tocaron
+volúmenes ni `.env.production.local`. El health posterior aprobó localhost,
+LAN, Tailscale, Alembic `0026_user_roles` y PostgreSQL no publicado, sin fallos
+ni advertencias.
+
+No se anuló ninguna venta real. El detalle técnico y operativo está en
 [`54-incidencia-60b-anulacion-ventas.md`](54-incidencia-60b-anulacion-ventas.md).
-La imagen frontend se actualizó recreando únicamente `web`; `api`, `db` y los
-volúmenes no se reiniciaron. El health posterior aprobó sin fallos ni
-advertencias. Hasta comprobar el flujo con una operación real autorizada, la
-incidencia permanece **en revisión** y el método manual paralelo continúa
-activo.
+Hasta que George autorice y compruebe una operación real con
+`admin_auditor`, la incidencia permanece **en revisión operativa** y el método
+manual paralelo continúa activo.

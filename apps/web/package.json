@@ -6,6 +6,7 @@
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
+    "test:api-url": "node --experimental-strip-types --test lib/apiUrl.test.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

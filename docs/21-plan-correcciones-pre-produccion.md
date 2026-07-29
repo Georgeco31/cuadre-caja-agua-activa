@@ -369,7 +369,7 @@ La reserva DHCP sigue activa y no se declara producción definitiva.
 | P1-08 | 55B | Pruebas de integración PostgreSQL | Desarrollo | Alta | Locks, concurrencia, índices parciales y constraints pasan en PostgreSQL |
 | P1-09 | 56/58D-2 | Smoke E2E por rol en servidor (aprobado) | Desarrollo | Media | Aprobado: login, módulos permitidos, restricciones, panel y exportaciones pasan en servidor |
 | P1-10 | 56/58D/59A | Guía de secretaria preparada en el documento 44; capacitación y práctica del Día 0 pendientes | George | Alta | Operador completa flujo diario sin acceso administrativo |
-| P1-11 | 60B | Anulación de ventas: reemplazar `Load failed` por errores de transporte y autorización claros (código e imagen productiva actualizados; comprobación humana pendiente) | Desarrollo + George | Alta | Contado y crédito se anulan con motivo por `admin_auditor`; `operator` recibe `403`; una venta con abonos muestra `409`; el flujo real autorizado queda comprobado |
+| P1-11 | 60B/60B-2 | Anulación de ventas: corregido el lock PostgreSQL que devolvía `500`, centralizada la resolución frontend de API para LAN/Tailscale/localhost y conservados errores de autorización/negocio claros; comprobación humana real pendiente | Desarrollo + George | Alta | Contado y crédito se anulan con motivo por `admin_auditor`; `operator` recibe `403`; una venta con abonos muestra `409`; el flujo real autorizado queda comprobado |
 
 ## Mejoras que pueden esperar
 
