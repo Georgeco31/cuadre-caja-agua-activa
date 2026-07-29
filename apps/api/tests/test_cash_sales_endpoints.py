@@ -3,11 +3,13 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
+from sqlalchemy.dialects import postgresql
 
 from app.models.cash_session import CashSession
 from app.models.product import Product
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
+from app.repositories import sales as sale_repository
 
 
 def test_create_cash_sale_with_customer(api_client, api_auth_headers) -> None:
@@ -512,6 +514,26 @@ def test_void_cash_sale_with_reason(api_client, api_auth_headers) -> None:
     assert body["status"] == "voided"
     assert body["void_reason"] == "Error al registrar la venta"
     assert body["voided_at"] is not None
+
+
+def test_sale_for_update_locks_only_sale_table_on_postgresql() -> None:
+    class StatementCapturingSession:
+        statement = None
+
+        def scalar(self, statement):
+            self.statement = statement
+            return None
+
+    session = StatementCapturingSession()
+
+    sale_repository.get_sale_for_update(session, 1)
+
+    assert session.statement is not None
+    compiled = str(
+        session.statement.compile(dialect=postgresql.dialect()),
+    )
+    assert "LEFT OUTER JOIN" in compiled
+    assert "FOR UPDATE OF sales" in compiled
 
 
 @pytest.mark.parametrize("payload", [{}, {"reason": "   "}])

@@ -49,8 +49,8 @@ Se actualizó `.env.production.local` solo en KERNELOS-PC:
 
 - `CORS_ORIGINS` conserva localhost, `127.0.0.1` y la IP LAN, y agrega el origen
   Web exacto de Tailscale.
-- `NEXT_PUBLIC_API_URL` conserva la API Tailscale como fallback para
-  renderizado de servidor y localhost.
+- `NEXT_PUBLIC_API_URL` conserva la API Tailscale como fallback exclusivo para
+  renderizado de servidor o contextos sin `window`.
 - No se cambió ni reprodujo ningún secreto.
 - El archivo sigue ignorado por Git y no aparece en `git status --short`.
 
@@ -64,13 +64,15 @@ API en tiempo de ejecución usando el hostname actual del navegador:
 
 - Web LAN usa `http://192.168.100.220:8010/api/v1`.
 - Web Tailscale usa `http://100.121.163.126:8010/api/v1`.
-- localhost y renderizado de servidor conservan `NEXT_PUBLIC_API_URL` como
-  fallback.
+- Web en localhost usa `http://localhost:8010/api/v1`; `127.0.0.1` e IPv6
+  loopback siguen el mismo patrón.
+- Solo el renderizado de servidor conserva `NEXT_PUBLIC_API_URL` como fallback.
 - Las solicitudes JSON y las descargas Excel/PDF usan el mismo helper.
 
-La función pura de resolución fue comprobada para LAN, Tailscale, localhost y
-renderizado de servidor. `npm run typecheck`, `npm run build` y el build Docker
-productivo aprobaron las 38 rutas del frontend.
+La función pura de resolución está separada en `apps/web/lib/apiUrl.ts` y fue
+comprobada para LAN, Tailscale, localhost, `127.0.0.1`, `::1` y renderizado de
+servidor. `npm run typecheck`, `npm run build` y el build Docker productivo
+aprobaron las 38 rutas del frontend.
 
 Después de la reconstrucción:
 
