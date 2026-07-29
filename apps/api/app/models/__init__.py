@@ -51,6 +51,7 @@ from app.models.route_closure import RouteClosure
 from app.models.route_return import RouteReturn
 from app.models.route_return_item import RouteReturnItem
 from app.models.sale import Sale
+from app.models.sale_date_correction import SaleDateCorrection
 from app.models.sale_item import SaleItem
 from app.models.supplier import Supplier
 from app.models.user import User
@@ -100,6 +101,7 @@ __all__ = [
     "RouteReturn",
     "RouteReturnItem",
     "Sale",
+    "SaleDateCorrection",
     "SaleItem",
     "Supplier",
     "User",

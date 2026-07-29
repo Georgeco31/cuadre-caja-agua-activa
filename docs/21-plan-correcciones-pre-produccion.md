@@ -337,6 +337,22 @@ los módulos usados, las incidencias y el cierre del Día 1 se registran en
 [`53-piloto-dia-1-inicio-controlado.md`](53-piloto-dia-1-inicio-controlado.md).
 La reserva DHCP sigue activa y no se declara producción definitiva.
 
+## Estado del Bloque 60C
+
+La necesidad operativa de corregir fechas de ventas reales quedó cubierta en
+el workspace con una acción exclusiva de `admin_auditor`, motivo obligatorio,
+auditoría dedicada y bloqueos de anulaciones, cierres de ruta y cierres de caja.
+Contado y crédito comparten el mismo endpoint y conservan identidad, cliente,
+partidas, montos, pagos y estado.
+
+La migración `0027_sale_date_corrections` pasó upgrade, downgrade y segundo
+upgrade en PostgreSQL temporal aislado. En el Bloque 60C-2 también se comprobó
+el backup, se migró producción a `0027_sale_date_corrections` y se recrearon
+solo `api` y `web`; PostgreSQL no se reinició y los conteos quedaron intactos.
+Permanecen pendientes la comprobación visual productiva por rol y una
+corrección real expresamente autorizada, auditada y conciliada. Ver
+[`55-bloque-60c-correccion-fecha-ventas.md`](55-bloque-60c-correccion-fecha-ventas.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -370,6 +386,7 @@ La reserva DHCP sigue activa y no se declara producción definitiva.
 | P1-09 | 56/58D-2 | Smoke E2E por rol en servidor (aprobado) | Desarrollo | Media | Aprobado: login, módulos permitidos, restricciones, panel y exportaciones pasan en servidor |
 | P1-10 | 56/58D/59A | Guía de secretaria preparada en el documento 44; capacitación y práctica del Día 0 pendientes | George | Alta | Operador completa flujo diario sin acceso administrativo |
 | P1-11 | 60B/60B-2/60B-3/60B-4 | Anulación de ventas: corregido el lock PostgreSQL que devolvía `500`. Login remoto: corregida la llamada productiva de `buildApiUrl` que, sin `location`, usaba el fallback Tailscale en navegadores LAN; se conserva timeout, liberación del loading y errores claros. Comprobación física real pendiente | Desarrollo + George | Alta | Contado y crédito se anulan con motivo por `admin_auditor`; `operator` recibe `403`; una venta con abonos muestra `409`; login `admin_auditor`/`operator` funciona desde MacBook/iPhone por WiFi/LAN, localhost y Tailscale; el flujo real autorizado queda comprobado |
+| P1-12 | 60C/60C-2 | Corrección administrativa auditada de `sale_date` para ventas reales registradas con fecha incorrecta, sin anular, duplicar ni editar otros datos. Backup y migración productiva a 0027 aprobados; falta validación operativa real por rol | Desarrollo + George | Alta | `admin_auditor` corrige contado/crédito con motivo; `operator` recibe `403`; cierres y anuladas devuelven `409`; auditoría, pagos inmutables, reportes y frontend quedan comprobados con una venta real autorizada |
 
 ## Mejoras que pueden esperar
 

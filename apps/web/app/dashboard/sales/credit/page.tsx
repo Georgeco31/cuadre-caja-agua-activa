@@ -10,8 +10,10 @@ import type { CashSaleFilterValues } from "@/components/CashSaleList";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
+import { SaleDateCorrectionModal } from "@/components/SaleDateCorrectionModal";
 import {
   ApiError,
+  correctSaleDate,
   createCreditSale,
   listCashSales,
   listCustomers,
@@ -20,11 +22,16 @@ import {
   voidCashSale,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
+import { getSaleDateCorrectionErrorMessage } from "@/lib/saleDateCorrection";
 import { useIsAdminAuditor } from "@/lib/useCurrentRole";
 import type { Customer } from "@/types/customer";
 import type { Product } from "@/types/product";
 import type { RouteLoad } from "@/types/routeLoad";
-import type { CashSale, CreditSalePayload } from "@/types/sale";
+import type {
+  CashSale,
+  CreditSalePayload,
+  SaleDateCorrectionPayload,
+} from "@/types/sale";
 
 const emptyFilters: CashSaleFilterValues = {
   search: "",
@@ -36,7 +43,7 @@ const emptyFilters: CashSaleFilterValues = {
 };
 
 export default function CreditSalesPage() {
-  const canVoid = useIsAdminAuditor();
+  const canUseAdminSaleActions = useIsAdminAuditor();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -50,6 +57,8 @@ export default function CreditSalesPage() {
   const [isLoadingSales, setIsLoadingSales] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [voidingSaleId, setVoidingSaleId] = useState<number | null>(null);
+  const [saleToCorrect, setSaleToCorrect] = useState<CashSale | null>(null);
+  const [isCorrectingDate, setIsCorrectingDate] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
@@ -177,6 +186,39 @@ export default function CreditSalesPage() {
     }
   }
 
+  async function handleCorrectSaleDate(
+    payload: SaleDateCorrectionPayload,
+  ): Promise<boolean> {
+    if (!token || !saleToCorrect) {
+      return false;
+    }
+
+    setIsCorrectingDate(true);
+    setError("");
+    setMessage("");
+    try {
+      const correction = await correctSaleDate(
+        token,
+        saleToCorrect.id,
+        payload,
+      );
+      setMessage(
+        `Fecha de venta corregida correctamente. ${correction.sale.sale_number}: ${formatDate(correction.previous_sale_date)} → ${formatDate(correction.new_sale_date)}.`,
+      );
+      setSaleToCorrect(null);
+      await loadSales(token, appliedFilters);
+      return true;
+    } catch (correctionError) {
+      if (redirectIfUnauthorized(correctionError)) {
+        return false;
+      }
+      setError(getSaleDateCorrectionErrorMessage(correctionError));
+      return false;
+    } finally {
+      setIsCorrectingDate(false);
+    }
+  }
+
   function handleFilter() {
     if (token) {
       loadSales(token, filters);
@@ -245,7 +287,8 @@ export default function CreditSalesPage() {
               onSubmit={handleCreateSale}
             />
             <CreditSaleList
-              canVoid={canVoid}
+              canVoid={canUseAdminSaleActions}
+              canCorrectDate={canUseAdminSaleActions}
               sales={sales}
               customers={customers}
               filters={filters}
@@ -256,10 +299,19 @@ export default function CreditSalesPage() {
               onFilter={handleFilter}
               onClearFilters={handleClearFilters}
               onVoid={handleVoidSale}
+              onCorrectDate={setSaleToCorrect}
             />
           </>
         )}
       </div>
+      {saleToCorrect ? (
+        <SaleDateCorrectionModal
+          sale={saleToCorrect}
+          isSubmitting={isCorrectingDate}
+          onCancel={() => setSaleToCorrect(null)}
+          onSubmit={handleCorrectSaleDate}
+        />
+      ) : null}
     </main>
   );
 }
@@ -291,4 +343,9 @@ function getSaleVoidErrorMessage(possibleError: unknown): string {
 function formatMoney(value: string): string {
   const amount = Number(value);
   return Number.isFinite(amount) ? `$${amount.toFixed(2)}` : "$0.00";
+}
+
+function formatDate(value: string): string {
+  const [year, month, day] = value.split("-");
+  return `${day}/${month}/${year}`;
 }

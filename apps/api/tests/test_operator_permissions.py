@@ -144,6 +144,28 @@ def test_restricted_endpoint_uses_401_without_authentication(api_client) -> None
     assert response.status_code == 401
 
 
+def test_operator_cannot_correct_sale_dates(
+    api_client,
+    api_operator_auth_headers,
+) -> None:
+    client, _ = api_client
+
+    response = client.patch(
+        "/api/v1/sales/999/date",
+        headers=api_operator_auth_headers,
+        json={
+            "new_sale_date": "2026-07-27",
+            "reason": "Intento no autorizado",
+        },
+    )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == (
+        "No tienes permiso para corregir ventas. "
+        "Solicita autorización a George."
+    )
+
+
 def test_operator_can_create_customer_and_close_cash_session(
     api_client,
     api_operator_auth_headers,

@@ -3,6 +3,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 
 import type { Customer } from "@/types/customer";
+import { canShowSaleDateCorrectionAction } from "@/lib/saleDateCorrection";
 import {
   CREDIT_STATUS_LABELS,
   SALE_PAYMENT_METHOD_LABELS,
@@ -29,11 +30,13 @@ export type CashSaleListProps = {
   hasActiveFilters?: boolean;
   isLoading?: boolean;
   canVoid?: boolean;
+  canCorrectDate?: boolean;
   voidingSaleId?: number | null;
   onFiltersChange: (filters: CashSaleFilterValues) => void;
   onFilter: () => void;
   onClearFilters: () => void;
   onVoid: (sale: CashSale) => void;
+  onCorrectDate: (sale: CashSale) => void;
 };
 
 const paymentMethods = Object.keys(
@@ -48,11 +51,13 @@ export function CashSaleList({
   hasActiveFilters = false,
   isLoading = false,
   canVoid = false,
+  canCorrectDate = false,
   voidingSaleId = null,
   onFiltersChange,
   onFilter,
   onClearFilters,
   onVoid,
+  onCorrectDate,
 }: CashSaleListProps) {
   const isCredit = mode === "credit";
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
@@ -235,10 +240,12 @@ export function CashSaleList({
                     isExpanded={isExpanded}
                     isVoiding={isVoiding}
                     canVoid={canVoid}
+                    canCorrectDate={canCorrectDate}
                     onToggle={() =>
                       setExpandedSaleId(isExpanded ? null : sale.id)
                     }
                     onVoid={() => onVoid(sale)}
+                    onCorrectDate={() => onCorrectDate(sale)}
                   />
                 );
               })}
@@ -256,8 +263,10 @@ type SaleRowsProps = {
   isExpanded: boolean;
   isVoiding: boolean;
   canVoid: boolean;
+  canCorrectDate: boolean;
   onToggle: () => void;
   onVoid: () => void;
+  onCorrectDate: () => void;
 };
 
 function SaleRows({
@@ -266,8 +275,10 @@ function SaleRows({
   isExpanded,
   isVoiding,
   canVoid,
+  canCorrectDate,
   onToggle,
   onVoid,
+  onCorrectDate,
 }: SaleRowsProps) {
   const isCredit = mode === "credit";
   return (
@@ -342,6 +353,18 @@ function SaleRows({
                 onClick={onVoid}
               >
                 {isVoiding ? "Anulando..." : "Anular"}
+              </button>
+            ) : null}
+            {canShowSaleDateCorrectionAction(
+              canCorrectDate,
+              sale.status,
+            ) ? (
+              <button
+                className="font-semibold text-amber-700 hover:text-amber-600"
+                type="button"
+                onClick={onCorrectDate}
+              >
+                Corregir fecha
               </button>
             ) : null}
           </div>

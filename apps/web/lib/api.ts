@@ -191,6 +191,8 @@ import type {
   CashSalePayload,
   CreditSalePayload,
   CustomerCreditBalance,
+  SaleDateCorrectionPayload,
+  SaleDateCorrectionResponse,
 } from "@/types/sale";
 import type { CashSessionSummary } from "@/types/summary";
 import type {
@@ -2035,6 +2037,18 @@ export async function voidCashSale(
     method: "POST",
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),
+  });
+}
+
+export async function correctSaleDate(
+  token: string,
+  saleId: number,
+  payload: SaleDateCorrectionPayload,
+): Promise<SaleDateCorrectionResponse> {
+  return request<SaleDateCorrectionResponse>(`/sales/${saleId}/date`, {
+    method: "PATCH",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
   });
 }
 

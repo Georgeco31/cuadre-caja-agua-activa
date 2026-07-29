@@ -21,8 +21,12 @@ def get_cash_session(
 def get_cash_session_by_date(
     db: Session,
     session_date: date,
+    *,
+    for_update: bool = False,
 ) -> CashSession | None:
     statement = select(CashSession).where(CashSession.session_date == session_date)
+    if for_update:
+        statement = statement.with_for_update()
     return db.scalar(statement)
 
 

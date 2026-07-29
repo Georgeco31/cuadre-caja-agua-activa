@@ -50,3 +50,7 @@ class User(Base):
         "CorrectionLog",
         back_populates="creator",
     )
+    sale_date_corrections: Mapped[list["SaleDateCorrection"]] = relationship(
+        "SaleDateCorrection",
+        back_populates="creator",
+    )

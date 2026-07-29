@@ -3,12 +3,19 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import get_current_user, get_db, require_admin_auditor
+from app.api.deps import (
+    ROLE_ADMIN_AUDITOR,
+    get_current_user,
+    get_db,
+    require_admin_auditor,
+)
 from app.models.user import User
 from app.schemas.sale import (
     CashSaleCreate,
     CreditSaleCreate,
     CustomerCreditBalance,
+    SaleDateCorrectionCreate,
+    SaleDateCorrectionResponse,
     SalePaymentMethod,
     SaleRead,
     SaleStatus,
@@ -114,12 +121,44 @@ def void_sale(
         raise _http_error(error) from error
 
 
+@router.patch(
+    "/{sale_id}/date",
+    response_model=SaleDateCorrectionResponse,
+)
+def correct_sale_date(
+    sale_id: int,
+    payload: SaleDateCorrectionCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != ROLE_ADMIN_AUDITOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "No tienes permiso para corregir ventas. "
+                "Solicita autorización a George."
+            ),
+        )
+    try:
+        return sale_service.correct_sale_date(
+            db,
+            sale_id=sale_id,
+            new_sale_date=payload.new_sale_date,
+            reason=payload.reason,
+            corrected_by=current_user.id,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
 def _http_error(error: ValueError) -> HTTPException:
     detail = str(error)
     if (
         "ya esta anulada" in detail
         or "tiene abonos activos" in detail
         or "cierre financiero activo" in detail
+        or "no puede corregirse" in detail
+        or "ligada a un cierre" in detail
     ):
         return HTTPException(status_code=status.HTTP_409_CONFLICT, detail=detail)
     if "no existe" in detail:

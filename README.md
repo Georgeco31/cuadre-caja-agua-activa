@@ -354,6 +354,12 @@ cuadre-caja-agua-activa/
   único helper dinámico para LAN, Tailscale, localhost, JSON y descargas. La
   corrección está desplegada; la comprobación con una venta real autorizada
   sigue pendiente.
+- Bloques 60C y 60C-2: se preparó y desplegó una corrección administrativa de fecha para ventas de
+  contado y crédito. Solo `admin_auditor` puede usarla, exige motivo, conserva
+  montos, partidas y pagos, y registra auditoría. Las ventas anuladas o ligadas
+  a cierres se bloquean. El backup y la migración productiva 0027 aprobaron sin
+  reiniciar PostgreSQL; sigue pendiente una operación real expresamente
+  autorizada y conciliada.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -450,6 +456,8 @@ de gastos, cookies ni refresh tokens.
 - `docs/54-incidencia-60b-anulacion-ventas.md`: diagnóstico y corrección del
   flujo de anulación de ventas y de la resolución central de API para LAN,
   Tailscale y localhost.
+- `docs/55-bloque-60c-correccion-fecha-ventas.md`: reglas, endpoint, auditoría,
+  bloqueos, pruebas y despliegue controlado de la corrección de fecha de ventas.
 
 ## Antes de usar datos reales
 
@@ -494,6 +502,8 @@ definitiva. Leer en este orden:
     operación, incidencias y cierre del Día 1.
 27. `docs/54-incidencia-60b-anulacion-ventas.md`, diagnóstico, corrección
     técnica y validación pendiente de una operación real autorizada.
+28. `docs/55-bloque-60c-correccion-fecha-ventas.md`, corrección administrativa
+    auditada, despliegue productivo y validación operativa pendiente.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni

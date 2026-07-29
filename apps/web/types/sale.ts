@@ -96,6 +96,22 @@ export type CreditSalePayload = {
   items: CashSaleItemPayload[];
 };
 
+export type SaleDateCorrectionPayload = {
+  new_sale_date: string;
+  reason: string;
+};
+
+export type SaleDateCorrectionResponse = {
+  sale: Sale;
+  correction_id: number;
+  correction_type: "date_change";
+  previous_sale_date: string;
+  new_sale_date: string;
+  reason: string;
+  corrected_by: number;
+  corrected_at: string;
+};
+
 export type CashSaleFilters = {
   date_from?: string;
   date_to?: string;

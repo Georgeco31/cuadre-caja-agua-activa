@@ -374,3 +374,28 @@ Codex no usó contraseñas reales ni anuló otra venta. La validación física f
 de ambas cuentas en MacBook/iPhone por WiFi/LAN, localhost y Tailscale queda a
 cargo de George. Hasta registrarla, la incidencia continúa **en revisión
 operativa** y el método manual paralelo permanece activo.
+
+## Seguimiento Bloque 60C
+
+George identificó la necesidad de corregir la fecha de una venta real sin
+anularla ni volverla a registrar. El Bloque 60C preparó una corrección
+administrativa limitada a `sale_date`, disponible solo para
+`admin_auditor`, con motivo obligatorio y auditoría de fecha anterior, fecha
+nueva, usuario y timestamp.
+
+La implementación conserva cliente, partidas, cantidades, precios, montos,
+saldo, pagos y estado de anulación. Las ventas anuladas y las fechas o cargas
+ligadas a cierres se bloquean con `409`. Los reportes consultan la nueva fecha
+y los pagos conservan sus propias fechas.
+
+En el Bloque 60C-2 se creó y comprobó el backup previo, se construyeron y
+recrearon solo `api` y `web`, y se aplicó la migración
+`0027_sale_date_corrections` sin reiniciar PostgreSQL ni cambiar conteos del
+negocio. El health posterior aprobó localhost, LAN y Tailscale; la tabla de
+auditoría quedó creada y vacía.
+
+Codex no corrigió ninguna venta real. Permanecen pendientes la comprobación
+visual productiva con sesiones `admin_auditor`/`operator` y una corrección real
+expresamente autorizada, conciliada contra auditoría y reportes. El detalle
+está en
+[`55-bloque-60c-correccion-fecha-ventas.md`](55-bloque-60c-correccion-fecha-ventas.md).

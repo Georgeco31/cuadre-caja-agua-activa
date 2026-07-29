@@ -144,6 +144,11 @@ class Sale(Base):
         back_populates="sale",
         order_by="CreditPayment.id",
     )
+    date_corrections: Mapped[list["SaleDateCorrection"]] = relationship(
+        "SaleDateCorrection",
+        back_populates="sale",
+        order_by="SaleDateCorrection.id",
+    )
 
     @property
     def route_load_number(self) -> str | None:

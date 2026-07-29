@@ -6,12 +6,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.models.sale import Sale
-from app.repositories import customers, products
+from app.repositories import cash_sessions, customers, products
+from app.repositories import sale_date_corrections
 from app.repositories import sales as sale_repository
 from app.schemas.sale import (
     CashSaleCreate,
     CreditSaleCreate,
     CustomerCreditBalance,
+    SaleDateCorrectionResponse,
     SaleItemCreate,
 )
 from app.services import route_loads as route_load_service
@@ -185,6 +187,87 @@ def void_sale(db: Session, sale_id: int, reason: str) -> Sale:
     if voided_sale is None:
         raise RuntimeError("La venta anulada no pudo recuperarse.")
     return voided_sale
+
+
+def correct_sale_date(
+    db: Session,
+    *,
+    sale_id: int,
+    new_sale_date: date,
+    reason: str,
+    corrected_by: int,
+) -> SaleDateCorrectionResponse:
+    sale = sale_repository.get_sale_for_update(db, sale_id)
+    if sale is None:
+        raise ValueError("La venta no existe.")
+    if sale.status == "voided":
+        raise ValueError("La venta anulada no puede corregirse.")
+
+    previous_sale_date = sale.sale_date
+    if previous_sale_date == new_sale_date:
+        raise ValueError("La nueva fecha debe ser diferente de la fecha actual.")
+
+    if sale.route_load_id is not None:
+        try:
+            route_load_service.ensure_route_load_is_financially_open(
+                db,
+                sale.route_load_id,
+            )
+        except ValueError as error:
+            if "cierre financiero activo" in str(error):
+                raise ValueError(
+                    "La fecha no puede corregirse porque la venta está "
+                    "ligada a un cierre.",
+                ) from error
+            raise
+
+    for affected_date in sorted({previous_sale_date, new_sale_date}):
+        cash_session = cash_sessions.get_cash_session_by_date(
+            db,
+            affected_date,
+            for_update=True,
+        )
+        if cash_session is not None and cash_session.status in {
+            "closed",
+            "corrected",
+        }:
+            raise ValueError(
+                "La fecha no puede corregirse porque la venta está ligada "
+                "a un cierre de caja.",
+            )
+
+    corrected_at = datetime.now(timezone.utc)
+    correction = sale_date_corrections.create_sale_date_correction(
+        db,
+        sale_id=sale.id,
+        previous_sale_date=previous_sale_date,
+        new_sale_date=new_sale_date,
+        reason=reason,
+        created_by=corrected_by,
+        created_at=corrected_at,
+    )
+    sale_repository.update_sale_date(db, sale, new_sale_date)
+    try:
+        db.flush()
+        correction_id = correction.id
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    corrected_sale = sale_repository.get_sale(db, sale.id)
+    if corrected_sale is None:
+        raise RuntimeError("La venta corregida no pudo recuperarse.")
+    return SaleDateCorrectionResponse(
+        sale=corrected_sale,
+        correction_id=correction_id,
+        correction_type="date_change",
+        previous_sale_date=previous_sale_date,
+        new_sale_date=new_sale_date,
+        reason=reason,
+        corrected_by=corrected_by,
+        corrected_at=corrected_at,
+    )
 
 
 def get_customer_credit_balance(

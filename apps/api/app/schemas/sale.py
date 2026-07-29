@@ -65,6 +65,19 @@ class SaleVoid(BaseModel):
         return normalized_value
 
 
+class SaleDateCorrectionCreate(BaseModel):
+    new_sale_date: date
+    reason: str = Field(min_length=1, max_length=1000)
+
+    @field_validator("reason")
+    @classmethod
+    def validate_reason(cls, value: str) -> str:
+        normalized_value = value.strip()
+        if not normalized_value:
+            raise ValueError("El motivo de corrección es obligatorio.")
+        return normalized_value
+
+
 class SaleItemRead(BaseModel):
     id: int
     sale_id: int
@@ -112,6 +125,17 @@ class SaleRead(BaseModel):
     items: list[SaleItemRead]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class SaleDateCorrectionResponse(BaseModel):
+    sale: SaleRead
+    correction_id: int
+    correction_type: Literal["date_change"]
+    previous_sale_date: date
+    new_sale_date: date
+    reason: str
+    corrected_by: int
+    corrected_at: datetime
 
 
 class CustomerCreditBalance(BaseModel):

@@ -160,6 +160,16 @@ def mark_sale_voided(
     return sale
 
 
+def update_sale_date(
+    db: Session,
+    sale: Sale,
+    new_sale_date: date,
+) -> Sale:
+    sale.sale_date = new_sale_date
+    db.add(sale)
+    return sale
+
+
 def _sale_options():
     return (
         selectinload(Sale.items),
