@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 
@@ -115,6 +115,24 @@ class CustomerRead(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CustomerSalesSummary(BaseModel):
+    customer_id: int
+    customer_name: str
+    period_start: date | None
+    period_end: date | None
+    cash_sales_count: int
+    cash_sales_total: Decimal
+    credit_sales_count: int
+    credit_sales_total: Decimal
+    total_sales_count: int
+    total_sales_amount: Decimal
+    total_collected_amount: Decimal
+    pending_credit_amount: Decimal
+    last_sale_date: date | None
+    cancelled_sales_count: int
+    cancelled_sales_total: Decimal
 
 
 def _normalize_required_text(value: str, message: str) -> str:

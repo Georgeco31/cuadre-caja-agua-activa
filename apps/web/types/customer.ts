@@ -51,3 +51,28 @@ export type CustomerFilters = {
   customer_type?: CustomerType | "";
   sector?: string;
 };
+
+export type CustomerSalesSummary = {
+  customer_id: number;
+  customer_name: string;
+  period_start: string | null;
+  period_end: string | null;
+  cash_sales_count: number;
+  cash_sales_total: string;
+  credit_sales_count: number;
+  credit_sales_total: string;
+  total_sales_count: number;
+  total_sales_amount: string;
+  total_collected_amount: string;
+  pending_credit_amount: string;
+  last_sale_date: string | null;
+  cancelled_sales_count: number;
+  cancelled_sales_total: string;
+};
+
+export type CustomerSalesFilters = {
+  start_date?: string;
+  end_date?: string;
+  sale_type?: "cash" | "credit" | "all";
+  status?: "active" | "voided";
+};

@@ -37,6 +37,7 @@ export type CashSaleListProps = {
   onClearFilters: () => void;
   onVoid: (sale: CashSale) => void;
   onCorrectDate: (sale: CashSale) => void;
+  customerSummary?: ReactNode;
 };
 
 const paymentMethods = Object.keys(
@@ -58,6 +59,7 @@ export function CashSaleList({
   onClearFilters,
   onVoid,
   onCorrectDate,
+  customerSummary,
 }: CashSaleListProps) {
   const isCredit = mode === "credit";
   const [expandedSaleId, setExpandedSaleId] = useState<number | null>(null);
@@ -190,6 +192,8 @@ export function CashSaleList({
           Limpiar
         </button>
       </form>
+
+      {customerSummary}
 
       {isLoading ? (
         <p className="px-4 py-8 text-sm text-slate-600">Cargando ventas...</p>

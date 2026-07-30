@@ -1,14 +1,19 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db, require_admin_auditor
 from app.schemas.customer import (
     CustomerCreate,
     CustomerRead,
+    CustomerSalesSummary,
     CustomerType,
     CustomerUpdate,
 )
+from app.schemas.sale import SaleRead, SaleStatus
 from app.services import customers as customer_service
+from app.services import customer_sales as customer_sales_service
 
 router = APIRouter(
     prefix="/customers",
@@ -49,6 +54,53 @@ def list_customers(
 def get_customer(customer_id: int, db: Session = Depends(get_db)):
     try:
         return customer_service.get_customer(db, customer_id)
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get(
+    "/{customer_id}/sales-summary",
+    response_model=CustomerSalesSummary,
+)
+def get_customer_sales_summary(
+    customer_id: int,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    sale_type: str = Query(default="all", pattern="^(cash|credit|all)$"),
+    sale_status: SaleStatus | None = Query(default=None, alias="status"),
+    db: Session = Depends(get_db),
+):
+    try:
+        return customer_sales_service.get_customer_sales_summary(
+            db,
+            customer_id=customer_id,
+            start_date=start_date,
+            end_date=end_date,
+            sale_type=sale_type,
+            status=sale_status,
+        )
+    except ValueError as error:
+        raise _http_error(error) from error
+
+
+@router.get("/{customer_id}/sales", response_model=list[SaleRead])
+def list_customer_sales(
+    customer_id: int,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    sale_type: str = Query(default="all", pattern="^(cash|credit|all)$"),
+    sale_status: SaleStatus | None = Query(default=None, alias="status"),
+    db: Session = Depends(get_db),
+):
+    try:
+        return customer_sales_service.list_customer_sales(
+            db,
+            customer_id=customer_id,
+            start_date=start_date,
+            end_date=end_date,
+            sale_type=sale_type,
+            status=sale_status,
+        )
     except ValueError as error:
         raise _http_error(error) from error
 

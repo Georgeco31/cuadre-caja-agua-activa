@@ -104,6 +104,14 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
   resumen mensual, ventas, cartera, gastos operativos, compras, inventario,
   producción, rutas y nómina base.
 
+- Resumen y detalle de ventas por cliente con contado, crédito, total vendido,
+  cobrado sobre crédito, saldo pendiente, fechas y anuladas separadas.
+- Exportación Excel detallada de ventas a crédito por cliente, exclusiva para
+  `admin_auditor`.
+- Métricas del dashboard principal para `admin_auditor`: ventas, cobros,
+  cartera, gastos operativos, mejor día, promedio, top clientes, tendencia y
+  mezcla contado/crédito.
+
 Quedan fuera del MVP:
 
 - Facturacion.
@@ -392,6 +400,14 @@ cuadre-caja-agua-activa/
   Tailscale: administrador ve nómina y operador recibe el bloqueo frontend
   esperado. No se modificaron credenciales.
 
+- Bloque 62A: reportes de solo lectura por cliente, exportación Excel de
+  crédito detallado y métricas visuales en el dashboard principal de
+  `admin_auditor`. Las anuladas se excluyen de totales, `operator` conserva su
+  panel simple y recibe `403` en exportación/analytics. No requiere migración;
+  62A-2 fue desplegado recreando sólo `api` y `web`, con DB, Alembic 0028 y
+  conteos productivos intactos. Queda pendiente el humo visual autenticado por
+  ambos roles.
+
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
 denominaciones o conciliacion contable del cierre de ruta con caja o bancos,
@@ -499,6 +515,9 @@ de gastos, cookies ni refresh tokens.
   jornadas de arranque controlado de producción e inventario.
 - `docs/60-bloque-60e-liquidacion-simple-rutas.md`: alcance, cálculos, reglas,
   permisos, pruebas y brechas del resumen simple de rutas.
+- `docs/62-bloque-62a-metricas-clientes-dashboard.md`: métricas por cliente,
+  exportación de crédito, analytics administrativos y evidencia de despliegue
+  controlado 62A-2.
 
 ## Antes de usar datos reales
 
@@ -558,6 +577,8 @@ datos; la conciliación con una ruta real sigue pendiente. Leer en este orden:
     Día 0 y las cinco jornadas con autorización de George.
 33. `docs/60-bloque-60e-liquidacion-simple-rutas.md`, para revisar carga,
     retorno, ventas y dinero sin confundir el resumen con inventario automático.
+34. `docs/62-bloque-62a-metricas-clientes-dashboard.md`, para consultar alcance,
+    semántica, permisos y evidencia productiva de 62A-2.
 
 Las separaciones actuales son deliberadas: una venta no descarga inventario,
 una produccion no aumenta stock hasta aplicarse, una compra no ingresa stock ni

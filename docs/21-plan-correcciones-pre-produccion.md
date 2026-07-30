@@ -447,6 +447,43 @@ Documento y procedimiento 61A-2:
 
 - [`61-bloque-61a-roles-pago-base.md`](61-bloque-61a-roles-pago-base.md).
 
+## Estado del Bloque 62A: métricas de clientes y dashboard
+
+62A agrega lecturas de ventas por cliente con totales de contado, crédito,
+total general, cobrado sobre crédito, saldo pendiente, filtros y detalle de
+ítems. Las ventas anuladas se muestran sólo como referencia y no inflan los
+totales activos.
+
+`admin_auditor` dispone de una exportación Excel especializada con resumen y
+detalle de ventas a crédito por cliente. `operator` conserva la lectura de
+clientes y ventas, pero recibe `403` en exportaciones y analytics
+administrativos.
+
+El dashboard principal del administrador muestra ventas, contado/crédito,
+cobros, saldo, gastos operativos, mejor día, promedio diario, clientes
+atendidos, top clientes y tendencia por rango. Ventas, cobros, caja y gastos no
+se mezclan; el neto queda `null` porque no existe todavía una base contable
+comparable y confiable.
+
+No se requiere migración: Alembic permanece en `0028_payroll_base`. 62A-2 fue
+desplegado el 29 de julio de 2026 recreando únicamente `api` y `web` con
+`--no-deps`. La DB conservó contenedor, hora de inicio y cero reinicios; los
+conteos de ventas, abonos, clientes, caja, rutas y nómina coincidieron antes y
+después. Los health previo y posterior aprobaron con cero fallos y cero
+advertencias.
+
+La validación aprobó 1.017 pruebas backend, 27 frontend, typecheck, build,
+Compose y `git diff --check`. Sobre la API desplegada, una sesión `READ ONLY`
+comprobó resumen y detalle de un cliente real, analytics y Excel con resumen,
+detalle y totales, sin imprimir su identidad ni cambiar datos. Los tres
+orígenes cargaron el login y el rechazo inválido fue claro, sin errores de
+consola. Queda pendiente únicamente el humo visual autenticado por ambos roles,
+porque no había sesiones abiertas y no se extrajeron credenciales ni tokens.
+
+Documento y procedimiento:
+
+- [`62-bloque-62a-metricas-clientes-dashboard.md`](62-bloque-62a-metricas-clientes-dashboard.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |

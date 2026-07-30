@@ -14,6 +14,7 @@ from openpyxl.utils import get_column_letter
 from sqlalchemy.orm import Session
 
 from app.services import credit_payments as credit_payment_service
+from app.services import customer_sales as customer_sales_service
 from app.services import inventory as inventory_service
 from app.services import operating_expenses as operating_expense_service
 from app.services import payroll as payroll_service
@@ -648,6 +649,146 @@ def build_sales_workbook(
         ),
         money_columns=("Precio unitario", "Subtotal"),
         quantity_columns=("Cantidad",),
+    )
+    return workbook
+
+
+def build_customer_credit_sales_workbook(
+    db: Session,
+    *,
+    customer_id: int,
+    start_date: date | None = None,
+    end_date: date | None = None,
+) -> Workbook:
+    summary = customer_sales_service.get_customer_sales_summary(
+        db,
+        customer_id=customer_id,
+        start_date=start_date,
+        end_date=end_date,
+        sale_type="credit",
+        status="active",
+    )
+    sales = customer_sales_service.list_customer_sales(
+        db,
+        customer_id=customer_id,
+        start_date=start_date,
+        end_date=end_date,
+        sale_type="credit",
+        status="active",
+    )
+    workbook = create_workbook()
+    summary_sheet = add_sheet(
+        workbook,
+        "Resumen",
+        ("Indicador", "Valor"),
+        (
+            ("Cliente", summary.customer_name),
+            ("Fecha desde", summary.period_start or "Sin límite"),
+            ("Fecha hasta", summary.period_end or "Sin límite"),
+            ("Total ventas crédito", summary.credit_sales_total),
+            ("Total cobrado", summary.total_collected_amount),
+            ("Saldo pendiente", summary.pending_credit_amount),
+            ("Número de ventas", summary.credit_sales_count),
+            ("Fecha de generación", datetime.now()),
+        ),
+    )
+    for row_number in (5, 6, 7):
+        summary_sheet.cell(row=row_number, column=2).number_format = MONEY_FORMAT
+    for row_number in (3, 4):
+        if isinstance(summary_sheet.cell(row=row_number, column=2).value, date):
+            summary_sheet.cell(row=row_number, column=2).number_format = DATE_FORMAT
+    summary_sheet.cell(row=9, column=2).number_format = DATETIME_FORMAT
+
+    detail_rows: list[tuple[Any, ...]] = [
+        (
+            sale.sale_date,
+            sale.id,
+            sale.sale_number,
+            sale.customer_name_snapshot,
+            item.product_name_snapshot,
+            item.quantity,
+            item.unit_price,
+            item.subtotal,
+            sale.total_amount,
+            sale.paid_amount,
+            sale.balance_amount,
+            sale.status,
+            sale.notes,
+        )
+        for sale in sales
+        for item in sale.items
+    ]
+    if sales:
+        detail_rows.append(
+            (
+                None,
+                None,
+                "TOTALES",
+                summary.customer_name,
+                "Totales del período",
+                sum(
+                    (
+                        item.quantity
+                        for sale in sales
+                        for item in sale.items
+                    ),
+                    start=Decimal("0.000"),
+                ),
+                None,
+                summary.credit_sales_total,
+                summary.credit_sales_total,
+                summary.total_collected_amount,
+                summary.pending_credit_amount,
+                "active",
+                None,
+            )
+        )
+    else:
+        detail_rows.append(
+            (
+                "Sin ventas a crédito en el periodo",
+                None,
+                None,
+                summary.customer_name,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+                None,
+            )
+        )
+    add_sheet(
+        workbook,
+        "Detalle ventas crédito",
+        (
+            "Fecha",
+            "Venta ID",
+            "Número de venta",
+            "Cliente",
+            "Producto",
+            "Cantidad",
+            "Precio unitario",
+            "Subtotal",
+            "Total venta",
+            "Cobrado",
+            "Saldo pendiente",
+            "Estado",
+            "Observación",
+        ),
+        detail_rows,
+        money_columns=(
+            "Precio unitario",
+            "Subtotal",
+            "Total venta",
+            "Cobrado",
+            "Saldo pendiente",
+        ),
+        quantity_columns=("Cantidad",),
+        date_columns=("Fecha",),
     )
     return workbook
 

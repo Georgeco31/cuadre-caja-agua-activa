@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AdminSalesAnalytics } from "@/components/AdminSalesAnalytics";
 import { BackupReminderCard } from "@/components/BackupReminderCard";
 import {
   DashboardAlertPanel,
@@ -26,12 +27,21 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   ApiError,
+  getAdminDashboardAnalytics,
   getCashSessionByDate,
   getCashSessionSummary,
   getCurrentUser,
   listCashSessions,
 } from "@/lib/api";
+import {
+  canShowAdminAnalytics,
+  getAnalyticsPreset,
+} from "@/lib/adminAnalytics";
 import { getToken, removeToken, saveUser } from "@/lib/auth";
+import type {
+  AdminDashboardAnalytics,
+  AdminDashboardAnalyticsFilters,
+} from "@/types/adminDashboardAnalytics";
 import type { CurrentUser } from "@/types/auth";
 import type { CashSession } from "@/types/cashSession";
 import type { CashSessionSummary } from "@/types/summary";
@@ -48,6 +58,14 @@ export default function DashboardPage() {
   const [recentSessions, setRecentSessions] = useState<
     DashboardRecentSessionItem[]
   >([]);
+  const [adminAnalytics, setAdminAnalytics] =
+    useState<AdminDashboardAnalytics | null>(null);
+  const [analyticsFilters, setAnalyticsFilters] =
+    useState<AdminDashboardAnalyticsFilters>(() =>
+      getAnalyticsPreset("month"),
+    );
+  const [analyticsError, setAnalyticsError] = useState("");
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -83,6 +101,13 @@ export default function DashboardPage() {
       saveUser(currentUser);
       setTodayData(loadedTodayData);
       setRecentSessions(loadedRecentSessions);
+      if (canShowAdminAnalytics(currentUser.role)) {
+        await loadAdminAnalytics(activeToken, analyticsFilters);
+      } else {
+        setAdminAnalytics(null);
+        setAnalyticsError("");
+        setIsLoadingAnalytics(false);
+      }
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -91,6 +116,41 @@ export default function DashboardPage() {
       setError(getErrorMessage(loadError));
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function loadAdminAnalytics(
+    activeToken: string,
+    activeFilters: AdminDashboardAnalyticsFilters,
+  ) {
+    if (
+      activeFilters.start_date &&
+      activeFilters.end_date &&
+      activeFilters.end_date < activeFilters.start_date
+    ) {
+      setAnalyticsError(
+        "La fecha hasta no puede ser menor que la fecha desde.",
+      );
+      return;
+    }
+    setIsLoadingAnalytics(true);
+    setAnalyticsError("");
+    try {
+      setAdminAnalytics(
+        await getAdminDashboardAnalytics(activeToken, activeFilters),
+      );
+    } catch (loadError) {
+      if (redirectIfUnauthorized(loadError)) {
+        return;
+      }
+      setAdminAnalytics(null);
+      setAnalyticsError(
+        loadError instanceof Error
+          ? loadError.message
+          : "No se pudieron cargar las métricas administrativas.",
+      );
+    } finally {
+      setIsLoadingAnalytics(false);
     }
   }
 
@@ -222,6 +282,22 @@ export default function DashboardPage() {
         {!error ? (
           <>
             <DashboardKpiGrid items={dashboardKpis} />
+
+            {canShowAdminAnalytics(user?.role) ? (
+              <AdminSalesAnalytics
+                data={adminAnalytics}
+                error={analyticsError}
+                filters={analyticsFilters}
+                isLoading={isLoadingAnalytics}
+                onFiltersChange={setAnalyticsFilters}
+                onLoad={(activeFilters) => {
+                  const activeToken = getToken();
+                  if (activeToken) {
+                    void loadAdminAnalytics(activeToken, activeFilters);
+                  }
+                }}
+              />
+            ) : null}
 
             <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.75fr)]">
               <DashboardTodayCard

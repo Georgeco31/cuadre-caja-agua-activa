@@ -10,8 +10,15 @@ import { DashboardShell } from "@/components/ui/DashboardShell";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ResponsiveToolbar } from "@/components/ui/ResponsiveToolbar";
 import { StatusBadge } from "@/components/ui/StatusBadge";
-import { ApiError, downloadFile, getCurrentUser } from "@/lib/api";
+import {
+  ApiError,
+  downloadFile,
+  getCurrentUser,
+  listCustomers,
+} from "@/lib/api";
 import { getToken, removeToken, saveUser } from "@/lib/auth";
+import { buildCustomerCreditExportPath } from "@/lib/customerSalesReporting";
+import type { Customer } from "@/types/customer";
 import type {
   ReportExportDefinition,
   ReportExportFormat,
@@ -158,10 +165,14 @@ export default function ReportExportsPage() {
   const [dateTo, setDateTo] = useState(currentMonthDates.to);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthValue);
   const [selectedDate, setSelectedDate] = useState(getCurrentDateValue);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [error, setError] = useState("");
   const [downloadingFormat, setDownloadingFormat] =
     useState<ReportExportFormat | null>(null);
   const [forbidden, setForbidden] = useState(false);
+  const [isDownloadingCustomerCredit, setIsDownloadingCustomerCredit] =
+    useState(false);
   const [accountName, setAccountName] = useState("Agua Activa");
 
   useEffect(() => {
@@ -183,6 +194,7 @@ export default function ReportExportsPage() {
         setError("No tienes permisos para acceder a las exportaciones.");
         return;
       }
+      setCustomers(await listCustomers(activeToken));
       setToken(activeToken);
     } catch (loadError) {
       if (loadError instanceof ApiError && loadError.status === 401) {
@@ -275,6 +287,45 @@ export default function ReportExportsPage() {
       setError(getErrorMessage(downloadError, format));
     } finally {
       setDownloadingFormat(null);
+    }
+  }
+
+  async function handleCustomerCreditDownload(
+    event: FormEvent<HTMLFormElement>,
+  ) {
+    event.preventDefault();
+    if (!token) {
+      return;
+    }
+    try {
+      const customerId = Number(selectedCustomerId);
+      const endpoint = buildCustomerCreditExportPath(customerId, {
+        ...(dateFrom ? { start_date: dateFrom } : {}),
+        ...(dateTo ? { end_date: dateTo } : {}),
+      });
+      setIsDownloadingCustomerCredit(true);
+      setError("");
+      await downloadFile(
+        token,
+        endpoint,
+        `ventas-credito-cliente-${customerId}.xlsx`,
+      );
+    } catch (downloadError) {
+      if (
+        downloadError instanceof ApiError &&
+        downloadError.status === 401
+      ) {
+        removeToken();
+        router.replace("/login");
+        return;
+      }
+      setError(
+        downloadError instanceof Error
+          ? downloadError.message
+          : "No se pudo exportar el crédito del cliente.",
+      );
+    } finally {
+      setIsDownloadingCustomerCredit(false);
     }
   }
 
@@ -382,6 +433,23 @@ export default function ReportExportsPage() {
               />
             </div>
 
+            <CustomerCreditExportSection
+              customers={customers}
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              disabled={
+                downloadingFormat !== null ||
+                isDownloadingCustomerCredit ||
+                !token
+              }
+              isDownloading={isDownloadingCustomerCredit}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+              onSelectedCustomerChange={setSelectedCustomerId}
+              onSubmit={handleCustomerCreditDownload}
+              selectedCustomerId={selectedCustomerId}
+            />
+
             {error ? <ErrorMessage message={error} /> : null}
 
             <p className="rounded-2xl border border-water-100 bg-water-50 px-5 py-4 text-sm leading-6 text-water-900">
@@ -392,6 +460,93 @@ export default function ReportExportsPage() {
         ) : null}
       </div>
     </DashboardShell>
+  );
+}
+
+function CustomerCreditExportSection({
+  customers,
+  dateFrom,
+  dateTo,
+  disabled,
+  isDownloading,
+  onDateFromChange,
+  onDateToChange,
+  onSelectedCustomerChange,
+  onSubmit,
+  selectedCustomerId,
+}: {
+  customers: Customer[];
+  dateFrom: string;
+  dateTo: string;
+  disabled: boolean;
+  isDownloading: boolean;
+  onDateFromChange: (value: string) => void;
+  onDateToChange: (value: string) => void;
+  onSelectedCustomerChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  selectedCustomerId: string;
+}) {
+  return (
+    <section className="overflow-hidden rounded-3xl border border-water-200 bg-white shadow-card">
+      <div className="border-b border-water-100 bg-water-50 p-5 sm:p-6">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-water-700">
+          Exportación especializada · Excel
+        </p>
+        <h2 className="mt-1.5 text-xl font-semibold text-slate-950">
+          Ventas a crédito por cliente
+        </h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+          Genera un libro con resumen, cobrado, saldo pendiente y el detalle de
+          productos de cada venta activa del cliente.
+        </p>
+      </div>
+      <form
+        className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6 xl:grid-cols-[minmax(260px,1.4fr)_minmax(180px,0.7fr)_minmax(180px,0.7fr)_auto] xl:items-end"
+        onSubmit={onSubmit}
+      >
+        <label className="block">
+          <span className="text-sm font-semibold text-slate-800">
+            Cliente obligatorio
+          </span>
+          <select
+            className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+            disabled={disabled}
+            onChange={(event) =>
+              onSelectedCustomerChange(event.target.value)
+            }
+            value={selectedCustomerId}
+          >
+            <option value="">Selecciona un cliente</option>
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {customer.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <DateField
+          disabled={disabled}
+          label="Fecha desde (opcional)"
+          onChange={onDateFromChange}
+          value={dateFrom}
+        />
+        <DateField
+          disabled={disabled}
+          label="Fecha hasta (opcional)"
+          onChange={onDateToChange}
+          value={dateTo}
+        />
+        <button
+          className="min-h-11 rounded-xl bg-water-700 px-5 text-sm font-semibold text-white shadow-water transition hover:bg-water-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+          disabled={disabled}
+          type="submit"
+        >
+          {isDownloading
+            ? "Preparando Excel..."
+            : "Exportar crédito del cliente"}
+        </button>
+      </form>
+    </section>
   );
 }
 

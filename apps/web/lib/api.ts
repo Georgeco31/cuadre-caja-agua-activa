@@ -1,3 +1,7 @@
+import type {
+  AdminDashboardAnalytics,
+  AdminDashboardAnalyticsFilters,
+} from "@/types/adminDashboardAnalytics";
 import type { CurrentUser, LoginCredentials, TokenResponse } from "@/types/auth";
 import type {
   CashCountItem,
@@ -22,6 +26,8 @@ import type {
   Customer,
   CustomerFilters,
   CustomerPayload,
+  CustomerSalesFilters,
+  CustomerSalesSummary,
   CustomerUpdatePayload,
 } from "@/types/customer";
 import type {
@@ -216,6 +222,7 @@ import type {
   UserUpdatePayload,
 } from "@/types/user";
 import { buildApiUrl } from "@/lib/apiUrl";
+import { buildCustomerSalesSummaryPath } from "@/lib/customerSalesReporting";
 
 export {
   buildApiUrl,
@@ -581,6 +588,24 @@ export async function getManagementDashboard(
   );
 }
 
+export async function getAdminDashboardAnalytics(
+  token: string,
+  filters: AdminDashboardAnalyticsFilters = {},
+): Promise<AdminDashboardAnalytics> {
+  const searchParams = new URLSearchParams();
+  if (filters.start_date) {
+    searchParams.set("start_date", filters.start_date);
+  }
+  if (filters.end_date) {
+    searchParams.set("end_date", filters.end_date);
+  }
+  const query = searchParams.toString();
+  return request<AdminDashboardAnalytics>(
+    `/reports/admin-dashboard-analytics${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
 export async function downloadFile(
   token: string,
   endpoint: string,
@@ -640,6 +665,17 @@ export async function getCustomer(
   return request<Customer>(`/customers/${customerId}`, {
     headers: authHeaders(token),
   });
+}
+
+export async function getCustomerSalesSummary(
+  token: string,
+  customerId: number,
+  filters: CustomerSalesFilters = {},
+): Promise<CustomerSalesSummary> {
+  return request<CustomerSalesSummary>(
+    buildCustomerSalesSummaryPath(customerId, filters),
+    { headers: authHeaders(token) },
+  );
 }
 
 export async function createCustomer(

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, require_admin_auditor
 from app.services.excel_export import (
     build_excel_response,
+    build_customer_credit_sales_workbook,
     build_inventory_workbook,
     build_management_dashboard_workbook,
     build_monthly_summary_workbook,
@@ -76,6 +77,24 @@ def export_sales(
             route_load_id=route_load_id,
         ),
         "ventas.xlsx",
+    )
+
+
+@router.get("/customer-credit-sales.xlsx")
+def export_customer_credit_sales(
+    customer_id: int = Query(gt=0),
+    start_date: date | None = None,
+    end_date: date | None = None,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_customer_credit_sales_workbook(
+            db,
+            customer_id=customer_id,
+            start_date=start_date,
+            end_date=end_date,
+        ),
+        f"ventas-credito-cliente-{customer_id}.xlsx",
     )
 
 

@@ -9,6 +9,7 @@ import {
   CashSaleList,
   type CashSaleFilterValues,
 } from "@/components/CashSaleList";
+import { CustomerSalesSummaryCard } from "@/components/CustomerSalesSummaryCard";
 import { ErrorMessage } from "@/components/ErrorMessage";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
@@ -17,6 +18,7 @@ import {
   ApiError,
   correctSaleDate,
   createCashSale,
+  getCustomerSalesSummary,
   listCashSales,
   listCustomers,
   listProducts,
@@ -26,7 +28,7 @@ import {
 import { getToken, removeToken } from "@/lib/auth";
 import { getSaleDateCorrectionErrorMessage } from "@/lib/saleDateCorrection";
 import { useIsAdminAuditor } from "@/lib/useCurrentRole";
-import type { Customer } from "@/types/customer";
+import type { Customer, CustomerSalesSummary } from "@/types/customer";
 import type { Product } from "@/types/product";
 import type { RouteLoad } from "@/types/routeLoad";
 import type {
@@ -52,16 +54,21 @@ export default function CashSalesPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [routeLoads, setRouteLoads] = useState<RouteLoad[]>([]);
   const [sales, setSales] = useState<CashSale[]>([]);
+  const [customerSummary, setCustomerSummary] =
+    useState<CustomerSalesSummary | null>(null);
   const [filters, setFilters] = useState<CashSaleFilterValues>(emptyFilters);
   const [appliedFilters, setAppliedFilters] =
     useState<CashSaleFilterValues>(emptyFilters);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSales, setIsLoadingSales] = useState(false);
+  const [isLoadingCustomerSummary, setIsLoadingCustomerSummary] =
+    useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [voidingSaleId, setVoidingSaleId] = useState<number | null>(null);
   const [saleToCorrect, setSaleToCorrect] = useState<CashSale | null>(null);
   const [isCorrectingDate, setIsCorrectingDate] = useState(false);
   const [error, setError] = useState("");
+  const [customerSummaryError, setCustomerSummaryError] = useState("");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -105,7 +112,9 @@ export default function CashSalesPage() {
     activeFilters: CashSaleFilterValues,
   ) {
     setIsLoadingSales(true);
+    setIsLoadingCustomerSummary(Boolean(activeFilters.customerId));
     setError("");
+    setCustomerSummaryError("");
     try {
       const loadedSales = await listCashSales(activeToken, {
         sale_type: "cash",
@@ -122,6 +131,32 @@ export default function CashSalesPage() {
       });
       setSales(loadedSales);
       setAppliedFilters({ ...activeFilters });
+      if (activeFilters.customerId) {
+        try {
+          setCustomerSummary(
+            await getCustomerSalesSummary(
+              activeToken,
+              Number(activeFilters.customerId),
+              {
+                ...(activeFilters.dateFrom
+                  ? { start_date: activeFilters.dateFrom }
+                  : {}),
+                ...(activeFilters.dateTo
+                  ? { end_date: activeFilters.dateTo }
+                  : {}),
+              },
+            ),
+          );
+        } catch (summaryError) {
+          if (redirectIfUnauthorized(summaryError)) {
+            return;
+          }
+          setCustomerSummary(null);
+          setCustomerSummaryError(getErrorMessage(summaryError));
+        }
+      } else {
+        setCustomerSummary(null);
+      }
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -129,6 +164,7 @@ export default function CashSalesPage() {
       setError(getErrorMessage(loadError));
     } finally {
       setIsLoadingSales(false);
+      setIsLoadingCustomerSummary(false);
     }
   }
 
@@ -306,6 +342,13 @@ export default function CashSalesPage() {
               onClearFilters={handleClearFilters}
               onVoid={handleVoidSale}
               onCorrectDate={setSaleToCorrect}
+              customerSummary={
+                <CustomerSalesSummaryCard
+                  error={customerSummaryError}
+                  isLoading={isLoadingCustomerSummary}
+                  summary={customerSummary}
+                />
+              }
             />
           </>
         )}
