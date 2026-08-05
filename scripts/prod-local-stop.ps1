@@ -4,8 +4,8 @@ $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $ComposeFile = "docker-compose.prod.yml"
 $EnvFile = ".env.production.local"
-$LanWebUrl = "http://192.168.100.220:3000/login"
-$LanApiHealthUrl = "http://192.168.100.220:8010/api/v1/health"
+$LanWebUrl = "http://192.168.100.225:3000/login"
+$LanApiHealthUrl = "http://192.168.100.225:8010/api/v1/health"
 $TailscaleWebUrl = "http://100.121.163.126:3000/login"
 $TailscaleApiHealthUrl = "http://100.121.163.126:8010/api/v1/health"
 

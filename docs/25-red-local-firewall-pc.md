@@ -1,5 +1,14 @@
 # 25 - Red local y firewall en PC
 
+## Actualización operativa del Bloque 62B
+
+El 2026-08-05 la concesión DHCP de KERNELOS-PC cambió la IP LAN anterior
+`192.168.100.220` por la IP actual `192.168.100.225`. Los scripts operativos
+comprueban ahora la Web en `http://192.168.100.225:3000/login` y la API en
+`http://192.168.100.225:8010/api/v1/health`. La evidencia que sigue en este
+documento corresponde a la prueba histórica del Bloque 55B-1 con la IP
+anterior. Continúa pendiente reservar una IP para KERNELOS-PC en el router.
+
 ## Alcance
 
 - Bloque: 55B-1.

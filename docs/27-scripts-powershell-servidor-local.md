@@ -270,10 +270,15 @@ reparar datos.
 
 | Acceso | URL |
 | --- | --- |
-| Web LAN | `http://192.168.100.220:3000/login` |
-| API LAN | `http://192.168.100.220:8010/api/v1/health` |
+| Web LAN | `http://192.168.100.225:3000/login` |
+| API LAN | `http://192.168.100.225:8010/api/v1/health` |
 | Web Tailscale | `http://100.121.163.126:3000/login` |
 | API Tailscale | `http://100.121.163.126:8010/api/v1/health` |
+
+Actualización del Bloque 62B (2026-08-05): la IP LAN cambió por DHCP de
+`192.168.100.220` a `192.168.100.225`. Los scripts operativos usan desde este
+bloque la dirección nueva. Sigue pendiente reservar una IP para KERNELOS-PC en
+el router y evitar nuevos cambios de dirección.
 
 La reserva DHCP sigue pendiente. Si cambia la IP LAN, hay que actualizar
 `.env.production.local`, firewall, documentos y scripts. Si cambia la IP
