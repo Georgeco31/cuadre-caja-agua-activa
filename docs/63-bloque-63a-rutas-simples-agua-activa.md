@@ -267,3 +267,22 @@ el dashboard administrativo autenticado aprobaron por localhost, LAN y
 Tailscale, sin errores de consola ni desbordamiento móvil. No se creó ninguna
 ruta. Las reglas, campos, pruebas y brechas están documentados en
 [`65-bloque-63b-dashboard-rutas-simples.md`](65-bloque-63b-dashboard-rutas-simples.md).
+
+## Continuidad en el Bloque 63C
+
+El centro de exportaciones ahora ofrece libros Excel específicos de Rutas
+Simples para resumen, detalle, ventas, fiados pendientes, abonos, gastos y
+cuadres. Todos reutilizan los datos y cálculos propios de 63A, excluyen rutas
+canceladas de totales/actividad principal y mantienen separadas ventas
+oficiales, cartera, cobros e inventario.
+
+La exportación visual de rutas anteriores fue retirada del selector general;
+su endpoint permanece únicamente por compatibilidad. 63C no agrega migración y
+Alembic continúa en `0029_simple_routes`.
+
+63C-2 se desplegó el 2026-08-07 recreando únicamente `api` y `web`. PostgreSQL
+conservó el mismo contenedor sin reinicios y los conteos protegidos permanecieron
+intactos. Health, login administrativo localhost/LAN/Tailscale, sección móvil,
+seis XLSX vacíos y el `404` controlado del detalle aprobaron; no se creó ninguna
+ruta ni se modificaron datos. El detalle completo está en
+[`66-bloque-63c-exportaciones-rutas-simples.md`](66-bloque-63c-exportaciones-rutas-simples.md).

@@ -15,15 +15,29 @@ import {
   downloadFile,
   getCurrentUser,
   listCustomers,
+  listSimpleRoutes,
 } from "@/lib/api";
 import { getToken, removeToken, saveUser } from "@/lib/auth";
 import { buildCustomerCreditExportPath } from "@/lib/customerSalesReporting";
+import {
+  buildSimpleRouteExportPath,
+  getSimpleRouteExportFilename,
+  SIMPLE_ROUTE_EXPORT_NOTICE,
+  SIMPLE_ROUTE_EXPORTS,
+  type SimpleRouteExportFilters,
+  type SimpleRouteExportType,
+} from "@/lib/simpleRouteExports";
 import type { Customer } from "@/types/customer";
 import type {
   ReportExportDefinition,
   ReportExportFormat,
   ReportExportType,
 } from "@/types/reportExports";
+import type {
+  SimpleRouteListItem,
+  SimpleRouteSaleType,
+  SimpleRouteStatus,
+} from "@/types/simpleRoute";
 
 const EXCEL_REPORTS: ReportExportDefinition[] = [
   {
@@ -88,14 +102,6 @@ const EXCEL_REPORTS: ReportExportDefinition[] = [
     description: "Lotes, aplicaciones, consumos y fórmulas.",
     endpoint: "production.xlsx",
     filename: "produccion.xlsx",
-    filterMode: "dates",
-  },
-  {
-    type: "routes",
-    label: "Rutas",
-    description: "Cargas, retornos, cierres, recibos y actividad comercial.",
-    endpoint: "routes.xlsx",
-    filename: "rutas.xlsx",
     filterMode: "dates",
   },
   {
@@ -166,6 +172,7 @@ export default function ReportExportsPage() {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthValue);
   const [selectedDate, setSelectedDate] = useState(getCurrentDateValue);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [simpleRoutes, setSimpleRoutes] = useState<SimpleRouteListItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [error, setError] = useState("");
   const [downloadingFormat, setDownloadingFormat] =
@@ -173,6 +180,8 @@ export default function ReportExportsPage() {
   const [forbidden, setForbidden] = useState(false);
   const [isDownloadingCustomerCredit, setIsDownloadingCustomerCredit] =
     useState(false);
+  const [downloadingSimpleRouteType, setDownloadingSimpleRouteType] =
+    useState<SimpleRouteExportType | null>(null);
   const [accountName, setAccountName] = useState("Agua Activa");
 
   useEffect(() => {
@@ -194,7 +203,12 @@ export default function ReportExportsPage() {
         setError("No tienes permisos para acceder a las exportaciones.");
         return;
       }
-      setCustomers(await listCustomers(activeToken));
+      const [loadedCustomers, loadedSimpleRoutes] = await Promise.all([
+        listCustomers(activeToken),
+        listSimpleRoutes(activeToken),
+      ]);
+      setCustomers(loadedCustomers);
+      setSimpleRoutes(loadedSimpleRoutes);
       setToken(activeToken);
     } catch (loadError) {
       if (loadError instanceof ApiError && loadError.status === 401) {
@@ -329,6 +343,41 @@ export default function ReportExportsPage() {
     }
   }
 
+  async function handleSimpleRouteDownload(
+    reportType: SimpleRouteExportType,
+    filters: SimpleRouteExportFilters,
+  ) {
+    if (!token) {
+      return;
+    }
+    try {
+      const endpoint = buildSimpleRouteExportPath(reportType, filters);
+      setDownloadingSimpleRouteType(reportType);
+      setError("");
+      await downloadFile(
+        token,
+        endpoint,
+        getSimpleRouteExportFilename(reportType, filters.route_sheet_id),
+      );
+    } catch (downloadError) {
+      if (
+        downloadError instanceof ApiError &&
+        downloadError.status === 401
+      ) {
+        removeToken();
+        router.replace("/login");
+        return;
+      }
+      setError(
+        downloadError instanceof Error
+          ? downloadError.message
+          : "No se pudo exportar el reporte de Rutas Simples.",
+      );
+    } finally {
+      setDownloadingSimpleRouteType(null);
+    }
+  }
+
   function useCurrentMonth() {
     const dates = getCurrentMonthDates();
     setDateFrom(dates.from);
@@ -433,6 +482,22 @@ export default function ReportExportsPage() {
               />
             </div>
 
+            <SimpleRouteExportSection
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              disabled={
+                downloadingFormat !== null ||
+                isDownloadingCustomerCredit ||
+                downloadingSimpleRouteType !== null ||
+                !token
+              }
+              downloadingType={downloadingSimpleRouteType}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+              onDownload={handleSimpleRouteDownload}
+              routes={simpleRoutes}
+            />
+
             <CustomerCreditExportSection
               customers={customers}
               dateFrom={dateFrom}
@@ -460,6 +525,211 @@ export default function ReportExportsPage() {
         ) : null}
       </div>
     </DashboardShell>
+  );
+}
+
+function SimpleRouteExportSection({
+  dateFrom,
+  dateTo,
+  disabled,
+  downloadingType,
+  onDateFromChange,
+  onDateToChange,
+  onDownload,
+  routes,
+}: {
+  dateFrom: string;
+  dateTo: string;
+  disabled: boolean;
+  downloadingType: SimpleRouteExportType | null;
+  onDateFromChange: (value: string) => void;
+  onDateToChange: (value: string) => void;
+  onDownload: (
+    reportType: SimpleRouteExportType,
+    filters: SimpleRouteExportFilters,
+  ) => Promise<void>;
+  routes: SimpleRouteListItem[];
+}) {
+  const [selectedRouteId, setSelectedRouteId] = useState("");
+  const [seller, setSeller] = useState("");
+  const [routeLabel, setRouteLabel] = useState("");
+  const [status, setStatus] = useState<SimpleRouteStatus | "">("");
+  const [saleType, setSaleType] = useState<SimpleRouteSaleType | "all">("all");
+
+  useEffect(() => {
+    if (!selectedRouteId && routes.length > 0) {
+      setSelectedRouteId(String(routes[0].id));
+    }
+  }, [routes, selectedRouteId]);
+
+  function filtersFor(reportType: SimpleRouteExportType): SimpleRouteExportFilters {
+    if (reportType === "detail") {
+      return { route_sheet_id: Number(selectedRouteId) };
+    }
+    return {
+      ...(dateFrom ? { start_date: dateFrom } : {}),
+      ...(dateTo ? { end_date: dateTo } : {}),
+      ...(seller.trim() ? { seller } : {}),
+      ...(routeLabel.trim() ? { route_label: routeLabel } : {}),
+      ...(status ? { status } : {}),
+      ...(reportType === "sales" ? { sale_type: saleType } : {}),
+    };
+  }
+
+  return (
+    <section className="overflow-hidden rounded-3xl border border-cyan-200 bg-white shadow-card">
+      <div className="border-b border-cyan-100 bg-cyan-50/70 p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-cyan-800">
+              Módulo independiente · Excel
+            </p>
+            <h2 className="mt-1.5 text-xl font-semibold text-slate-950">
+              Rutas Simples
+            </h2>
+          </div>
+          <StatusBadge label="Solo Rutas Simples" tone="success" />
+        </div>
+        <p className="mt-3 max-w-4xl rounded-xl border border-cyan-200 bg-white px-4 py-3 text-sm font-medium leading-6 text-cyan-950">
+          {SIMPLE_ROUTE_EXPORT_NOTICE}
+        </p>
+      </div>
+
+      <div className="space-y-6 p-5 sm:p-6">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <DateField
+            disabled={disabled}
+            label="Fecha inicio"
+            onChange={onDateFromChange}
+            value={dateFrom}
+          />
+          <DateField
+            disabled={disabled}
+            label="Fecha fin"
+            onChange={onDateToChange}
+            value={dateTo}
+          />
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-800">
+              Vendedor (opcional)
+            </span>
+            <input
+              className="mt-2 h-11 w-full rounded-xl border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              disabled={disabled}
+              onChange={(event) => setSeller(event.target.value)}
+              placeholder="Ej. George"
+              type="text"
+              value={seller}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-800">
+              Ruta / zona (opcional)
+            </span>
+            <input
+              className="mt-2 h-11 w-full rounded-xl border border-slate-300 px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              disabled={disabled}
+              onChange={(event) => setRouteLabel(event.target.value)}
+              placeholder="Ej. Centro"
+              type="text"
+              value={routeLabel}
+            />
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-800">
+              Estado (resumen y cuadres)
+            </span>
+            <select
+              className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              disabled={disabled}
+              onChange={(event) =>
+                setStatus(event.target.value as SimpleRouteStatus | "")
+              }
+              value={status}
+            >
+              <option value="">Todos</option>
+              <option value="draft">Borrador</option>
+              <option value="in_progress">En progreso</option>
+              <option value="settled">Liquidada</option>
+              <option value="cancelled">Cancelada</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-sm font-semibold text-slate-800">
+              Tipo de venta
+            </span>
+            <select
+              className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              disabled={disabled}
+              onChange={(event) =>
+                setSaleType(event.target.value as SimpleRouteSaleType | "all")
+              }
+              value={saleType}
+            >
+              <option value="all">Todas</option>
+              <option value="cash">Contado</option>
+              <option value="credit">Fiado</option>
+              <option value="partial">Parcial</option>
+            </select>
+          </label>
+          <label className="block sm:col-span-2">
+            <span className="text-sm font-semibold text-slate-800">
+              Ruta para exportar detalle
+            </span>
+            <select
+              className="mt-2 h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-slate-950 outline-none transition focus:border-water-500 focus:ring-2 focus:ring-water-100"
+              disabled={disabled || routes.length === 0}
+              onChange={(event) => setSelectedRouteId(event.target.value)}
+              value={selectedRouteId}
+            >
+              {routes.length === 0 ? (
+                <option value="">No hay Rutas Simples registradas</option>
+              ) : null}
+              {routes.map((route) => (
+                <option key={route.id} value={route.id}>
+                  #{route.id} · {route.route_date} · {route.seller_name} · {route.route_label || "Sin zona"}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {routes.length === 0 ? (
+          <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+            No hay Rutas Simples para seleccionar. Los reportes por período se
+            pueden descargar vacíos; el detalle requiere una ruta registrada.
+          </p>
+        ) : null}
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {SIMPLE_ROUTE_EXPORTS.map((report) => {
+            const detailUnavailable =
+              report.type === "detail" && !selectedRouteId;
+            return (
+              <article
+                className="flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-slate-50/70 p-4"
+                key={report.type}
+              >
+                <h3 className="font-semibold text-slate-950">{report.label}</h3>
+                <p className="mt-1 flex-1 text-sm leading-6 text-slate-600">
+                  {report.description}
+                </p>
+                <button
+                  className="mt-4 min-h-11 rounded-xl bg-water-700 px-4 text-sm font-semibold text-white shadow-water transition hover:bg-water-600 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                  disabled={disabled || detailUnavailable}
+                  onClick={() => void onDownload(report.type, filtersFor(report.type))}
+                  type="button"
+                >
+                  {downloadingType === report.type
+                    ? "Preparando Excel..."
+                    : `Exportar ${report.label}`}
+                </button>
+              </article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 

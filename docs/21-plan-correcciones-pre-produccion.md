@@ -515,6 +515,30 @@ Documentos:
 - [`63-bloque-63a-rutas-simples-agua-activa.md`](63-bloque-63a-rutas-simples-agua-activa.md).
 - [`64-plan-limpieza-ventas-ruta-2026-08-01.md`](64-plan-limpieza-ventas-ruta-2026-08-01.md).
 
+## Estado del Bloque 63C: exportaciones de Rutas Simples
+
+63C agrega siete libros Excel de solo lectura para resumen, detalle, ventas,
+fiados, abonos, gastos y cuadres. Todos usan el dominio `simple_route_*`,
+mantienen separados ventas/cobros oficiales, cartera e inventario, y excluyen
+rutas canceladas de totales o actividad principal.
+
+`admin_auditor` puede descargar; `operator` conserva el bloqueo frontend y
+recibe `403` por URL directa. La opción de rutas legacy se ocultó del selector
+general sin eliminar su endpoint compatible. No hay migración y Alembic debe
+permanecer en `0029_simple_routes`.
+
+63C-2 fue desplegado de forma controlada el 2026-08-07 recreando únicamente
+`api` y `web`. PostgreSQL no se reinició, Alembic y los conteos permanecieron
+intactos, y el health final aprobó con cero fallos/advertencias. El humo
+administrativo localhost/LAN/Tailscale, la UI móvil y seis XLSX vacíos
+aprobaron; el detalle devolvió el `404` esperado porque todavía no existen rutas
+simples. El permiso de `operator` quedó cubierto por API/suite, sin cambiar
+credenciales para repetir manualmente su login.
+
+Documento:
+
+- [`66-bloque-63c-exportaciones-rutas-simples.md`](66-bloque-63c-exportaciones-rutas-simples.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |
@@ -554,6 +578,7 @@ Documentos:
 | P1-15 | Siguiente bloque de producción | Alertar lotes sin consumo o aplicación y validar vigencia de fórmula al confirmar consumo | Desarrollo + George | Alta | El cierre diario identifica lotes incompletos y una fórmula fuera de vigencia no se consume |
 | P1-16 | 61A/61A-2 | Roles de pago internos con borrador, aprobación, pago, cancelación, auditoría y aplicación trazable de anticipos/préstamos; 0028 desplegada | Desarrollo + George | Alta | Backup, migración, saldos y humo visual por ambos roles aprobados; falta evidencia manual del `403` backend productivo específico de nómina; ningún rol real se marca pagado sin autorización |
 | P1-17 | 63B/63B-2 | Dashboard administrativo con Ventas oficiales, Ventas de ruta y Total vendido con rutas, sin mezclar cartera, cobros, inventario ni caja | Desarrollo + George | Alta | Despliegue controlado aprobado recreando sólo api/web; DB, Alembic 0029 y conteos intactos; health y humo admin localhost/LAN/Tailscale aprobados; permisos de operator comprobados por API y suite, sin cambiar credenciales para repetir su login visual |
+| P1-18 | 63C/63C-2 | Exportaciones Excel exclusivas de Rutas Simples y retiro visual de rutas legacy | Desarrollo + George | Alta | Despliegue controlado aprobado recreando solo api/web; DB, Alembic 0029 y conteos intactos; seis XLSX vacíos y detalle 404 válidos, admin localhost/LAN/Tailscale y UI móvil aprobados; operator 403 cubierto por API/suite; falta detalle 200 con una ruta real autorizada |
 
 ## Mejoras que pueden esperar
 

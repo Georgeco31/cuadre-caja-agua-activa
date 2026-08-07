@@ -431,6 +431,17 @@ cuadre-caja-agua-activa/
   conteos productivos permanecieron intactos. El dashboard admin autenticado
   aprobó por localhost, LAN y Tailscale, sin errores de consola ni
   desbordamiento móvil; no se creó ninguna ruta ni se modificaron datos.
+- Bloque 63C: el centro de exportaciones agrega siete libros Excel exclusivos
+  de Rutas Simples: resumen, detalle, ventas, fiados, abonos, gastos y cuadres.
+  La interfaz aclara que no incluye ventas oficiales, cartera formal ni
+  inventario y oculta la exportación legacy de rutas sin eliminar su endpoint.
+  Solo `admin_auditor` puede descargar; `operator` recibe `403`. No requiere
+  migración y Alembic permanece en `0029_simple_routes`. 63C-2 fue desplegado
+  el 2026-08-07 recreando únicamente `api` y `web`; PostgreSQL mantuvo el mismo
+  contenedor sin reinicios y los conteos quedaron intactos. Health, login admin
+  localhost/LAN/Tailscale, UI móvil, seis XLSX vacíos y el `404` controlado del
+  detalle aprobaron sin crear rutas ni modificar datos. Queda pendiente validar
+  el detalle `200` cuando exista una ruta simple real autorizada.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -547,6 +558,9 @@ de gastos, cookies ni refresh tokens.
 - `docs/65-bloque-63b-dashboard-rutas-simples.md`: decisión de nombres,
   cálculos, separaciones, endpoint, permisos, pruebas y brechas del dashboard
   administrativo con Rutas Simples.
+- `docs/66-bloque-63c-exportaciones-rutas-simples.md`: decisión de usar solo
+  Rutas Simples, endpoints, filtros, estructura de los siete XLSX, permisos,
+  pruebas, brechas y despliegue sin migración.
 
 ## Antes de usar datos reales
 

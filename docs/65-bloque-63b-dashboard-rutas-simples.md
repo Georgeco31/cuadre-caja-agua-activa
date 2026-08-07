@@ -287,7 +287,6 @@ nómina, credenciales ni archivos de entorno.
 - Gastos de ruta no son gastos oficiales de caja.
 - La integración definitiva con caja debe seguir controlada para evitar doble
   conteo.
-- Una exportación específica de Rutas Simples queda para un bloque futuro.
 - La impresión o formato final de hoja de ruta queda para un bloque futuro.
 
 ## Resultado
@@ -295,3 +294,17 @@ nómina, credenciales ni archivos de entorno.
 El administrador puede leer el negocio con una cifra oficial, una cifra
 operativa de rutas y un total combinado inequívoco. La implementación es de
 solo lectura y mantiene separados ventas, cartera, cobros, inventario y caja.
+
+## Continuidad en el Bloque 63C
+
+La brecha de Excel específico quedó atendida con siete exportaciones basadas en
+Rutas Simples: resumen, detalle, ventas, fiados, abonos, gastos y cuadres. La
+pantalla explica que no incluye ventas oficiales, cartera formal ni inventario,
+y dejó de ofrecer la exportación legacy de rutas en el selector general.
+
+63C es de solo lectura, conserva la protección exclusiva de
+`admin_auditor`, no cambia cálculos del dashboard y no requiere migración.
+63C-2 se desplegó el 2026-08-07 recreando solo `api` y `web`; `db`, Alembic y
+los conteos quedaron intactos. Health, login administrativo, UI móvil y las
+descargas vacías aprobaron sin crear rutas ni modificar datos. Ver
+[`66-bloque-63c-exportaciones-rutas-simples.md`](66-bloque-63c-exportaciones-rutas-simples.md).

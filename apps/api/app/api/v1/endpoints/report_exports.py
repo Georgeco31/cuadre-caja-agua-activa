@@ -20,6 +20,15 @@ from app.services.excel_export import (
     build_routes_workbook,
     build_sales_workbook,
 )
+from app.services.simple_route_excel_export import (
+    build_simple_route_collections_workbook,
+    build_simple_route_detail_workbook,
+    build_simple_route_expenses_workbook,
+    build_simple_route_pending_workbook,
+    build_simple_route_sales_workbook,
+    build_simple_route_settlements_workbook,
+    build_simple_routes_summary_workbook,
+)
 
 router = APIRouter(
     prefix="/reports/exports",
@@ -217,6 +226,149 @@ def export_routes(
             status=route_status,
         ),
         "rutas.xlsx",
+    )
+
+
+@router.get("/simple-routes-summary.xlsx")
+def export_simple_routes_summary(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    seller: str | None = None,
+    route_label: str | None = None,
+    route_status: str | None = Query(default=None, alias="status"),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_simple_routes_summary_workbook(
+            db,
+            start_date=start_date,
+            end_date=end_date,
+            seller=seller,
+            route_label=route_label,
+            status=route_status,
+        ),
+        "resumen-rutas-simples.xlsx",
+    )
+
+
+@router.get("/simple-routes/{route_sheet_id}.xlsx")
+def export_simple_route_detail(
+    route_sheet_id: int,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    try:
+        return build_excel_response(
+            build_simple_route_detail_workbook(db, route_sheet_id),
+            f"ruta-simple-{route_sheet_id}.xlsx",
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=http_status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+
+
+@router.get("/simple-route-sales.xlsx")
+def export_simple_route_sales(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    sale_type: str | None = None,
+    seller: str | None = None,
+    route_label: str | None = None,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_simple_route_sales_workbook(
+            db,
+            start_date=start_date,
+            end_date=end_date,
+            sale_type=sale_type,
+            seller=seller,
+            route_label=route_label,
+        ),
+        "ventas-rutas-simples.xlsx",
+    )
+
+
+@router.get("/simple-route-pending.xlsx")
+def export_simple_route_pending(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    seller: str | None = None,
+    route_label: str | None = None,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_simple_route_pending_workbook(
+            db,
+            start_date=start_date,
+            end_date=end_date,
+            seller=seller,
+            route_label=route_label,
+        ),
+        "fiados-rutas-simples.xlsx",
+    )
+
+
+@router.get("/simple-route-collections.xlsx")
+def export_simple_route_collections(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    seller: str | None = None,
+    route_label: str | None = None,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_simple_route_collections_workbook(
+            db,
+            start_date=start_date,
+            end_date=end_date,
+            seller=seller,
+            route_label=route_label,
+        ),
+        "abonos-rutas-simples.xlsx",
+    )
+
+
+@router.get("/simple-route-expenses.xlsx")
+def export_simple_route_expenses(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    seller: str | None = None,
+    route_label: str | None = None,
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_simple_route_expenses_workbook(
+            db,
+            start_date=start_date,
+            end_date=end_date,
+            seller=seller,
+            route_label=route_label,
+        ),
+        "gastos-rutas-simples.xlsx",
+    )
+
+
+@router.get("/simple-route-settlements.xlsx")
+def export_simple_route_settlements(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    seller: str | None = None,
+    route_label: str | None = None,
+    route_status: str | None = Query(default=None, alias="status"),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    return _build_response(
+        lambda: build_simple_route_settlements_workbook(
+            db,
+            start_date=start_date,
+            end_date=end_date,
+            seller=seller,
+            route_label=route_label,
+            status=route_status,
+        ),
+        "cuadres-rutas-simples.xlsx",
     )
 
 
