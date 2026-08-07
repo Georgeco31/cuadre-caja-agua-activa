@@ -54,6 +54,15 @@ def test_initial_tables_are_registered_in_metadata() -> None:
         "sale_date_corrections",
         "sale_items",
         "sales",
+        "simple_route_audit_logs",
+        "simple_route_cash_receipts",
+        "simple_route_collections",
+        "simple_route_expenses",
+        "simple_route_sale_items",
+        "simple_route_sales",
+        "simple_route_sheets",
+        "simple_route_trip_items",
+        "simple_route_trips",
         "suppliers",
     }
 

@@ -484,6 +484,37 @@ Documento y procedimiento:
 
 - [`62-bloque-62a-metricas-clientes-dashboard.md`](62-bloque-62a-metricas-clientes-dashboard.md).
 
+## Estado del Bloque 63A: Rutas Simples independientes
+
+63A prepara un módulo nuevo basado en la hoja física usada por George. Las
+ventas, fiados, abonos y gastos se guardan en tablas `simple_route_*`; no crean
+ventas/cobros oficiales, cartera formal, gastos de caja ni movimientos de
+inventario. Permite varios viajes, salidas, retornos, clientes libres y
+liquidación por producto y efectivo.
+
+El efectivo entregado puede vincularse una sola vez a un cuadre abierto de la
+misma fecha como referencia trazable. No se suma a `total_counted`, porque ya
+está incluido en el conteo físico. El dashboard recomienda Rutas Simples y
+mantiene el flujo tradicional como `legacy`.
+
+63A-2 fue desplegado de forma controlada el 2026-08-06. Se validó el backup
+previo, se aplicó `0029_simple_routes`, se recrearon únicamente `api` y `web` y
+PostgreSQL no se reinició. El health localhost/LAN/Tailscale terminó con cero
+fallos; 14 conteos protegidos permanecieron iguales y las tablas simples
+quedaron vacías. Tampoco se anularon ventas del 2026-08-01: el dry-run productivo
+identificó 14 candidatas y confirmó `modified_records = 0`.
+
+Los permisos backend productivos y el humo visual autenticado aprobaron por rol.
+Admin y operator ingresaron por localhost; admin se comprobó por LAN y operator
+por Tailscale. Rutas Simples cargó sin errores de consola, admin conservó
+analytics y operator recibió los bloqueos de nómina, gerencia y exportaciones.
+Queda pendiente únicamente una ruta de prueba real, porque no fue autorizada.
+
+Documentos:
+
+- [`63-bloque-63a-rutas-simples-agua-activa.md`](63-bloque-63a-rutas-simples-agua-activa.md).
+- [`64-plan-limpieza-ventas-ruta-2026-08-01.md`](64-plan-limpieza-ventas-ruta-2026-08-01.md).
+
 ## Correcciones obligatorias antes de producción
 
 | ID | Bloque sugerido | Corrección | Responsable | Prioridad | Criterio de cierre |

@@ -21,7 +21,7 @@ type DashboardShellProps = {
 const navigation = [
   { href: "/dashboard", label: "Inicio", icon: "⌂" },
   { href: "/dashboard/cash-session", label: "Caja", icon: "$" },
-  { href: "/dashboard/delivery-routes", label: "Rutas", icon: "↗" },
+  { href: "/dashboard/simple-routes", label: "Rutas simples", icon: "↗" },
   {
     href: "/dashboard/reports",
     label: "Reportes",

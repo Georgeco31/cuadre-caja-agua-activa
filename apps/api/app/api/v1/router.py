@@ -29,6 +29,7 @@ from app.api.v1.endpoints import (
     route_closures,
     route_returns,
     sales,
+    simple_routes,
     suppliers,
     users,
     vehicles,
@@ -65,6 +66,8 @@ api_router.include_router(route_loads.router)
 api_router.include_router(route_closures.router)
 api_router.include_router(route_returns.router)
 api_router.include_router(sales.router)
+api_router.include_router(simple_routes.router)
+api_router.include_router(simple_routes.cash_session_router)
 api_router.include_router(suppliers.router)
 api_router.include_router(users.router)
 api_router.include_router(vehicles.router)

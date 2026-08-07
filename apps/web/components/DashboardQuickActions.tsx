@@ -133,8 +133,16 @@ const actionGroups: DashboardActionGroup[] = [
     description: "Planeación, carga, retorno, cierre y control de efectivo.",
     actions: [
       {
+        href: "/dashboard/simple-routes",
+        title: "Rutas simples (recomendado)",
+        description:
+          "Registrar la hoja diaria de George sin inventario ni ventas oficiales.",
+        icon: "RS",
+        primary: true,
+      },
+      {
         href: "/dashboard/delivery-routes",
-        title: "Rutas",
+        title: "Rutas tradicionales (legacy)",
         description:
           "Registrar rutas y zonas de entrega para el control operativo.",
         operatorDescription: "Consultar rutas y zonas de entrega.",

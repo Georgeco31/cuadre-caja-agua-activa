@@ -14,6 +14,7 @@ import { ExpenseList } from "@/components/ExpenseList";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SummaryCard } from "@/components/SummaryCard";
+import { SimpleRouteCashReceiptList } from "@/components/SimpleRouteCashReceiptList";
 import {
   ApiError,
   correctCashCountItem,
@@ -25,6 +26,7 @@ import {
   listCorrections,
   listDenominations,
   listExpenses,
+  listCashSessionSimpleRouteReceipts,
 } from "@/lib/api";
 import { getToken, removeToken, saveUser } from "@/lib/auth";
 import type { CashSession } from "@/types/cashSession";
@@ -37,6 +39,7 @@ import type {
 import type { Denomination } from "@/types/denomination";
 import type { Expense } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
+import type { SimpleRouteCashReceipt } from "@/types/simpleRoute";
 
 export default function CashSessionHistoryDetailPage() {
   const router = useRouter();
@@ -48,6 +51,7 @@ export default function CashSessionHistoryDetailPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [denominations, setDenominations] = useState<Denomination[]>([]);
   const [correctionLogs, setCorrectionLogs] = useState<CorrectionLog[]>([]);
+  const [simpleRouteReceipts, setSimpleRouteReceipts] = useState<SimpleRouteCashReceipt[]>([]);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -107,12 +111,14 @@ export default function CashSessionHistoryDetailPage() {
         loadedCountItems,
         loadedExpenses,
         loadedDenominations,
+        loadedSimpleRouteReceipts,
       ] = await Promise.all([
         getCashSession(activeToken, activeCashSessionId),
         getCashSessionSummary(activeToken, activeCashSessionId),
         listCashCountItems(activeToken, activeCashSessionId),
         listExpenses(activeToken, activeCashSessionId),
         listDenominations(activeToken),
+        listCashSessionSimpleRouteReceipts(activeToken, activeCashSessionId),
       ]);
       const loadedCorrectionLogs = canCorrect
         ? await listCorrections(activeToken, activeCashSessionId)
@@ -124,6 +130,7 @@ export default function CashSessionHistoryDetailPage() {
       setExpenses(loadedExpenses);
       setDenominations(loadedDenominations);
       setCorrectionLogs(loadedCorrectionLogs);
+      setSimpleRouteReceipts(loadedSimpleRouteReceipts);
     } catch (loadError) {
       if (redirectIfUnauthorized(loadError)) {
         return;
@@ -253,6 +260,7 @@ export default function CashSessionHistoryDetailPage() {
           <>
             <CashSessionDetailCard cashSession={cashSession} />
             <SummaryCard summary={summary} />
+            <SimpleRouteCashReceiptList receipts={simpleRouteReceipts} />
             <CountItemsList countItems={countItems} />
             <div className="grid gap-6 lg:grid-cols-2">
               <ExpenseList

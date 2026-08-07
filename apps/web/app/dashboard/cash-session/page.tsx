@@ -13,6 +13,7 @@ import { ExpenseList } from "@/components/ExpenseList";
 import { LoadingState } from "@/components/LoadingState";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SummaryCard } from "@/components/SummaryCard";
+import { SimpleRouteCashReceiptList } from "@/components/SimpleRouteCashReceiptList";
 import {
   ApiError,
   closeCashSession,
@@ -24,6 +25,7 @@ import {
   listCashCountItems,
   listExpenses,
   listDenominations,
+  listCashSessionSimpleRouteReceipts,
   setCashCountItem,
 } from "@/lib/api";
 import { getToken, removeToken } from "@/lib/auth";
@@ -37,6 +39,7 @@ import type { CountItemDetail } from "@/types/countItem";
 import type { Denomination } from "@/types/denomination";
 import type { Expense, ExpensePayload } from "@/types/expense";
 import type { CashSessionSummary } from "@/types/summary";
+import type { SimpleRouteCashReceipt } from "@/types/simpleRoute";
 
 export default function CashSessionPage() {
   const router = useRouter();
@@ -48,6 +51,7 @@ export default function CashSessionPage() {
   const [countItems, setCountItems] = useState<CountItemDetail[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [summary, setSummary] = useState<CashSessionSummary | null>(null);
+  const [simpleRouteReceipts, setSimpleRouteReceipts] = useState<SimpleRouteCashReceipt[]>([]);
   const [countedAmounts, setCountedAmounts] = useState<Record<number, string>>(
     {},
   );
@@ -161,11 +165,12 @@ export default function CashSessionPage() {
     loadedSession: CashSession,
     loadedDenominations: Denomination[] = denominations,
   ) {
-    const [loadedSummary, loadedExpenses, loadedCountItems] =
+    const [loadedSummary, loadedExpenses, loadedCountItems, loadedSimpleRouteReceipts] =
       await Promise.all([
         getCashSessionSummary(activeToken, loadedSession.id),
         listExpenses(activeToken, loadedSession.id),
         listCashCountItems(activeToken, loadedSession.id),
+        listCashSessionSimpleRouteReceipts(activeToken, loadedSession.id),
       ]);
 
     setCashSession(loadedSession);
@@ -173,6 +178,7 @@ export default function CashSessionPage() {
     setExpenses(loadedExpenses);
     setSummary(loadedSummary);
     setCountItems(loadedCountItems);
+    setSimpleRouteReceipts(loadedSimpleRouteReceipts);
     setCountedAmounts(
       buildCountedAmountMap(loadedDenominations, loadedCountItems),
     );
@@ -236,6 +242,7 @@ export default function CashSessionPage() {
     setCountItems([]);
     setExpenses([]);
     setSummary(null);
+    setSimpleRouteReceipts([]);
     setCountedAmounts({});
     setSavingId(null);
     setIsClosing(false);
@@ -446,6 +453,7 @@ export default function CashSessionPage() {
             />
 
             <SummaryCard summary={summary} />
+            <SimpleRouteCashReceiptList receipts={simpleRouteReceipts} />
 
             <div className="grid gap-6 lg:grid-cols-2">
               <DenominationCountTable

@@ -54,6 +54,17 @@ from app.models.route_return_item import RouteReturnItem
 from app.models.sale import Sale
 from app.models.sale_date_correction import SaleDateCorrection
 from app.models.sale_item import SaleItem
+from app.models.simple_route import (
+    SimpleRouteAuditLog,
+    SimpleRouteCashReceipt,
+    SimpleRouteCollection,
+    SimpleRouteExpense,
+    SimpleRouteSale,
+    SimpleRouteSaleItem,
+    SimpleRouteSheet,
+    SimpleRouteTrip,
+    SimpleRouteTripItem,
+)
 from app.models.supplier import Supplier
 from app.models.user import User
 from app.models.vehicle import Vehicle
@@ -105,6 +116,15 @@ __all__ = [
     "Sale",
     "SaleDateCorrection",
     "SaleItem",
+    "SimpleRouteAuditLog",
+    "SimpleRouteCashReceipt",
+    "SimpleRouteCollection",
+    "SimpleRouteExpense",
+    "SimpleRouteSale",
+    "SimpleRouteSaleItem",
+    "SimpleRouteSheet",
+    "SimpleRouteTrip",
+    "SimpleRouteTripItem",
     "Supplier",
     "User",
     "Vehicle",

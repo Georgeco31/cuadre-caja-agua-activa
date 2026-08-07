@@ -407,6 +407,19 @@ cuadre-caja-agua-activa/
   62A-2 fue desplegado recreando sólo `api` y `web`, con DB, Alembic 0028 y
   conteos productivos intactos. Queda pendiente el humo visual autenticado por
   ambos roles.
+- Bloque 63A: módulo nuevo de Rutas Simples basado en la hoja diaria de George.
+  Viajes, ventas de ruta, fiados, abonos y gastos usan tablas propias; no crean
+  ventas/cobros oficiales, cartera ni movimientos de inventario. El efectivo
+  liquidado puede vincularse una sola vez a un cuadre abierto como referencia,
+  sin sumarse de nuevo al conteo físico. 63A-2 fue desplegado el 2026-08-06 con
+  backup validado y migración `0029_simple_routes`; se recrearon solo `api` y
+  `web`, DB no se reinició, health quedó en cero fallos y los conteos protegidos
+  permanecieron intactos. No se creó ninguna ruta ni se tocó caja. El dry-run
+  del 2026-08-01 identificó 14 candidatas y modificó 0 registros. El humo visual
+  autenticado aprobó con ambos roles en localhost, admin por LAN y operator por
+  Tailscale; no hubo errores de consola ni se creó una ruta de prueba.
+  Ver `docs/63-bloque-63a-rutas-simples-agua-activa.md` y
+  `docs/64-plan-limpieza-ventas-ruta-2026-08-01.md`.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por

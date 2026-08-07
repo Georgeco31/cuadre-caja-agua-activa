@@ -186,6 +186,22 @@ import type {
 } from "@/types/routeReturn";
 import type { RouteSettlement } from "@/types/routeSettlement";
 import type {
+  SimpleRouteAnalytics,
+  SimpleRouteCashReceipt,
+  SimpleRouteCollection,
+  SimpleRouteExpense,
+  SimpleRouteListItem,
+  SimpleRouteSale,
+  SimpleRouteSalePayload,
+  SimpleRouteSettlement,
+  SimpleRouteSheet,
+  SimpleRouteSheetPayload,
+  SimpleRouteStatus,
+  SimpleRouteTrip,
+  SimpleRouteTripItem,
+  SimpleRouteTripItemPayload,
+} from "@/types/simpleRoute";
+import type {
   CustomerStatement,
   CustomerStatementFilters,
   OverdueReceivable,
@@ -2937,6 +2953,194 @@ export async function voidRouteReturn(
     headers: authHeaders(token),
     body: JSON.stringify({ reason }),
   });
+}
+
+export async function listSimpleRoutes(
+  token: string,
+  filters: {
+    date_from?: string;
+    date_to?: string;
+    status?: SimpleRouteStatus;
+    search?: string;
+  } = {},
+): Promise<SimpleRouteListItem[]> {
+  const params = new URLSearchParams();
+  if (filters.date_from) params.set("date_from", filters.date_from);
+  if (filters.date_to) params.set("date_to", filters.date_to);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.search) params.set("search", filters.search);
+  const query = params.toString();
+  return request<SimpleRouteListItem[]>(
+    `/simple-routes${query ? `?${query}` : ""}`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getSimpleRoute(
+  token: string,
+  sheetId: number,
+): Promise<SimpleRouteSheet> {
+  return request<SimpleRouteSheet>(`/simple-routes/${sheetId}`, {
+    headers: authHeaders(token),
+  });
+}
+
+export async function createSimpleRoute(
+  token: string,
+  payload: SimpleRouteSheetPayload,
+): Promise<SimpleRouteSheet> {
+  return request<SimpleRouteSheet>("/simple-routes", {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function addSimpleRouteTrip(
+  token: string,
+  sheetId: number,
+  notes?: string | null,
+): Promise<SimpleRouteTrip> {
+  return request<SimpleRouteTrip>(`/simple-routes/${sheetId}/trips`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ notes: notes ?? null }),
+  });
+}
+
+export async function addSimpleRouteTripItem(
+  token: string,
+  sheetId: number,
+  tripId: number,
+  payload: SimpleRouteTripItemPayload,
+): Promise<SimpleRouteTripItem> {
+  return request<SimpleRouteTripItem>(
+    `/simple-routes/${sheetId}/trips/${tripId}/items`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function addSimpleRouteSale(
+  token: string,
+  sheetId: number,
+  payload: SimpleRouteSalePayload,
+): Promise<SimpleRouteSale> {
+  return request<SimpleRouteSale>(`/simple-routes/${sheetId}/sales`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function addSimpleRouteCollection(
+  token: string,
+  sheetId: number,
+  payload: {
+    simple_route_sale_id?: number | null;
+    customer_name?: string | null;
+    amount: string;
+    notes?: string | null;
+  },
+): Promise<SimpleRouteCollection> {
+  return request<SimpleRouteCollection>(
+    `/simple-routes/${sheetId}/collections`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
+export async function addSimpleRouteExpense(
+  token: string,
+  sheetId: number,
+  payload: {
+    description: string;
+    category: string;
+    amount: string;
+    notes?: string | null;
+  },
+): Promise<SimpleRouteExpense> {
+  return request<SimpleRouteExpense>(`/simple-routes/${sheetId}/expenses`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getSimpleRouteSettlement(
+  token: string,
+  sheetId: number,
+): Promise<SimpleRouteSettlement> {
+  return request<SimpleRouteSettlement>(
+    `/simple-routes/${sheetId}/settlement`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function settleSimpleRoute(
+  token: string,
+  sheetId: number,
+  cashDelivered: string,
+): Promise<SimpleRouteSheet> {
+  return request<SimpleRouteSheet>(`/simple-routes/${sheetId}/settle`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ cash_delivered: cashDelivered }),
+  });
+}
+
+export async function cancelSimpleRoute(
+  token: string,
+  sheetId: number,
+  reason: string,
+): Promise<SimpleRouteSheet> {
+  return request<SimpleRouteSheet>(`/simple-routes/${sheetId}/cancel`, {
+    method: "POST",
+    headers: authHeaders(token),
+    body: JSON.stringify({ reason }),
+  });
+}
+
+export async function receiveSimpleRouteCash(
+  token: string,
+  sheetId: number,
+  cashSessionId: number,
+): Promise<SimpleRouteCashReceipt> {
+  return request<SimpleRouteCashReceipt>(
+    `/simple-routes/${sheetId}/cash-receipt`,
+    {
+      method: "POST",
+      headers: authHeaders(token),
+      body: JSON.stringify({ cash_session_id: cashSessionId }),
+    },
+  );
+}
+
+export async function listCashSessionSimpleRouteReceipts(
+  token: string,
+  cashSessionId: number,
+): Promise<SimpleRouteCashReceipt[]> {
+  return request<SimpleRouteCashReceipt[]>(
+    `/cash-sessions/${cashSessionId}/simple-route-cash-receipts`,
+    { headers: authHeaders(token) },
+  );
+}
+
+export async function getSimpleRouteAnalytics(
+  token: string,
+  dateFrom: string,
+  dateTo: string,
+): Promise<SimpleRouteAnalytics> {
+  return request<SimpleRouteAnalytics>(
+    `/simple-routes/analytics?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`,
+    { headers: authHeaders(token) },
+  );
 }
 
 async function request<T>(
