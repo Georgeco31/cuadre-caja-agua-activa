@@ -553,6 +553,7 @@ Documentos:
 | P1-14 | Siguiente bloque de inventario | Conciliación de apertura/cierre por ubicación y reporte de inventario esperado vs físico | Desarrollo + George | Alta | Bodega y carros muestran apertura, movimientos, cierre, conteo y diferencia |
 | P1-15 | Siguiente bloque de producción | Alertar lotes sin consumo o aplicación y validar vigencia de fórmula al confirmar consumo | Desarrollo + George | Alta | El cierre diario identifica lotes incompletos y una fórmula fuera de vigencia no se consume |
 | P1-16 | 61A/61A-2 | Roles de pago internos con borrador, aprobación, pago, cancelación, auditoría y aplicación trazable de anticipos/préstamos; 0028 desplegada | Desarrollo + George | Alta | Backup, migración, saldos y humo visual por ambos roles aprobados; falta evidencia manual del `403` backend productivo específico de nómina; ningún rol real se marca pagado sin autorización |
+| P1-17 | 63B/63B-2 | Dashboard administrativo con Ventas oficiales, Ventas de ruta y Total vendido con rutas, sin mezclar cartera, cobros, inventario ni caja | Desarrollo + George | Alta | Despliegue controlado aprobado recreando sólo api/web; DB, Alembic 0029 y conteos intactos; health y humo admin localhost/LAN/Tailscale aprobados; permisos de operator comprobados por API y suite, sin cambiar credenciales para repetir su login visual |
 
 ## Mejoras que pueden esperar
 

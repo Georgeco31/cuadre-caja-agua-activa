@@ -108,9 +108,10 @@ El sistema mantiene el modulo de caja como base operativa e incorpora clientes, 
   cobrado sobre crédito, saldo pendiente, fechas y anuladas separadas.
 - Exportación Excel detallada de ventas a crédito por cliente, exclusiva para
   `admin_auditor`.
-- Métricas del dashboard principal para `admin_auditor`: ventas, cobros,
-  cartera, gastos operativos, mejor día, promedio, top clientes, tendencia y
-  mezcla contado/crédito.
+- Métricas del dashboard principal para `admin_auditor`: Ventas oficiales,
+  Ventas de ruta y Total vendido con rutas; cobros, cartera formal, fiados,
+  abonos, gastos y efectivo de rutas permanecen separados. También incluye
+  mejor día, promedio, rankings, tendencias y mezcla contado/crédito oficial.
 
 Quedan fuera del MVP:
 
@@ -420,6 +421,16 @@ cuadre-caja-agua-activa/
   Tailscale; no hubo errores de consola ni se creó una ruta de prueba.
   Ver `docs/63-bloque-63a-rutas-simples-agua-activa.md` y
   `docs/64-plan-limpieza-ventas-ruta-2026-08-01.md`.
+- Bloque 63B: el dashboard administrativo distingue **Ventas oficiales**,
+  **Ventas de ruta** y **Total vendido con rutas**. Mantiene separados crédito
+  formal/fiados, cobros/abonos y caja/efectivo de ruta, reutiliza el endpoint
+  administrativo existente y no requiere migración. `operator` no ve ni puede
+  consultar estas métricas gerenciales. 63B-2 fue desplegado el 2026-08-07
+  recreando sólo `api` y `web`; PostgreSQL no se reinició, Alembic permaneció
+  en `0029_simple_routes`, el health quedó en cero fallos/advertencias y los
+  conteos productivos permanecieron intactos. El dashboard admin autenticado
+  aprobó por localhost, LAN y Tailscale, sin errores de consola ni
+  desbordamiento móvil; no se creó ninguna ruta ni se modificaron datos.
 
 Todavia no se han creado recibos de cobro de clientes, cobros masivos,
 anticipos de clientes, facturacion electronica, ingreso automatico por
@@ -531,6 +542,11 @@ de gastos, cookies ni refresh tokens.
 - `docs/62-bloque-62a-metricas-clientes-dashboard.md`: métricas por cliente,
   exportación de crédito, analytics administrativos y evidencia de despliegue
   controlado 62A-2.
+- `docs/63-bloque-63a-rutas-simples-agua-activa.md`: arquitectura, operación,
+  independencia, despliegue y brechas de Rutas Simples.
+- `docs/65-bloque-63b-dashboard-rutas-simples.md`: decisión de nombres,
+  cálculos, separaciones, endpoint, permisos, pruebas y brechas del dashboard
+  administrativo con Rutas Simples.
 
 ## Antes de usar datos reales
 

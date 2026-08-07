@@ -250,3 +250,20 @@ autorizó expresamente. No se creó ninguna hoja durante el humo visual.
 
 Un downgrade productivo solo debe considerarse antes de registrar hojas reales;
 después de crear datos, se requiere un plan de conservación y autorización.
+
+## Continuidad en el Bloque 63B
+
+El dashboard principal de `admin_auditor` ahora incorpora las métricas de este
+módulo sin cambiar su independencia. Distingue de forma visible **Ventas
+oficiales**, **Ventas de ruta** y **Total vendido con rutas**; fiados, abonos,
+gastos, efectivo esperado, entregado y diferencia permanecen en el dominio de
+Rutas Simples. El endpoint administrativo existente se amplió de forma
+compatible y `operator` continúa sin acceso a analytics gerenciales.
+
+63B no requiere migración y conserva Alembic en `0029_simple_routes`. 63B-2 se
+desplegó el 2026-08-07 recreando sólo `api` y `web`; PostgreSQL conservó su
+contenedor y los conteos protegidos permanecieron intactos. El health final y
+el dashboard administrativo autenticado aprobaron por localhost, LAN y
+Tailscale, sin errores de consola ni desbordamiento móvil. No se creó ninguna
+ruta. Las reglas, campos, pruebas y brechas están documentados en
+[`65-bloque-63b-dashboard-rutas-simples.md`](65-bloque-63b-dashboard-rutas-simples.md).
