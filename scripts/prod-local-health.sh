@@ -50,10 +50,10 @@ else
 fi
 
 if alembic_current="$(prod_compose exec --no-TTY api alembic current 2>&1)"; then
-  if [[ "$alembic_current" == *"0028_payroll_base"* ]]; then
-    echo "OK: Alembic esta en 0028_payroll_base."
+  if [[ "$alembic_current" == *"0029_simple_routes"* ]]; then
+    echo "OK: Alembic esta en 0029_simple_routes."
   else
-    prod_error "Alembic responde, pero no esta en 0028_payroll_base: ${alembic_current}"
+    prod_error "Alembic responde, pero no esta en 0029_simple_routes: ${alembic_current}"
     status=1
   fi
 else

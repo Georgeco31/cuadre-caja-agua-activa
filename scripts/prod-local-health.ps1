@@ -215,11 +215,11 @@ try {
 
     try {
         $currentVersion = Get-ProdAlembicVersion -ComposeFile $ComposeFile -EnvFile $EnvFile
-        if ($currentVersion -eq "0028_payroll_base") {
-            Write-HealthResult -Level "OK" -Section "Alembic" -Message "La revision actual es 0028_payroll_base."
+        if ($currentVersion -eq "0029_simple_routes") {
+            Write-HealthResult -Level "OK" -Section "Alembic" -Message "La revision actual es 0029_simple_routes."
         }
         else {
-            Write-HealthResult -Level "FAIL" -Section "Alembic" -Message "La revision actual no es 0028_payroll_base; se obtuvo $currentVersion."
+            Write-HealthResult -Level "FAIL" -Section "Alembic" -Message "La revision actual no es 0029_simple_routes; se obtuvo $currentVersion."
         }
     }
     catch {
