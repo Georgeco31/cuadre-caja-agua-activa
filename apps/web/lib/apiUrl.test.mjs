@@ -35,6 +35,15 @@ const scenarios = [
     expected: "http://[::1]:8010/api/v1/sales/13/void",
     expectedLogin: "http://[::1]:8010/api/v1/auth/login",
   },
+  {
+  name: "SolsActive HTTPS",
+  location: {
+    hostname: "agua.solsactive.com",
+    protocol: "https:",
+  },
+  expected: "https://agua.solsactive.com/api/v1/sales/13/void",
+  expectedLogin: "https://agua.solsactive.com/api/v1/auth/login",
+  },
 ];
 
 for (const scenario of scenarios) {

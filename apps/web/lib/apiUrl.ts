@@ -14,6 +14,10 @@ export function resolveApiBaseUrl(location?: ApiLocation): string {
     return FALLBACK_API_URL;
   }
 
+  if (location.hostname === "agua.solsactive.com") {
+    return `${location.protocol}//${location.hostname}${API_V1_PATH}`;
+  }
+
   const hostname = formatHostname(location.hostname);
   return `${location.protocol}//${hostname}:${API_PORT}${API_V1_PATH}`;
 }
