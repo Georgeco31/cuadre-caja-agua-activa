@@ -38,11 +38,11 @@ const scenarios = [
   {
   name: "SolsActive HTTPS",
   location: {
-    hostname: "agua.solsactive.com",
+    hostname: "aqua.solsactive.com",
     protocol: "https:",
   },
-  expected: "https://agua.solsactive.com/api/v1/sales/13/void",
-  expectedLogin: "https://agua.solsactive.com/api/v1/auth/login",
+  expected: "https://aqua.solsactive.com/api/v1/sales/13/void",
+  expectedLogin: "https://aqua.solsactive.com/api/v1/auth/login",
   },
 ];
 

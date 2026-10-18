@@ -14,7 +14,7 @@ export function resolveApiBaseUrl(location?: ApiLocation): string {
     return FALLBACK_API_URL;
   }
 
-  if (location.hostname === "agua.solsactive.com") {
+  if (location.hostname === "aqua.solsactive.com") {
     return `${location.protocol}//${location.hostname}${API_V1_PATH}`;
   }
 
